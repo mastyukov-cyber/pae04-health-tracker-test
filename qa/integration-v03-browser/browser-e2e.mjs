@@ -12,7 +12,7 @@ import {chromium,webkit} from 'playwright';
 
 const ROOT=resolve('qa/integration-v03-browser/site-v03');
 const REPORT_DIR=resolve('qa/integration-v03-browser/reports');
-const DB_NAME='PAE04_HealthTracker_PWA_v031_INTEGRATION_SYNTHETIC_V03_CONFIRM_BUTTON_4STORE';
+const DB_NAME='PAE04_HealthTracker_PWA_v021_INTEGRATION_SYNTHETIC_V03_CONFIRM_BUTTON_4STORE';
 const STORE_NAMES=['pressures','medications','intakes','intakeEvents'];
 const RESOURCES=['/','/index.html','/app.js','/styles.css','/manifest.webmanifest','/icons/icon.svg',
  '/icons/apple-touch-icon.png','/icons/icon-192.png','/icons/icon-512.png'];
@@ -113,7 +113,7 @@ async function main(){
  const sw=await page.evaluate(async()=>{
   const reg=await navigator.serviceWorker.ready;
   const cacheNames=await caches.keys();
-  const cacheName=cacheNames.find(n=>n.includes('pae04-pwa-v031-integration-test-v03'));
+  const cacheName=cacheNames.find(n=>n.includes('pae04-pwa-v021-integration-test-v03'));
   const resources=cacheName?await (await caches.open(cacheName)).keys():[];
   return {active:reg.active?.state,cacheName,keys:resources.map(x=>new URL(x.url).pathname)};
  });
@@ -135,7 +135,7 @@ async function main(){
  await page.locator('#med-form button[type="submit"]').click();
  await page.waitForFunction(()=>document.getElementById('stat-meds')?.textContent==='1');
  const created=(await readDB(page)).entries.medications;
- assert.equal(created.length,1);assert.equal(created[0].pae04v031?.strength,10);
+ assert.equal(created.length,1);assert.equal(created[0].pae04v021?.strength,10);
  assert.equal(created[0].dose,'Тестовая текстовая дозировка');
  mark('Real UI creates only synthetic medication and preserves legacy dose');
  await page.locator('#intake-date').fill('2024-06-10');
