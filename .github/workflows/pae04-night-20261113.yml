@@ -1,0 +1,74 @@
+name: PAE-04 ONE-NIGHT 13 Nov 2026 endurance QA (synthetic only)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/pae04-night-20261113.yml'
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Confirm exact source ZIP and safe synthetic resources
+        run: python3 qa/integration-v02-browser/verify-extract.py
+      - name: Validate night runner and browser QA source
+        run: |
+          bash -n qa/integration-v02-browser/night-stress.sh
+          node --check qa/integration-v02-browser/browser-e2e.mjs
+  night-first:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact source, fail closed
+        run: python3 qa/integration-v02-browser/verify-extract.py
+      - name: Install browser runners in temporary Linux environment
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install chromium webkit --with-deps
+      - name: Execute first window 01:00–04:45 MSK; every 10 minutes
+        run: bash qa/integration-v02-browser/night-stress.sh phase1
+      - name: Preserve synthetic test evidence first half
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-night-20261113-first
+          path: qa/integration-v02-browser/reports/night-phase1/
+          if-no-files-found: warn
+          retention-days: 7
+  night-second:
+    needs: [preflight, night-first]
+    if: always() && needs.preflight.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact source, fail closed
+        run: python3 qa/integration-v02-browser/verify-extract.py
+      - name: Install browser runners in temporary Linux environment
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install chromium webkit --with-deps
+      - name: Execute second window 04:45–08:45 MSK; every 10 minutes
+        run: bash qa/integration-v02-browser/night-stress.sh phase2
+      - name: Preserve synthetic test evidence second half
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-night-20261113-second
+          path: qa/integration-v02-browser/reports/night-phase2/
+          if-no-files-found: warn
+          retention-days: 7
