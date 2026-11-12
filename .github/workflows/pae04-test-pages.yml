@@ -1,0 +1,40 @@
+name: PAE-04 TEST v0.2.1 HTTPS GitHub Pages (synthetic only)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/pae04-test-pages.yml'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pae04-test-site-pages
+  cancel-in-progress: false
+jobs:
+  deploy-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/checkout@v4
+      - name: Strictly verify v02 site and unpack to isolated dist directory
+        run: |
+          python3 qa/integration-v02-browser/verify-extract.py
+          mkdir -p dist
+          cp -R qa/integration-v02-browser/site-v02/. dist/
+          touch dist/.nojekyll
+          test -f dist/index.html
+          test -f dist/sw.js
+          test -f dist/icons/icon-512.png
+          find dist -type f | sort
+      - name: Configure Pages (requires Pages enabled for GitHub Actions)
+        uses: actions/configure-pages@v5
+      - name: Upload only the verified site directory
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+      - name: Publish TEST website, not production app
+        id: deployment
+        uses: actions/deploy-pages@v4
