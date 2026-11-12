@@ -8,7 +8,7 @@ from subprocess import run, PIPE
 import base64, gzip, shutil, re, sys
 
 ROOT=Path(__file__).resolve().parent
-V02=ROOT.parent.parent/"integration-v02-browser"/"site-v02"
+V02=ROOT.parent/"integration-v02-browser"/"site-v02"
 V03=ROOT/"site-v03"
 PATCH_FILE=ROOT/"v03.patch.gz.b64"
 PATCH_SHA="e76ffbae228592fd457ed17849d4070a6a0ff341dd203ba3421ba640d1f13d17"
