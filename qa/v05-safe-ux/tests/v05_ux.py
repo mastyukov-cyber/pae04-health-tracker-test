@@ -104,8 +104,13 @@ try:
 except Exception as e:
     result={'engine':engine,'status':'FAIL','checks':len(checks),'error':str(e),'trace':traceback.format_exc()}
 finally:
-    if ctx: ctx.close()
-    if browser: browser.close()
+    # Playwright's with-block may already have stopped the event loop.
+    if ctx:
+        try: ctx.close()
+        except Exception: pass
+    if browser:
+        try: browser.close()
+        except Exception: pass
     server.shutdown();server.server_close();thread.join(timeout=5)
     (REPORT/f'v05-{engine}.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
     (REPORT/f'v05-{engine}.log').write_text('\n'.join(f'PASS {i+1} {s}' for i,s in enumerate(checks))+'\nRESULT='+result['status']+'\n',encoding='utf-8')
