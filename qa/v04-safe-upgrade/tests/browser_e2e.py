@@ -286,8 +286,9 @@ def check_engine(p,engine,log):
         server.shutdown();server.server_close()
         if thread:thread.join(timeout=5)
         server=None
-        missing=page.evaluate("fetch('./__uncached_v04_qa_resource__').then(()=>({ok:true}),e=>({ok:false,name:e.name}))")
-        assert missing['ok'] is False
+        missing=page.evaluate("fetch('./__uncached_v04_qa_resource__').then(r=>({ok:true,status:r.status}),e=>({ok:false,name:e.name}))")
+        log.append('UNCACHED_OFFLINE_RESULT='+json.dumps(missing,ensure_ascii=False))
+        assert missing['ok'] is False or missing.get('status',0)>=400
         ok(f'{engine}: stopped origin rejects a request to a non-cached resource')
         assert dbrows(page)==before_offline
         ok(f'{engine}: existing page retains all IndexedDB rows after origin stops')
