@@ -1,0 +1,17 @@
+{
+  "version": "v05.3",
+  "purpose": "Safari focus auto-zoom prevention, synthetic QA only",
+  "source_v052": "4bb075108e6903dd60e6dccef56b6627089336e9",
+  "source_test_main": "965cee6fce65f4359f90400470c7ff4c65306a5e",
+  "sha256": {
+    "index.html": "178fe075368887d9f9078898f57ce0c04b9bd7e6a4fa47a8d3b4b14076a4bc5b",
+    "styles.css": "067b4d8391fae03b03b135a76e314f788b1d0d078593e0541c5c566a830a3fb6",
+    "app.js": "1efa9e4d900a20e748b5f09ac3bba07cc2635ef347e7ae12b66ea848ede3bfe9",
+    "sw.js": "c5f071f686e59f6c709f66428f5905e7fcd2df9839aba1d4060206e24f22b8a0",
+    "manifest.webmanifest": "20af1489fc872d66b0206937d47f77e24a4fa0259c2682be3ae531c06572d609",
+    "icons/icon.svg": "377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606",
+    "icons/apple-touch-icon.png": "7e321de521f7c91a8856a66e237b98bb48d36bc89c6246ab90cc0ffb4ce6e11b",
+    "icons/icon-192.png": "455b1aa541ebd7574d441d82615efd6f02d277c2ecf727077aa274fbbbe74f05",
+    "icons/icon-512.png": "b5509bdf65dc021a057dac3f6db52de87a5d13d64c34cdc5f8dfc677a4e4f18b"
+  }
+}
