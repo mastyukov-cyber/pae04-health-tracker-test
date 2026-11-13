@@ -143,6 +143,7 @@ def check_engine(p,engine,log):
         assert {k:len(v) for k,v in v03_profile.items()}=={k:1 for k in STORE}
         seed.close()
         upgrade_page=upgrade.new_page()
+        upgrade_page.on('dialog',lambda d:d.accept())
         upgrade_page.goto(base+'index.html',wait_until='domcontentloaded')
         wait_until(upgrade_page, 'document.querySelector("#stat-pressure")?.textContent==="0"&&document.querySelector("#stat-meds")?.textContent==="0"')
         assert all(not v for v in dbrows(upgrade_page).values())
