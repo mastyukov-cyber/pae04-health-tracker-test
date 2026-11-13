@@ -167,11 +167,11 @@ def check_engine(p,engine,log):
             context.set_offline(False)
             ok('Real Chromium network-offline SW restart preserves two intakes')
         else:
-            # WebKit Playwright context.set_offline may raise unrelated internal error; test origin-down route.
-            server.shutdown();server.server_close();server=None
+            context.set_offline(True)
             offline.reload(wait_until='domcontentloaded',timeout=15000)
             assert len(dbrows(offline)['intakes'])==2
-            ok('WebKit origin-down cached restart preserves two intakes')
+            context.set_offline(False)
+            ok('Real WebKit network-offline SW restart preserves two intakes')
         sub.close();b.close()
         context.close();context=None
         log.append(f'RESULT=PASS ENGINE={engine} CHECKS={count} MODE=REAL_BROWSER_INDEXEDDB_AND_SW SYNTHETIC_ONLY')
