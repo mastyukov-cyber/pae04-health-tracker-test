@@ -1,0 +1,38 @@
+name: PAE-04 v05.1 Mobile UI QA - synthetic only (NO DEPLOY)
+on:
+  push:
+    branches: [sandbox/pae04-v051-mobile-ui-fix]
+    paths:
+      - 'qa/v051-mobile-ui/**'
+      - '.github/workflows/pae04-v051-mobile-ui-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mobile-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact nine v05.1 files and SHA256
+        run: python3 qa/v051-mobile-ui/verify.py
+      - name: Install Playwright 1.65.0
+        run: |
+          python -m pip install playwright==1.65.0
+          python -m playwright install --with-deps ${{ matrix.engine }}
+      - name: Original 25-check synthetic browser regression
+        run: python qa/v051-mobile-ui/tests/browser_e2e.py ${{ matrix.engine }}
+      - name: Mobile layout geometry and screenshot regression
+        run: python qa/v051-mobile-ui/tests/mobile_geometry.py ${{ matrix.engine }}
+      - name: Upload synthetic QA logs and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-v051-${{ matrix.engine }}
+          path: qa/v051-mobile-ui/reports/
+          if-no-files-found: warn
+          retention-days: 14
