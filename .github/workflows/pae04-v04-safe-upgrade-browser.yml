@@ -27,7 +27,7 @@ jobs:
         run: python qa/v04-safe-upgrade/verify_v04.py
       - name: Install real browser and Playwright
         run: |
-          python -m pip install playwright==1.56.1
+          python -m pip install playwright==1.56.0
           python -m playwright install --with-deps ${{ matrix.engine }}
       - name: Run synthetic-only browser E2E
         run: python qa/v04-safe-upgrade/tests/browser_e2e.py ${{ matrix.engine }}
