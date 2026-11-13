@@ -65,7 +65,7 @@ def cache_state(page):
 def check_engine(playwright, engine, expected_version, log):
     failures = []
     checks = 0
-    context = server = thread = None
+    context = server = thread = temp_profile = None
     server_requests = []
     sw_console = []
     page_events = []
@@ -98,9 +98,9 @@ def check_engine(playwright, engine, expected_version, log):
         mark("HTTP 200 for v04 page, Service Worker, and 9 cached resources")
 
         browser_type = getattr(playwright, engine)
-        profile = REPORT / f"profile-{engine}-pw-{expected_version}"
+        temp_profile = TemporaryDirectory(prefix=f"pae04-cache-{engine}-{expected_version}-")
         context = browser_type.launch_persistent_context(
-            user_data_dir=str(profile.resolve()),
+            user_data_dir=temp_profile.name,
             headless=True,
             accept_downloads=True,
             service_workers="allow",
@@ -256,6 +256,9 @@ def check_engine(playwright, engine, expected_version, log):
             except Exception: pass
         if server:
             try: server.shutdown(); server.server_close()
+            except Exception: pass
+        if temp_profile:
+            try: temp_profile.cleanup()
             except Exception: pass
         if thread:
             try: thread.join(timeout=5)
