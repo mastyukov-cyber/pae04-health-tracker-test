@@ -1,0 +1,49 @@
+name: PAE-04 v04 Playwright Cache Storage version comparison
+on:
+  push:
+    branches:
+      - sandbox/pae04-v04-safe-upgrade
+    paths:
+      - 'qa/cache-storage-compare/**'
+      - '.github/workflows/pae04-v04-cache-storage-compare.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cache-storage:
+    name: ${{ matrix.engine }} · Playwright ${{ matrix.playwright }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - engine: chromium
+            playwright: '1.56.0'
+          - engine: chromium
+            playwright: '1.65.0'
+          - engine: webkit
+            playwright: '1.56.0'
+          - engine: webkit
+            playwright: '1.65.0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify unchanged v04 site files
+        run: python qa/v04-safe-upgrade/verify_v04.py
+      - name: Install Playwright and matching browser
+        run: |
+          python -m pip install playwright==${{ matrix.playwright }}
+          python -m playwright install --with-deps ${{ matrix.engine }}
+      - name: Compare Service Worker and Cache Storage persistence
+        run: python qa/cache-storage-compare/cache_storage_compare.py ${{ matrix.engine }} ${{ matrix.playwright }}
+      - name: Upload comparison evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-cache-storage-${{ matrix.engine }}-pw-${{ matrix.playwright }}
+          path: qa/cache-storage-compare/reports/cache-storage-${{ matrix.engine }}-pw-${{ matrix.playwright }}.*
+          if-no-files-found: warn
+          retention-days: 14
