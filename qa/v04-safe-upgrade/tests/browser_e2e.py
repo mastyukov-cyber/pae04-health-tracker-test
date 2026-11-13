@@ -92,6 +92,23 @@ def check_engine(p,engine,log):
         page.wait_for_timeout(200)
         assert len(dbrows(page)['intakes'])==2
         ok('Same-time duplicate confirmation does not create extra record')
+        initial_intakes=dbrows(page)['intakes']
+        first_id=initial_intakes[0]['id'];first_marked=initial_intakes[0]['markedAt']
+        first_row=page.locator('#med-list .intake-record').first()
+        first_row.locator('input[type="time"]').fill('09:10')
+        first_row.get_by_role('button',name='Изменить время').click()
+        wait_until(page, 'document.querySelector("#med-list")?.textContent?.includes("08:15 → 09:10")')
+        changed=dbrows(page)
+        corrected=next(x for x in changed['intakes'] if x['id']==first_id)
+        assert corrected['takenAtLocal']=='2024-06-10T09:10' and corrected['markedAt']==first_marked
+        assert len(changed['intakeEvents'])==3
+        ok('Synthetic intake time corrected with original mark preserved and audit event added')
+        page.locator('#med-list .intake-record').nth(1).get_by_role('button',name='Отменить отметку').click()
+        wait_until(page, 'document.querySelectorAll("#med-list .intake-record.cancelled").length===1')
+        cancelled=dbrows(page)
+        assert len(cancelled['intakes'])==2 and sum(1 for x in cancelled['intakes'] if x.get('status')=='cancelled')==1
+        assert len(cancelled['intakeEvents'])==4
+        ok('Synthetic intake cancellation retains history and appends audit event')
         page.locator('[data-page="backup"]').click()
         with page.expect_download(timeout=15000) as d:page.locator('#export-button').click()
         dl=d.value
