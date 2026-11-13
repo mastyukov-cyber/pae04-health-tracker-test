@@ -1,0 +1,24 @@
+{
+  "source_v03_zip_sha256": "6633a51d713019e38b2094b79218b6a97ac8f230325accd4a25dc31c29a991ab",
+  "patch_sha256": "14f9eda87e1a80a9e8b4ddd9f0d3374670bff2e7f918440270da7527dda1c2e2",
+  "patch_b64_sha256": "a09fcbbad05e7b45ec3408a5c8d65710e443b0c02435c58522f5de4ddadfe454",
+  "target_files": {
+    "index.html": "55053430f87db962cd0482e6ced92cb646dca717782d99143e891d9eb9eedcf6",
+    "styles.css": "672770d0f732502ccfce33670ed167d12ba882ebc6bf50610616e6082c5fb90c",
+    "sw.js": "db303798274e07d33947c748c0f3309bf813a6fd5dc7fea083f47bed872cbbd7",
+    "app.js": "7837f6df9b82c5cb0e8a98789ba0326ba9e597c27f43154ab969b117dd9caea6",
+    "manifest.webmanifest": "67b89a209c3e762066b2c1a55118933088810eda9a6f95db34c3dc95835a87dc",
+    "icons/icon-512.png": "b5509bdf65dc021a057dac3f6db52de87a5d13d64c34cdc5f8dfc677a4e4f18b",
+    "icons/icon.svg": "377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606",
+    "icons/icon-192.png": "455b1aa541ebd7574d441d82615efd6f02d277c2ecf727077aa274fbbbe74f05",
+    "icons/apple-touch-icon.png": "7e321de521f7c91a8856a66e237b98bb48d36bc89c6246ab90cc0ffb4ce6e11b"
+  },
+  "changed_files": [
+    "app.js",
+    "index.html",
+    "manifest.webmanifest",
+    "styles.css",
+    "sw.js"
+  ],
+  "target": "PAE04 v04 synthetic-only safe-upgrade candidate; no real data; not published"
+}

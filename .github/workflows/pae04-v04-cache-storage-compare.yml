@@ -1,0 +1,77 @@
+name: PAE-04 v04 Playwright Cache Storage version comparison
+on:
+  push:
+    branches:
+      - sandbox/pae04-v04-safe-upgrade
+    paths:
+      - 'qa/cache-storage-compare/**'
+      - '.github/workflows/pae04-v04-cache-storage-compare.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cache-storage:
+    name: ${{ matrix.engine }} · Playwright ${{ matrix.playwright }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - engine: chromium
+            playwright: '1.56.0'
+          - engine: chromium
+            playwright: '1.65.0'
+          - engine: webkit
+            playwright: '1.56.0'
+          - engine: webkit
+            playwright: '1.65.0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify unchanged v04 site files
+        run: python qa/v04-safe-upgrade/verify_v04.py
+      - name: Install Playwright and matching browser
+        run: |
+          python -m pip install playwright==${{ matrix.playwright }}
+          python -m playwright install --with-deps ${{ matrix.engine }}
+      - name: Compare Service Worker and Cache Storage persistence
+        id: compare
+        # The old WebKit defect must be reproduced as a controlled XFAIL,
+        # never misreported as an application PASS.
+        continue-on-error: ${{ matrix.engine == 'webkit' && matrix.playwright == '1.56.0' }}
+        run: python qa/cache-storage-compare/cache_storage_compare.py ${{ matrix.engine }} ${{ matrix.playwright }}
+      - name: Validate exact known WebKit 1.56.0 XFAIL
+        if: ${{ matrix.engine == 'webkit' && matrix.playwright == '1.56.0' }}
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("qa/cache-storage-compare/reports/cache-storage-webkit-pw-1.56.0.json")
+          data = json.loads(p.read_text(encoding="utf8"))
+          expected = {
+              "Cache Storage created with all nine v04 worker resources",
+              "All nine Cache Storage resources persist after online reload",
+              "Offline reload served from Service Worker after origin stop",
+              "No page JavaScript errors",
+          }
+          assert set(data.get("failures", [])) == expected, data.get("failures")
+          assert data["cache_before_reload"]["keys"] == [], "old WebKit cache unexpectedly populated"
+          assert data["offline_response_from_service_worker"] is False, "old WebKit unexpectedly served offline"
+          print("RESULT=XFAIL WebKit Playwright 1.56.0 only: exact known Cache Storage defect reproduced")
+          PY
+      - name: Require diagnostic evidence files
+        if: always()
+        run: |
+          test -s qa/cache-storage-compare/reports/cache-storage-${{ matrix.engine }}-pw-${{ matrix.playwright }}.json
+          test -s qa/cache-storage-compare/reports/cache-storage-${{ matrix.engine }}-pw-${{ matrix.playwright }}.log
+      - name: Upload comparison evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-cache-storage-${{ matrix.engine }}-pw-${{ matrix.playwright }}
+          path: qa/cache-storage-compare/reports/cache-storage-${{ matrix.engine }}-pw-${{ matrix.playwright }}.*
+          if-no-files-found: error
+          retention-days: 14
