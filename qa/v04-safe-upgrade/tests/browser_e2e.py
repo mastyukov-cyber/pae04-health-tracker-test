@@ -128,6 +128,33 @@ def check_engine(p,engine,log):
         restored=dbrows(rest)
         assert {k:len(v) for k,v in restored.items()}=={k:len(v) for k,v in exported['data'].items()}
         ok('Explicit checkpoint acknowledgement enables atomic restore of all four stores')
+        # Import actual legacy v1/v2 synthetic fixture shapes into isolated browser profiles.
+        for version in (1,2):
+            legacy_med={'id':f'synthetic-medicine-v{version}','name':'Учебный препарат Б','dose':'Тестовая дозировка','kind':'regular','from':None,'to':None,'createdAt':'2024-06-10T09:00:00Z'}
+            legacy_intake={'id':f'synthetic-intake-v{version}','medId':legacy_med['id'],'date':'2024-06-10','markedAt':'2024-06-10T08:15:00Z'}
+            if version==2: legacy_intake['takenAtLocal']='2024-06-10T08:15'
+            legacy_body={'format':exported['format'],'version':version,'exportedAt':'2026-11-12T10:10:00.000Z','data':{'pressures':[],'medications':[legacy_med],'intakes':[legacy_intake]}}
+            legacy={**legacy_body,'sha256':sha256(canonical(legacy_body).encode()).hexdigest()}
+            stage=b.new_context(accept_downloads=True,service_workers='allow')
+            legacy_page=stage.new_page()
+            legacy_page.on('dialog',lambda d:d.accept())
+            legacy_page.goto(base+'index.html',wait_until='domcontentloaded')
+            legacy_page.locator('[data-page="backup"]').click()
+            legacy_bytes=json.dumps(legacy,ensure_ascii=False).encode()
+            legacy_page.locator('#import-file').set_input_files({'name':f'synthetic-v{version}.json','mimeType':'application/json','buffer':legacy_bytes})
+            wait_until(legacy_page, 'document.querySelector("#checkpoint-button")?.disabled===false')
+            with legacy_page.expect_download(timeout=15000): legacy_page.locator('#checkpoint-button').click()
+            legacy_page.locator('#checkpoint-ack').check()
+            assert legacy_page.locator('#import-button').is_enabled()
+            legacy_page.locator('#import-button').click()
+            wait_until(legacy_page, 'document.querySelector("#stat-meds")?.textContent==="1"')
+            legacy_db=dbrows(legacy_page)
+            assert len(legacy_db['medications'])==1 and len(legacy_db['intakes'])==1 and len(legacy_db['intakeEvents'])==0
+            if version==1: assert 'takenAtLocal' not in legacy_db['intakes'][0]
+            else: assert legacy_db['intakes'][0]['takenAtLocal']=='2024-06-10T08:15'
+            stage.close()
+            ok(f'Real {engine} browser imports synthetic legacy v{version} after a protective checkpoint')
+
         # Corrupted file must fail closed, preserving existing records.
         bad=json.loads(json.dumps(exported));bad['data']['medications'][0]['dose']='TAMPERED'
         rest.locator('#import-file').set_input_files({'name':'corrupted.json','mimeType':'application/json','buffer':json.dumps(bad,ensure_ascii=False).encode()})
@@ -160,18 +187,12 @@ def check_engine(p,engine,log):
         offline.goto(base+'index.html',wait_until='domcontentloaded')
         assert len(dbrows(offline)['pressures'])==1
         ok('Reload/new tab retains synthetic data in real IndexedDB')
-        if engine=='chromium':
-            context.set_offline(True)
-            offline.reload(wait_until='domcontentloaded',timeout=15000)
-            assert len(dbrows(offline)['intakes'])==2
-            context.set_offline(False)
-            ok('Real Chromium network-offline SW restart preserves two intakes')
-        else:
-            context.set_offline(True)
-            offline.reload(wait_until='domcontentloaded',timeout=15000)
-            assert len(dbrows(offline)['intakes'])==2
-            context.set_offline(False)
-            ok('Real WebKit network-offline SW restart preserves two intakes')
+        context.set_offline(True)
+        cached=offline.evaluate("fetch('./index.html').then(async r=>({status:r.status,body:await r.text()}))")
+        assert cached['status']==200 and 'HEALTH TRACKER' in cached['body'].upper()
+        assert len(dbrows(offline)['intakes'])==2
+        context.set_offline(False)
+        ok(f'Real {engine} offline Service Worker returns cached HTML and IndexedDB retains two intakes')
         sub.close();b.close()
         context.close();context=None
         log.append(f'RESULT=PASS ENGINE={engine} CHECKS={count} MODE=REAL_BROWSER_INDEXEDDB_AND_SW SYNTHETIC_ONLY')
