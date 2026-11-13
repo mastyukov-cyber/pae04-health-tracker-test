@@ -27,6 +27,14 @@ def canonical(x):
     if isinstance(x,dict):return '{'+','.join(json.dumps(k,ensure_ascii=False)+':'+canonical(x[k]) for k in sorted(x))+'}'
     return json.dumps(x,ensure_ascii=False,separators=(',',':'))
 
+def wait_until(page, expression, timeout=15000):
+    deadline = time.monotonic() + timeout / 1000
+    while time.monotonic() < deadline:
+        if page.evaluate(expression):
+            return
+        page.wait_for_timeout(100)
+    raise AssertionError(f"Timed out waiting for browser condition: {expression}")
+
 def dbrows(page):
     return page.evaluate('''async(name)=>{const db=await new Promise((resolve,reject)=>{const r=indexedDB.open(name);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});const names=[...db.objectStoreNames];const out={};for(const name of names){out[name]=await new Promise((resolve,reject)=>{const tx=db.transaction(name);const r=tx.objectStore(name).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}db.close();return out}''',DB)
 
@@ -52,8 +60,8 @@ def check_engine(p,engine,log):
                 assert r.status==200,asset
         ok('10 local HTTP assets are 200, including four PNG/SVG icons')
         page.goto(base+'index.html',wait_until='domcontentloaded',timeout=30000)
-        page.wait_for_function('document.querySelector("#stat-pressure")?.textContent!==undefined',timeout=15000)
-        page.wait_for_function('async()=>{const r=await navigator.serviceWorker.ready;return r.active?.state==="activated"}',timeout=20000)
+        wait_until(page, 'document.querySelector("#stat-pressure")?.textContent!==undefined',timeout=15000)
+        wait_until(page, 'async()=>{const r=await navigator.serviceWorker.ready;return r.active?.state==="activated"}',timeout=20000)
         ok('ServiceWorker installed and activated on real browser')
         db=dbrows(page)
         assert sorted(db)==sorted(STORE)
@@ -63,21 +71,21 @@ def check_engine(p,engine,log):
         page.locator('#systolic').fill('121');page.locator('#diastolic').fill('79');page.locator('#pulse').fill('70')
         page.locator('#pressure-datetime').fill('2024-06-10T09:00')
         page.locator('#pressure-form button[type="submit"]').click()
-        page.wait_for_function('document.querySelector("#stat-pressure")?.textContent==="1"')
+        wait_until(page, 'document.querySelector("#stat-pressure")?.textContent==="1"')
         assert dbrows(page)['pressures'][0]['arm']=='right'
         ok('Synthetic manual right-arm pressure persisted')
         page.locator('[data-page="meds"]').click()
         page.locator('#med-name').fill('Учебный препарат А');page.locator('#med-dose').fill('Учебная дозировка')
         page.locator('#med-kind').select_option('regular');page.locator('#med-strength').fill('10');page.locator('#med-unit').select_option(label='мг');page.locator('#med-form-factor').select_option(label='таблетки')
         page.locator('#med-form button[type="submit"]').click()
-        page.wait_for_function('document.querySelector("#stat-meds")?.textContent==="1"')
+        wait_until(page, 'document.querySelector("#stat-meds")?.textContent==="1"')
         page.locator('#intake-date').fill('2024-06-10')
         page.locator('#med-list .med-time-controls input[type="time"]').fill('08:15')
         page.locator('#med-list .intake-confirm-button').click()
-        page.wait_for_function('document.querySelectorAll("#med-list .intake-record").length===1')
+        wait_until(page, 'document.querySelectorAll("#med-list .intake-record").length===1')
         page.locator('#med-list .med-time-controls input[type="time"]').fill('20:15')
         page.locator('#med-list .intake-confirm-button').click()
-        page.wait_for_function('document.querySelectorAll("#med-list .intake-record").length===2')
+        wait_until(page, 'document.querySelectorAll("#med-list .intake-record").length===2')
         assert len(dbrows(page)['intakeEvents'])==2
         ok('Two same-day medicine intakes with distinct audit events')
         page.locator('#med-list .intake-confirm-button').click()
@@ -103,7 +111,7 @@ def check_engine(p,engine,log):
         rest.locator('[data-page="backup"]').click()
         filebytes=json.dumps(exported,ensure_ascii=False).encode()
         rest.locator('#import-file').set_input_files({'name':'synthetic-v3.json','mimeType':'application/json','buffer':filebytes})
-        rest.wait_for_function('document.querySelector("#checkpoint-button")?.disabled===false')
+        wait_until(rest, 'document.querySelector("#checkpoint-button")?.disabled===false')
         assert rest.locator('#import-button').is_disabled()
         ok('Import v3 preview requires checkpoint; cannot import directly')
         with rest.expect_download(timeout=15000) as d:rest.locator('#checkpoint-button').click()
@@ -116,29 +124,29 @@ def check_engine(p,engine,log):
         rest.locator('#checkpoint-ack').check()
         assert rest.locator('#import-button').is_enabled()
         rest.locator('#import-button').click()
-        rest.wait_for_function('document.querySelector("#stat-meds")?.textContent==="1"')
+        wait_until(rest, 'document.querySelector("#stat-meds")?.textContent==="1"')
         restored=dbrows(rest)
         assert {k:len(v) for k,v in restored.items()}=={k:len(v) for k,v in exported['data'].items()}
         ok('Explicit checkpoint acknowledgement enables atomic restore of all four stores')
         # Corrupted file must fail closed, preserving existing records.
         bad=json.loads(json.dumps(exported));bad['data']['medications'][0]['dose']='TAMPERED'
         rest.locator('#import-file').set_input_files({'name':'corrupted.json','mimeType':'application/json','buffer':json.dumps(bad,ensure_ascii=False).encode()})
-        rest.wait_for_function('document.querySelector("#import-preview")?.textContent?.includes("SHA-256")')
+        wait_until(rest, 'document.querySelector("#import-preview")?.textContent?.includes("SHA-256")')
         assert rest.locator('#import-button').is_disabled()
         assert len(dbrows(rest)['intakes'])==2
         ok('Tampered backup rejected without altering stored intakes')
         # Checkpoint invalidated if underlying database changes after download.
         rest.locator('#import-file').set_input_files({'name':'synthetic-v3.json','mimeType':'application/json','buffer':filebytes})
-        rest.wait_for_function('document.querySelector("#checkpoint-button")?.disabled===false')
+        wait_until(rest, 'document.querySelector("#checkpoint-button")?.disabled===false')
         with rest.expect_download(timeout=15000):rest.locator('#checkpoint-button').click()
         rest.locator('#checkpoint-ack').check()
         rest.locator('[data-page="pressure"]').click()
         rest.locator('#systolic').fill('122');rest.locator('#diastolic').fill('78');rest.locator('#pulse').fill('70');rest.locator('#pressure-datetime').fill('2024-06-10T09:30')
         rest.locator('#pressure-form button[type="submit"]').click()
-        rest.wait_for_function('document.querySelector("#stat-pressure")?.textContent==="2"')
+        wait_until(rest, 'document.querySelector("#stat-pressure")?.textContent==="2"')
         rest.locator('[data-page="backup"]').click()
         rest.locator('#import-button').click()
-        rest.wait_for_function('document.querySelector("#messages")?.textContent?.includes("База изменилась")')
+        wait_until(rest, 'document.querySelector("#messages")?.textContent?.includes("База изменилась")')
         assert rest.locator('#import-button').is_disabled()
         assert len(dbrows(rest)['pressures'])==2
         ok('Changed database after checkpoint blocks import and requires fresh checkpoint')
@@ -146,7 +154,7 @@ def check_engine(p,engine,log):
         assert not outsiders,outsiders
         ok('No page JS errors or external origin requests in primary TEST browser')
         # Browser persistence and ServiceWorker cached offline across new page.
-        page.wait_for_function('Boolean(navigator.serviceWorker.controller)',timeout=15000)
+        wait_until(page, 'Boolean(navigator.serviceWorker.controller)',timeout=15000)
         page.close()
         offline=context.new_page()
         offline.goto(base+'index.html',wait_until='domcontentloaded')
