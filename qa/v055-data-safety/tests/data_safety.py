@@ -156,7 +156,7 @@ try:
    receiver.locator('#checkpoint-ack').check()
    receiver.once('dialog',lambda d:d.accept())
    receiver.locator('#import-button').click()
-   receiver.locator('#stat-pressure').filter(has_text='1').wait_for()
+   expect(receiver.locator('#stat-pressure')).to_have_text('1',timeout=10000)
    restored=db(receiver)
    assert_counts(restored,[1,1,1,1])
    for store in restored:
