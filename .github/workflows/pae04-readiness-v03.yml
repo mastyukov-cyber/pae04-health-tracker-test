@@ -1,0 +1,47 @@
+name: PAE-04 v03 synthetic real-data readiness / upgrade-origin QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'qa/real-data-readiness-v03/**'
+      - '.github/workflows/pae04-readiness-v03.yml'
+permissions:
+  contents: read
+jobs:
+  origin-upgrade-probe:
+    name: Synthetic v02 to v03 / ${{ matrix.engine }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Guard v02 source byte integrity
+        run: python3 qa/integration-v02-browser/verify-extract.py
+      - name: Guard exact v03 source byte integrity
+        run: python3 qa/integration-v03-browser/verify-build-v03.py
+      - name: Syntax-check diagnostic script
+        run: node --check qa/real-data-readiness-v03/upgrade-origin-probe.mjs
+      - name: Install temporary Linux browser in GitHub runner
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install ${{ matrix.engine }} --with-deps
+      - name: Test same-origin migration and isolation using only synthetic data
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p qa/real-data-readiness-v03/reports
+          PAE04_ENGINE=${{ matrix.engine }} node qa/real-data-readiness-v03/upgrade-origin-probe.mjs 2>&1 | tee qa/real-data-readiness-v03/reports/${{ matrix.engine }}.log
+      - name: Upload only synthetic QA logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-readiness-v03-${{ matrix.engine }}
+          path: qa/real-data-readiness-v03/reports/
+          if-no-files-found: warn
+          retention-days: 7

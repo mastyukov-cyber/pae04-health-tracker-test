@@ -1,0 +1,47 @@
+name: PAE-04 v03 exact-site Chromium + WebKit acceptance QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'qa/integration-v03-browser/**'
+      - '.github/workflows/pae04-v03-browser.yml'
+permissions:
+  contents: read
+jobs:
+  v03-browser:
+    name: v03 ${{ matrix.engine }} (synthetic only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify source v02 CRC and original 9 SHA-256 values
+        run: python3 qa/integration-v02-browser/verify-extract.py
+      - name: Apply SHA-verified patch and verify exact v03 9 resource hashes
+        run: python3 qa/integration-v03-browser/verify-build-v03.py
+      - name: Verify real browser test syntax
+        run: node --check qa/integration-v03-browser/browser-e2e.mjs
+      - name: Install selected browser in ephemeral Linux QA runner only
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install ${{ matrix.engine }} --with-deps
+      - name: Real ${{ matrix.engine }} v03 button, IndexedDB, backup, offline and mobile CSS
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p qa/integration-v03-browser/reports
+          PAE04_ENGINE=${{ matrix.engine }} node qa/integration-v03-browser/browser-e2e.mjs 2>&1 | tee qa/integration-v03-browser/reports/${{ matrix.engine }}-console.log
+      - name: Preserve synthetic-only QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-v03-${{ matrix.engine }}-browser-qa
+          path: qa/integration-v03-browser/reports/
+          if-no-files-found: warn
+          retention-days: 7
