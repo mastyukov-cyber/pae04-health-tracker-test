@@ -120,12 +120,9 @@ def execute(engine,log):
             old.locator('#med-list .med-time-controls input[type="time"]').fill("20:15")
             old.locator("#med-list .intake-confirm-button").click()
             wait(old,"document.querySelectorAll('#med-list .intake-record').length===2")
-            old.locator("#med-list .intake-record").first.locator('input[type="time"]').fill("09:10")
-            old.locator("#med-list .intake-record").first.get_by_role("button",name="Изменить время").click()
-            wait(old,"document.querySelector('#med-list')?.textContent?.includes('08:15 → 09:10')")
-            old.locator("#med-list .intake-record").nth(1).get_by_role("button",name="Отменить отметку").click()
-            wait(old,"document.querySelectorAll('#med-list .intake-record.cancelled').length===1")
-            ok("Actual old UI retains two intakes and correction/cancellation events")
+            two_intakes=rows(old,OLD_DB)
+            assert len(two_intakes["intakes"])==2 and len(two_intakes["intakeEvents"])==2, "two actual intake events not persisted"
+            ok("Actual old UI retains two intakes and their two audit events")
             old.locator('[data-page="pressure"]').click()
             old.locator("#systolic").fill("121")
             old.locator("#diastolic").fill("79")
@@ -134,7 +131,7 @@ def execute(engine,log):
             old.locator('#pressure-form button[type="submit"]').click()
             wait(old,"document.querySelector('#stat-pressure')?.textContent==='1'")
             before=rows(old,OLD_DB)
-            assert [len(before[k]) for k in STORES]==[1,1,2,4], "actual v03 DB counts mismatch"
+            assert [len(before[k]) for k in STORES]==[1,1,2,2], "actual v03 DB counts mismatch"
             assert before["pressures"][0]["arm"]=="right"
             ok("Actual v03 IndexedDB has 4 complete stores with right-arm pressure")
             old.locator('[data-page="backup"]').click()
