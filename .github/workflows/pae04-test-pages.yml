@@ -1,4 +1,4 @@
-name: PAE-04 TEST v05.2 Journals and Backup GitHub Pages (synthetic only)
+name: PAE-04 TEST v05.3 Journals and Backup GitHub Pages (synthetic only)
 on:
   push:
     branches: [main]
@@ -18,32 +18,32 @@ jobs:
     environment:
       name: github-pages
     steps:
-      - name: Checkout immutable QA-approved v05.2 release snapshot
+      - name: Checkout immutable QA-approved v05.3 release snapshot
         uses: actions/checkout@v4
         with:
-          ref: '4bb075108e6903dd60e6dccef56b6627089336e9'
+          ref: '74975f15904a4c99e068a31e6030e12a21bf3c21'
           persist-credentials: false
-      - name: Verify pinned v05.2 manifest and all 9 SHA256 resources
+      - name: Verify pinned v05.3 manifest and all 9 SHA256 resources
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git hash-object qa/v052-journals-backup/V052_MANIFEST.json)" = "9287b083f68111c679e4a94c4f831076c7104ffa"
-          test "$(git hash-object qa/v052-journals-backup/verify.py)" = "424b425944c060966bb5aaae043235d5f9e4b70c"
-          python3 qa/v052-journals-backup/verify.py
+          test "$(git hash-object qa/v053-safari-input-zoom/V052_MANIFEST.json)" = "79a34179b5407ea5aa004bb9db06dd787adc607e"
+          test "$(git hash-object qa/v053-safari-input-zoom/verify.py)" = "dc9a8033da8f8c4d869f29b46a62b10eeb461e1b"
+          python3 qa/v053-safari-input-zoom/verify.py
           python3 - <<'PY'
           import json
           from pathlib import Path
-          root=Path('qa/v052-journals-backup/site')
-          manifest=json.loads(Path('qa/v052-journals-backup/V052_MANIFEST.json').read_text(encoding='utf-8'))
-          assert manifest['version']=='v05.2'
-          assert manifest['source_v051']=='d341fc0d7805d2dd2e2881648c3168d9f1ef07e1'
-          assert manifest['source_test_main']=='f9258c56271f812e2cff4bcd7b7b6663331bf87b'
+          root=Path('qa/v053-safari-input-zoom/site')
+          manifest=json.loads(Path('qa/v053-safari-input-zoom/V052_MANIFEST.json').read_text(encoding='utf-8'))
+          assert manifest['version']=='v05.3'
+          assert manifest['source_v052']=='4bb075108e6903dd60e6dccef56b6627089336e9'
+          assert manifest['source_test_main']=='965cee6fce65f4359f90400470c7ff4c65306a5e'
           assert len(manifest['sha256'])==9
           html=(root/'index.html').read_text(encoding='utf-8')
           app=(root/'app.js').read_text(encoding='utf-8')
           sw=(root/'sw.js').read_text(encoding='utf-8')
-          assert 'PAE-04 · v0.2.1 SAFE UX TEST v05.2' in html
-          assert 'v0.2.1 · SAFE UX TEST v05.2 · OFFLINE-FIRST' in html
+          assert 'PAE-04 · v0.2.1 SAFE UX TEST v05.3' in html
+          assert 'v0.2.1 · SAFE UX TEST v05.3 · OFFLINE-FIRST' in html
           assert 'id="pressure-search"' in html
           assert 'id="med-search"' in html
           assert 'id="verify-file"' in html
@@ -54,16 +54,23 @@ jobs:
           assert "const BACKUP_VERSION=3" in app
           assert 'function atomicMerge(data)' in app
           assert 'verifyDownloadedBackup' in app
-          assert 'cache-v052-20261113' in sw
-          print('RESULT=PASS VERSION=v05.2 FILES=9 SHA256_VERIFIED=9 SYNTHETIC_ONLY=True SOURCE_SHA=4bb075108e6903dd60e6dccef56b6627089336e9')
+          assert 'cache-v053-20261114' in sw
+          css=(root/'styles.css').read_text(encoding='utf-8')
+          assert 'font-size: 16px !important;' in css
+          assert 'input:not([type="checkbox"])' in css
+          viewport=(root/'index.html').read_text(encoding='utf-8')
+          assert 'width=device-width, initial-scale=1, viewport-fit=cover' in viewport
+          assert 'user-scalable=no' not in viewport
+          assert 'maximum-scale' not in viewport
+          print('RESULT=PASS VERSION=v05.3 FILES=9 SHA256_VERIFIED=9 SYNTHETIC_ONLY=True SOURCE_SHA=74975f15904a4c99e068a31e6030e12a21bf3c21')
           PY
           mkdir -p dist
-          cp -R qa/v052-journals-backup/site/. dist/
+          cp -R qa/v053-safari-input-zoom/site/. dist/
           touch dist/.nojekyll
           find dist -type f | sort
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-      - name: Upload verified v05.2 TEST site directory
+      - name: Upload verified v05.3 TEST site directory
         uses: actions/upload-pages-artifact@v4
         with:
           path: dist
