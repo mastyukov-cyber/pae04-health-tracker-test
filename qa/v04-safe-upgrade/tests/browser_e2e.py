@@ -94,7 +94,7 @@ def check_engine(p,engine,log):
         ok('Same-time duplicate confirmation does not create extra record')
         initial_intakes=dbrows(page)['intakes']
         first_id=initial_intakes[0]['id'];first_marked=initial_intakes[0]['markedAt']
-        first_row=page.locator('#med-list .intake-record').first()
+        first_row=page.locator('#med-list .intake-record').first
         first_row.locator('input[type="time"]').fill('09:10')
         first_row.get_by_role('button',name='Изменить время').click()
         wait_until(page, 'document.querySelector("#med-list")?.textContent?.includes("08:15 → 09:10")')
