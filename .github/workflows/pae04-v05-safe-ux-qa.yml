@@ -18,18 +18,24 @@ jobs:
         engine: [chromium, webkit]
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout immutable approved v04.1 snapshot for byte verification
+        uses: actions/checkout@v4
+        with:
+          ref: b400558fd8c8147aeda50402c7aa634bdb8d455f
+          path: _immutable_v041
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Verify original immutable v04.1 site
-        run: python qa/v04-safe-upgrade/verify_v04.py
+        run: python _immutable_v041/qa/v04-safe-upgrade/verify_v04.py
       - name: Verify v05 uses same DB and backup format and has exactly 9 site files
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
           source=Path('qa/v05-safe-ux/site')
-          base=Path('qa/v04-safe-upgrade/site')
+          base=Path('_immutable_v041/qa/v04-safe-upgrade/site')
           fs={str(p.relative_to(source)) for p in source.rglob('*') if p.is_file()}
           expected={'index.html','app.js','styles.css','sw.js','manifest.webmanifest','icons/icon.svg','icons/apple-touch-icon.png','icons/icon-192.png','icons/icon-512.png'}
           assert fs==expected,(fs^expected)

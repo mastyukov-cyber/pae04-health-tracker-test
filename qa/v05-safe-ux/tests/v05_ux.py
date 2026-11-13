@@ -43,7 +43,7 @@ try:
         page.locator('#pulse').fill('70')
         page.locator('#pressure-datetime').fill('2024-06-10T09:00')
         page.locator('#pressure-form button[type="submit"]').click()
-        page.locator('#pressure-count').get_by_text('1 записей').wait_for()
+        page.locator('#pressure-count').filter(has_text='1 записей').wait_for()
         before=db_data(page)
         assert len(before['pressures'])==1 and before['pressures'][0]['arm']=='right'
         pass_check('Right-arm pressure saved using unchanged database schema')
