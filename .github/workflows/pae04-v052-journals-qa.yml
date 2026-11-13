@@ -1,0 +1,47 @@
+name: PAE-04 v05.2 Journals and Backup QA (synthetic only, NO DEPLOY)
+on:
+  push:
+    branches: [sandbox/pae04-v052-journals-backup-qa]
+    paths:
+      - 'qa/v052-journals-backup/**'
+      - '.github/workflows/pae04-v052-journals-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify exact 9 site resources SHA-256; unchanged IndexedDB and backups
+        run: python qa/v052-journals-backup/verify.py
+      - name: JavaScript syntax check without running app
+        run: node --check qa/v052-journals-backup/site/app.js
+      - name: Install Playwright 1.65.0 engine
+        run: |
+          python -m pip install playwright==1.65.0
+          python -m playwright install --with-deps ${{ matrix.engine }}
+      - name: Preserved 25-check browser persistence/export/offline regression
+        run: python qa/v052-journals-backup/tests/browser_e2e.py ${{ matrix.engine }}
+      - name: Preserved 9-check v05 UX functional regression
+        run: python qa/v052-journals-backup/tests/v05_ux.py ${{ matrix.engine }}
+      - name: Preserved 29-check mobile geometry regression
+        run: python qa/v052-journals-backup/tests/mobile_geometry.py ${{ matrix.engine }}
+      - name: New synthetic journal search and backup-file verifier regression
+        run: python qa/v052-journals-backup/tests/v052_features.py ${{ matrix.engine }}
+      - name: Upload synthetic-only QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-v052-synthetic-${{ matrix.engine }}
+          path: qa/v052-journals-backup/reports/
+          if-no-files-found: warn
+          retention-days: 14
