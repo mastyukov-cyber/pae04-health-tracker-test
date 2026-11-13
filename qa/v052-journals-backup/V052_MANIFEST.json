@@ -1,0 +1,17 @@
+{
+  "version": "v05.2",
+  "source_v051": "d341fc0d7805d2dd2e2881648c3168d9f1ef07e1",
+  "source_test_main": "f9258c56271f812e2cff4bcd7b7b6663331bf87b",
+  "sha256": {
+    "index.html": "996b0065f6933eb0225eb4496c6be7415369abf868d053ede7672a51a53ae77a",
+    "styles.css": "08dba43dfa7d9bf87f5553085249f9f9418825aee47c9416eff8c4c4b81b0ee4",
+    "app.js": "1efa9e4d900a20e748b5f09ac3bba07cc2635ef347e7ae12b66ea848ede3bfe9",
+    "sw.js": "a22681f466af1a2fa132c2880806e5463e70b194cf67e34b97874f592fb30f0e",
+    "manifest.webmanifest": "21139a6b1a33208725ccce68e8a326b4792cbd193f988aa8e97e01c0fc6c99d1",
+    "icons/icon.svg": "377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606",
+    "icons/apple-touch-icon.png": "7e321de521f7c91a8856a66e237b98bb48d36bc89c6246ab90cc0ffb4ce6e11b",
+    "icons/icon-192.png": "455b1aa541ebd7574d441d82615efd6f02d277c2ecf727077aa274fbbbe74f05",
+    "icons/icon-512.png": "b5509bdf65dc021a057dac3f6db52de87a5d13d64c34cdc5f8dfc677a4e4f18b"
+  },
+  "safety": "synthetic-only; no production; unchanged IndexedDB/schema v1; JSON backup v3"
+}
