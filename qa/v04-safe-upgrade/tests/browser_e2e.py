@@ -203,6 +203,7 @@ def check_engine(p,engine,log):
         page.close()
         offline=context.new_page()
         offline.goto(base+'index.html',wait_until='domcontentloaded')
+        wait_until(offline, 'Boolean(navigator.serviceWorker.controller)',timeout=15000)
         assert len(dbrows(offline)['pressures'])==1
         ok('Reload/new tab retains synthetic data in real IndexedDB')
         context.set_offline(True)
