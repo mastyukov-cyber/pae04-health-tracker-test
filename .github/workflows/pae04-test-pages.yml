@@ -1,4 +1,4 @@
-name: PAE-04 TEST v0.2.1 HTTPS GitHub Pages (synthetic only)
+name: PAE-04 TEST v0.2.1 SAFE UPGRADE v04 HTTPS GitHub Pages (synthetic only)
 on:
   push:
     branches: [main]
@@ -18,23 +18,45 @@ jobs:
     environment:
       name: github-pages
     steps:
-      - uses: actions/checkout@v4
-      - name: Strictly verify v02 site and unpack to isolated dist directory
+      - name: Checkout immutable QA-approved v04 release snapshot
+        uses: actions/checkout@v4
+        with:
+          ref: '2ba1e3eabbf90f174407784303344cf312675fae'
+          persist-credentials: false
+      - name: Verify all 9 v04 resources and stage ONLY synthetic TEST site
+        shell: bash
         run: |
-          python3 qa/integration-v02-browser/verify-extract.py
+          set -euo pipefail
+          python3 qa/v04-safe-upgrade/verify_v04.py
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root=Path("qa/v04-safe-upgrade")
+          source=root/"site"
+          manifest=json.loads((root/"V04_MANIFEST.json").read_text(encoding="utf-8"))
+          expected=manifest["target_files"]
+          actual={str(p.relative_to(source)) for p in source.rglob("*") if p.is_file()}
+          assert len(expected)==9 and actual==set(expected), "unexpected or missing site file"
+          for name,digest in expected.items():
+              assert hashlib.sha256((source/name).read_bytes()).hexdigest()==digest, "SHA256 mismatch: "+name
+          html=(source/"index.html").read_text(encoding="utf-8")
+          assert "PAE-04 · v0.2.1 SAFE UPGRADE TEST v04" in html
+          assert "v0.2.1 · SAFE UPGRADE TEST v04 · OFFLINE-FIRST" in html
+          assert "TEST v02" not in html and "TEST v03" not in html
+          app=(source/"app.js").read_text(encoding="utf-8")
+          assert "PAE04_HT_STABLE_CANDIDATE_INTEGRATION_SYNTHETIC_SCHEMA1" in app
+          assert "Учебный препарат" in app
+          print("RESULT=PASS VERSION=v04 FILES=9 SYNTHETIC_ONLY=True SOURCE_SHA=2ba1e3eabbf90f174407784303344cf312675fae")
+          PY
           mkdir -p dist
-          cp -R qa/integration-v02-browser/site-v02/. dist/
+          cp -R qa/v04-safe-upgrade/site/. dist/
           touch dist/.nojekyll
-          test -f dist/index.html
-          test -f dist/sw.js
-          test -f dist/icons/icon-512.png
           find dist -type f | sort
-      - name: Configure Pages (requires Pages enabled for GitHub Actions)
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-      - name: Upload only the verified site directory
+      - name: Upload verified v04 site directory
         uses: actions/upload-pages-artifact@v4
         with:
           path: dist
-      - name: Publish TEST website, not production app
-        id: deployment
+      - name: Publish only TEST Pages, not production PWA
         uses: actions/deploy-pages@v4
