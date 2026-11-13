@@ -1,4 +1,4 @@
-name: PAE-04 TEST v05.1 Mobile UI Fix GitHub Pages (synthetic only)
+name: PAE-04 TEST v05.2 Journals and Backup GitHub Pages (synthetic only)
 on:
   push:
     branches: [main]
@@ -18,48 +18,52 @@ jobs:
     environment:
       name: github-pages
     steps:
-      - name: Checkout immutable QA-approved v05.1 release snapshot
+      - name: Checkout immutable QA-approved v05.2 release snapshot
         uses: actions/checkout@v4
         with:
-          ref: 'd341fc0d7805d2dd2e2881648c3168d9f1ef07e1'
+          ref: '4bb075108e6903dd60e6dccef56b6627089336e9'
           persist-credentials: false
-      - name: Verify pinned v05.1 manifest and all 9 SHA256 resources
+      - name: Verify pinned v05.2 manifest and all 9 SHA256 resources
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git hash-object qa/v051-mobile-ui/V051_MANIFEST.json)" = "b48b325c41cbfb43b8f5e9933081a583aa40c8d2"
-          test "$(git hash-object qa/v051-mobile-ui/verify.py)" = "b3f83ab79b40b865a3c0abb534612fc1c4ccc727"
-          python3 qa/v051-mobile-ui/verify.py
+          test "$(git hash-object qa/v052-journals-backup/V052_MANIFEST.json)" = "9287b083f68111c679e4a94c4f831076c7104ffa"
+          test "$(git hash-object qa/v052-journals-backup/verify.py)" = "424b425944c060966bb5aaae043235d5f9e4b70c"
+          python3 qa/v052-journals-backup/verify.py
           python3 - <<'PY'
           import json
           from pathlib import Path
-          root=Path('qa/v051-mobile-ui/site')
-          manifest=json.loads(Path('qa/v051-mobile-ui/V051_MANIFEST.json').read_text(encoding='utf-8'))
-          assert manifest['version']=='v05.1'
-          assert manifest['source_v05']=='e58aae8bbbb8a7dcd9ec9fd4355309b906b2851d'
+          root=Path('qa/v052-journals-backup/site')
+          manifest=json.loads(Path('qa/v052-journals-backup/V052_MANIFEST.json').read_text(encoding='utf-8'))
+          assert manifest['version']=='v05.2'
+          assert manifest['source_v051']=='d341fc0d7805d2dd2e2881648c3168d9f1ef07e1'
+          assert manifest['source_test_main']=='f9258c56271f812e2cff4bcd7b7b6663331bf87b'
           assert len(manifest['sha256'])==9
           html=(root/'index.html').read_text(encoding='utf-8')
           app=(root/'app.js').read_text(encoding='utf-8')
           sw=(root/'sw.js').read_text(encoding='utf-8')
-          assert 'PAE-04 · v0.2.1 SAFE UX TEST v05.1' in html
-          assert 'v0.2.1 · SAFE UX TEST v05.1 · OFFLINE-FIRST' in html
-          assert 'class="version-inline"' not in html
-          assert 'class="pressure-date-field"' in html
+          assert 'PAE-04 · v0.2.1 SAFE UX TEST v05.2' in html
+          assert 'v0.2.1 · SAFE UX TEST v05.2 · OFFLINE-FIRST' in html
+          assert 'id="pressure-search"' in html
+          assert 'id="med-search"' in html
+          assert 'id="verify-file"' in html
+          assert 'JSON не зашифрован' in html
           assert "const DB_NAME='PAE04_HT_STABLE_CANDIDATE_INTEGRATION_SYNTHETIC_SCHEMA1'" in app
           assert "const DB_VERSION=1" in app
           assert "const STORE_NAMES=['pressures','medications','intakes','intakeEvents']" in app
           assert "const BACKUP_VERSION=3" in app
-          assert 'cache-v051-20261113' in sw
-          assert 'Учебный препарат' in app
-          print('RESULT=PASS VERSION=v05.1 FILES=9 SHA256_VERIFIED=9 SYNTHETIC_ONLY=True SOURCE_SHA=d341fc0d7805d2dd2e2881648c3168d9f1ef07e1')
+          assert 'function atomicMerge(data)' in app
+          assert 'verifyDownloadedBackup' in app
+          assert 'cache-v052-20261113' in sw
+          print('RESULT=PASS VERSION=v05.2 FILES=9 SHA256_VERIFIED=9 SYNTHETIC_ONLY=True SOURCE_SHA=4bb075108e6903dd60e6dccef56b6627089336e9')
           PY
           mkdir -p dist
-          cp -R qa/v051-mobile-ui/site/. dist/
+          cp -R qa/v052-journals-backup/site/. dist/
           touch dist/.nojekyll
           find dist -type f | sort
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-      - name: Upload verified v05.1 TEST site directory
+      - name: Upload verified v05.2 TEST site directory
         uses: actions/upload-pages-artifact@v4
         with:
           path: dist
