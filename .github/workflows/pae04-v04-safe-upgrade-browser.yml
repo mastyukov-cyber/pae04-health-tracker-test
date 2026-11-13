@@ -1,0 +1,41 @@
+name: PAE-04 v04 SAFE UPGRADE Chromium and WebKit QA
+on:
+  push:
+    branches:
+      - sandbox/pae04-v04-safe-upgrade
+    paths:
+      - 'qa/v04-safe-upgrade/**'
+      - '.github/workflows/pae04-v04-safe-upgrade-browser.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser-e2e:
+    name: v04 ${{ matrix.engine }} synthetic browser E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify exact v04 site hashes
+        run: python qa/v04-safe-upgrade/verify_v04.py
+      - name: Install real browser and Playwright
+        run: |
+          python -m pip install playwright==1.56.1
+          python -m playwright install --with-deps ${{ matrix.engine }}
+      - name: Run synthetic-only browser E2E
+        run: python qa/v04-safe-upgrade/tests/browser_e2e.py ${{ matrix.engine }}
+      - name: Upload browser logs and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-v04-${{ matrix.engine }}-qa
+          path: qa/v04-safe-upgrade/reports/
+          if-no-files-found: warn
+          retention-days: 14
