@@ -269,8 +269,9 @@ def check_engine(p,engine,log):
         ok('No page JS errors or external origin requests in primary TEST browser')
         # Check cache and controlling SW, then stop only the ephemeral HTTP origin.
         wait_until(page, 'Boolean(navigator.serviceWorker.controller)',timeout=15000)
-        cache_state=page.evaluate('''async()=>{const reg=await navigator.serviceWorker.ready;const cache=await caches.open('pae04-ht-stable-candidate-synthetic-schema1-cache-v04-20261113');const response=await cache.match(new URL('./index.html',location.href).href);return {controller:Boolean(navigator.serviceWorker.controller),active:reg.active?.state,cachedIndex:Boolean(response)}}''')
-        assert cache_state=={'controller':True,'active':'activated','cachedIndex':True}
+        cache_state=page.evaluate('''async()=>{const reg=await navigator.serviceWorker.ready;const names=await caches.keys();const cache=await caches.open('pae04-ht-stable-candidate-synthetic-schema1-cache-v04-20261113');const keys=await cache.keys();const absolute=new URL('./index.html',location.href).href;const response=await cache.match(absolute);const fallback=await caches.match(absolute);return {controller:Boolean(navigator.serviceWorker.controller),active:reg.active?.state,names,keys:keys.map(r=>r.url),absolute,cachedIndex:Boolean(response),anyCacheMatch:Boolean(fallback)}}''')
+        log.append('OFFLINE_PREFLIGHT='+json.dumps(cache_state,ensure_ascii=False))
+        assert cache_state['controller'] is True and cache_state['active']=='activated' and cache_state['cachedIndex'] is True
         page.close()
         offline=context.new_page()
         offline.goto(base+'index.html',wait_until='domcontentloaded')
