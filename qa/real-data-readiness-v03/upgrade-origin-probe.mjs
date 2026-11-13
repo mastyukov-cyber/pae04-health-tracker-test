@@ -64,6 +64,7 @@ async function main(){
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base+'/index.html',{waitUntil:'domcontentloaded'});
  await readyForApp(page);
+ await page.locator('[data-page="pressure"]').click();
  await page.locator('#systolic').fill('121');
  await page.locator('#diastolic').fill('79');
  await page.locator('#pulse').fill('70');
