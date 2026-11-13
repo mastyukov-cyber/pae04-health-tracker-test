@@ -1,4 +1,4 @@
-name: PAE-04 TEST v05 SAFE UX GitHub Pages (synthetic only)
+name: PAE-04 TEST v05.1 Mobile UI Fix GitHub Pages (synthetic only)
 on:
   push:
     branches: [main]
@@ -18,48 +18,48 @@ jobs:
     environment:
       name: github-pages
     steps:
-      - name: Checkout immutable QA-approved v05 release snapshot
+      - name: Checkout immutable QA-approved v05.1 release snapshot
         uses: actions/checkout@v4
         with:
-          ref: 'e58aae8bbbb8a7dcd9ec9fd4355309b906b2851d'
+          ref: 'd341fc0d7805d2dd2e2881648c3168d9f1ef07e1'
           persist-credentials: false
-      - name: Verify 9 SHA256 assets and stage ONLY synthetic TEST v05
+      - name: Verify pinned v05.1 manifest and all 9 SHA256 resources
         shell: bash
         run: |
           set -euo pipefail
+          test "$(git hash-object qa/v051-mobile-ui/V051_MANIFEST.json)" = "b48b325c41cbfb43b8f5e9933081a583aa40c8d2"
+          test "$(git hash-object qa/v051-mobile-ui/verify.py)" = "b3f83ab79b40b865a3c0abb534612fc1c4ccc727"
+          python3 qa/v051-mobile-ui/verify.py
           python3 - <<'PY'
-          import hashlib, json
+          import json
           from pathlib import Path
-          src=Path("qa/v05-safe-ux/site")
-          expected=json.loads("{\"index.html\":\"46697cd84cca20c60a05855756d7dd1b0abb0beda0aebd880547b82197d7e8e2\",\"styles.css\":\"e36e15756d4c7294a8277746386047acd0136b9be48522d21dc2cb78d2a858d4\",\"sw.js\":\"9a8d22197e384d17f2d7f5560ec5dcfa63a41036ed9e9858720d699cab89791e\",\"app.js\":\"673452db182dbebe1cd1d3f0464c3eb125e817e5ae6b3ed22160a143c4046a78\",\"manifest.webmanifest\":\"04bdbc7878e50f657619280df366c3ec17e6a785786adde672474c6d01dfb584\",\"icons/icon.svg\":\"377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606\",\"icons/apple-touch-icon.png\":\"7e321de521f7c91a8856a66e237b98bb48d36bc89c6246ab90cc0ffb4ce6e11b\",\"icons/icon-192.png\":\"455b1aa541ebd7574d441d82615efd6f02d277c2ecf727077aa274fbbbe74f05\",\"icons/icon-512.png\":\"b5509bdf65dc021a057dac3f6db52de87a5d13d64c34cdc5f8dfc677a4e4f18b\"}")
-          files={str(p.relative_to(src)) for p in src.rglob("*") if p.is_file()}
-          assert len(expected)==9 and files==set(expected), "Unexpected or missing v05 resources"
-          for name,digest in expected.items():
-              actual=hashlib.sha256((src/name).read_bytes()).hexdigest()
-              assert actual==digest, "SHA256 mismatch: "+name
-          index=(src/"index.html").read_text(encoding="utf-8")
-          app=(src/"app.js").read_text(encoding="utf-8")
-          sw=(src/"sw.js").read_text(encoding="utf-8")
-          manifest=json.loads((src/"manifest.webmanifest").read_text(encoding="utf-8"))
-          assert "PAE-04 · v0.2.1 SAFE UX TEST v05" in index
-          assert "v0.2.1 · SAFE UX TEST v05 · OFFLINE-FIRST" in index
-          assert "TEST v02" not in index and "TEST v03" not in index
+          root=Path('qa/v051-mobile-ui/site')
+          manifest=json.loads(Path('qa/v051-mobile-ui/V051_MANIFEST.json').read_text(encoding='utf-8'))
+          assert manifest['version']=='v05.1'
+          assert manifest['source_v05']=='e58aae8bbbb8a7dcd9ec9fd4355309b906b2851d'
+          assert len(manifest['sha256'])==9
+          html=(root/'index.html').read_text(encoding='utf-8')
+          app=(root/'app.js').read_text(encoding='utf-8')
+          sw=(root/'sw.js').read_text(encoding='utf-8')
+          assert 'PAE-04 · v0.2.1 SAFE UX TEST v05.1' in html
+          assert 'v0.2.1 · SAFE UX TEST v05.1 · OFFLINE-FIRST' in html
+          assert 'class="version-inline"' not in html
+          assert 'class="pressure-date-field"' in html
           assert "const DB_NAME='PAE04_HT_STABLE_CANDIDATE_INTEGRATION_SYNTHETIC_SCHEMA1'" in app
           assert "const DB_VERSION=1" in app
           assert "const STORE_NAMES=['pressures','medications','intakes','intakeEvents']" in app
           assert "const BACKUP_VERSION=3" in app
-          assert "cache-v05-20261113" in sw
-          assert "v05" in manifest["short_name"]
-          assert "Учебный препарат" in app
-          print("RESULT=PASS VERSION=v05 FILES=9 SHA256_VERIFIED=9 SYNTHETIC_ONLY=True SOURCE_SHA=e58aae8bbbb8a7dcd9ec9fd4355309b906b2851d")
+          assert 'cache-v051-20261113' in sw
+          assert 'Учебный препарат' in app
+          print('RESULT=PASS VERSION=v05.1 FILES=9 SHA256_VERIFIED=9 SYNTHETIC_ONLY=True SOURCE_SHA=d341fc0d7805d2dd2e2881648c3168d9f1ef07e1')
           PY
           mkdir -p dist
-          cp -R qa/v05-safe-ux/site/. dist/
+          cp -R qa/v051-mobile-ui/site/. dist/
           touch dist/.nojekyll
           find dist -type f | sort
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-      - name: Upload verified v05 TEST site directory
+      - name: Upload verified v05.1 TEST site directory
         uses: actions/upload-pages-artifact@v4
         with:
           path: dist
