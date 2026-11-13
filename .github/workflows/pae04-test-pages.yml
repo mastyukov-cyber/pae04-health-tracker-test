@@ -1,4 +1,4 @@
-name: PAE-04 TEST v05.3 Journals and Backup GitHub Pages (synthetic only)
+name: PAE-04 TEST v05.3 Safari Zoom Fix GitHub Pages (synthetic only)
 on:
   push:
     branches: [main]
@@ -27,14 +27,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git hash-object qa/v053-safari-input-zoom/V052_MANIFEST.json)" = "79a34179b5407ea5aa004bb9db06dd787adc607e"
+          test "$(git hash-object qa/v053-safari-input-zoom/V053_MANIFEST.json)" = "79a34179b5407ea5aa004bb9db06dd787adc607e"
           test "$(git hash-object qa/v053-safari-input-zoom/verify.py)" = "dc9a8033da8f8c4d869f29b46a62b10eeb461e1b"
           python3 qa/v053-safari-input-zoom/verify.py
           python3 - <<'PY'
           import json
           from pathlib import Path
           root=Path('qa/v053-safari-input-zoom/site')
-          manifest=json.loads(Path('qa/v053-safari-input-zoom/V052_MANIFEST.json').read_text(encoding='utf-8'))
+          manifest=json.loads(Path('qa/v053-safari-input-zoom/V053_MANIFEST.json').read_text(encoding='utf-8'))
           assert manifest['version']=='v05.3'
           assert manifest['source_v052']=='4bb075108e6903dd60e6dccef56b6627089336e9'
           assert manifest['source_test_main']=='965cee6fce65f4359f90400470c7ff4c65306a5e'
