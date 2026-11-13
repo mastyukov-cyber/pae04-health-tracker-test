@@ -3,7 +3,7 @@
   "patch_sha256": "14f9eda87e1a80a9e8b4ddd9f0d3374670bff2e7f918440270da7527dda1c2e2",
   "patch_b64_sha256": "a09fcbbad05e7b45ec3408a5c8d65710e443b0c02435c58522f5de4ddadfe454",
   "target_files": {
-    "index.html": "55053430f87db962cd0482e6ced92cb646dca717782d99143e891d9eb9eedcf6",
+    "index.html": "e0047ba4ed12897f3e9a6da7d1ec8656c76b0288b8cc8a047fcba855d0437aba",
     "styles.css": "672770d0f732502ccfce33670ed167d12ba882ebc6bf50610616e6082c5fb90c",
     "sw.js": "db303798274e07d33947c748c0f3309bf813a6fd5dc7fea083f47bed872cbbd7",
     "app.js": "7837f6df9b82c5cb0e8a98789ba0326ba9e597c27f43154ab969b117dd9caea6",

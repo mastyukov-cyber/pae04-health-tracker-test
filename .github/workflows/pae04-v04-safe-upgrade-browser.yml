@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - sandbox/pae04-v04-safe-upgrade
+      - sandbox/pae04-v04-release-versionfix
     paths:
       - 'qa/v04-safe-upgrade/**'
       - '.github/workflows/pae04-v04-safe-upgrade-browser.yml'
