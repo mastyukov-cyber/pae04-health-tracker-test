@@ -65,7 +65,8 @@ try:
    assert page.locator('#wheel-day .wheel-option').count()==29
    set_wheel(page,'day',29)
    page.locator('#wheel-time').fill('09:07')
-   assert '29 февраля 2024' in page.locator('#wheel-preview').inner_text().lower()
+   preview=page.locator('#wheel-preview').inner_text().lower()
+   assert '29 февраля 2024' in preview,preview
    page.locator('#wheel-apply').click()
    assert page.locator('#pressure-datetime').input_value()=='2024-02-29T09:07'
    assert '29 февраля 2024' in page.locator('[data-wheel-label="pressure-datetime"]').inner_text().lower()

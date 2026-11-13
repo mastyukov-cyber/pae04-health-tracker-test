@@ -61,7 +61,7 @@ const wheelYearMonthDays=(y,m)=>new Date(y,m,0).getDate();
 function wheelDisplayDate(date){
   if(!validDate(date))return'Не указана';
   const [y,m,d]=date.split('-').map(Number);
-  return d+' '+WHEEL_MONTHS[m-1].toLocaleLowerCase('ru')+' '+y;
+  return new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',year:'numeric'}).format(new Date(y,m-1,d,12));
 }
 function updateWheelTrigger(id){
   const source=$(id),label=document.querySelector('[data-wheel-label="'+id+'"]');

@@ -6,7 +6,7 @@
   "sha256": {
     "index.html": "9fbfea09dbad46b4965d05feb00b33be76f78441d5da0dc9b553d4c95cacb264",
     "styles.css": "f3f85af20fa784cc465bc779c9d68133a7d00e91546b5b2032796f5272b12b04",
-    "app.js": "5e6c64740f94d4a81d6c67b72affa431210185e96a38b1bf7ab5fe4d7faea5e6",
+    "app.js": "ac21b3e83c0a0f27a42ba0499a831edb25903bd518b36f5c0fe1c3d791449ef9",
     "sw.js": "750b177d4c403b5a0168dfcfd314834626159d67b1921d7f16fa1eb986875581",
     "manifest.webmanifest": "52c893f0fb856af282a3a9800b1112342399f22e4bd2e8d734ef2c5ab6ed2104",
     "icons/icon.svg": "377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606",
