@@ -105,7 +105,7 @@ def check_engine(p,engine,log):
         sub=context.browser.new_context(accept_downloads=True) if context.browser else None
         # persistent contexts do not expose browser: use a separate browser process via launch.
         b=browser_engine.launch(headless=True,args=['--no-sandbox'] if engine=='chromium' else [],executable_path='/usr/bin/chromium' if engine=='chromium' else None)
-        sub=b.new_context(accept_downloads=True,service_workers='allow',executable_path='/usr/bin/chromium' if engine=='chromium' else None);rest=sub.new_page()
+        sub=b.new_context(accept_downloads=True,service_workers='allow');rest=sub.new_page()
         rest.on('dialog',lambda d:d.accept())
         rest.goto(base+'index.html',wait_until='domcontentloaded')
         rest.locator('[data-page="backup"]').click()
