@@ -283,7 +283,7 @@ def check_engine(p,engine,log):
         if thread:thread.join(timeout=5)
         server=None
         response=offline.reload(wait_until='domcontentloaded',timeout=20000)
-        assert response is not None and response.from_service_worker()
+        assert response is not None and response.from_service_worker
         assert 'HEALTH TRACKER' in offline.title().upper()
         assert dbrows(offline)==before_offline
         missing=offline.evaluate("fetch('./__uncached_v04_qa_resource__').then(()=>({ok:true}),e=>({ok:false,name:e.name}))")
