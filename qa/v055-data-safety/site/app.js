@@ -673,6 +673,8 @@ async function verifyDownloadedBackup(e){
   const sequence=++backupVerifySequence,view=$('verify-result');
   view.replaceChildren();
   const file=e.target.files?.[0];if(!file)return;
+  verifiedExternalBackupHash=null;
+  safetyWrite('safety-copy-status','Проверяем выбранный JSON…','safety-warn');
   try{
     if(file.size>5*1024*1024)throw Error('Максимальный размер проверяемого JSON — 5 МБ');
     const parsed=JSON.parse(await file.text());if(sequence!==backupVerifySequence)return;
@@ -692,7 +694,7 @@ async function verifyDownloadedBackup(e){
     view.append(node('p','verify-pass','PASS · SHA-256 совпадает · '+total+' учебных записей'),
       node('p','form-hint','Файл: '+file.name+' · '+details),
       node('p','form-hint','Файл проверен без импорта. Это не шифрование. Защитите копию от посторонних.'));
-  }catch(err){if(sequence!==backupVerifySequence)return;view.append(node('p','verify-fail','FAIL · '+toError(err)));}
+  }catch(err){if(sequence!==backupVerifySequence)return;safetyWrite('safety-copy-status','Выбранный JSON отклонён: актуальная внешняя копия не подтверждена','safety-bad');view.append(node('p','verify-fail','FAIL · '+toError(err)));}
 }
 function resetImportCheckpoint(){
   $('checkpoint-button').disabled=true;

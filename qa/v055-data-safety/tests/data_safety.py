@@ -129,6 +129,7 @@ try:
    assert damaged!=file_bytes
    page.locator('#verify-file').set_input_files({'name':'damaged.json','mimeType':'application/json','buffer':damaged})
    page.locator('#verify-result .verify-fail').wait_for()
+   assert 'отклонён' in page.locator('#safety-copy-status').inner_text()
    assert_counts(db(page),[2,1,1,1])
    ok('Tampered backup blocked; local records unchanged')
    page.reload(wait_until='domcontentloaded')
@@ -175,13 +176,13 @@ try:
     upgrade_page=upctx.new_page()
     url='http://127.0.0.1:'+str(upgrade_server.server_address[1])+'/index.html'
     upgrade_page.goto(url,wait_until='domcontentloaded')
-    upgrade_page.locator('#stat-pressure').filter(has_text='0').wait_for()
+    expect(upgrade_page.locator('#stat-pressure')).to_have_text('0',timeout=10000)
     upgrade_page.locator('[data-page=pressure]').click()
     upgrade_page.locator('#systolic').fill('116')
     upgrade_page.locator('#diastolic').fill('74')
     upgrade_page.locator('#pressure-datetime').fill('2024-01-09T08:30')
     upgrade_page.locator('#pressure-form button[type=submit]').click()
-    upgrade_page.locator('#stat-pressure').filter(has_text='1').wait_for()
+    expect(upgrade_page.locator('#stat-pressure')).to_have_text('1',timeout=10000)
     stable=db(upgrade_page)
     assert_counts(stable,[1,0,0,0])
     versions=['v05.3','v05.4','v05.5','v05.4','v05.3','v05.5','v05.3','v05.4','v05.5','v05.5']
@@ -189,7 +190,7 @@ try:
      upgrade['path']=SITES[version]
      upgrade_page.reload(wait_until='domcontentloaded')
      upgrade_page.locator('.brand small').filter(has_text=version).wait_for()
-     upgrade_page.locator('#stat-pressure').filter(has_text='1').wait_for()
+     expect(upgrade_page.locator('#stat-pressure')).to_have_text('1',timeout=10000)
      assert db(upgrade_page)==stable,(idx,version)
      ok('Upgrade cycle '+str(idx)+'/10 version '+version+' preserves exact IndexedDB records')
     upctx.close()
