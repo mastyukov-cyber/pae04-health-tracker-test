@@ -1,0 +1,28 @@
+{
+  "version": "v05.5",
+  "purpose": "Synthetic-only data safety gate; verified IndexedDB writes, local audit, backup inspection and controlled upgrades",
+  "source_v054": "aefffde27cc8bcd6d4922e724120fda4acd25c07",
+  "source_test_main": "6bb1149fc69d8232fb7a4a253475213101f7b2ad",
+  "sha256": {
+    "index.html": "600a6a31a291c1f3df27b4f31bb0c2368354be3bf164e25f560d013242cdb9ee",
+    "app.js": "4c0b59ac572a597cae3e684ea6bbede6e531986acbe952e3d3990cae08320864",
+    "styles.css": "9f11391d1f8ccb197e45df2de1aa1785f64d4ea9f24c6ed817bfb12b1f11e88c",
+    "sw.js": "9e28f53b0cc686a5faaf7c34ebaca510a889db89ab49026781f50ef84c3cf5b3",
+    "manifest.webmanifest": "9ff54561659ad34b659147ed860f8597eb0e22bdbb5c7d8dbff7ae63e3382113",
+    "icons/icon.svg": "377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606",
+    "icons/apple-touch-icon.png": "7e321de521f7c91a8856a66e237b98bb48d36bc89c6246ab90cc0ffb4ce6e11b",
+    "icons/icon-192.png": "455b1aa541ebd7574d441d82615efd6f02d277c2ecf727077aa274fbbbe74f05",
+    "icons/icon-512.png": "b5509bdf65dc021a057dac3f6db52de87a5d13d64c34cdc5f8dfc677a4e4f18b"
+  },
+  "unchanged": {
+    "db_name": "PAE04_HT_STABLE_CANDIDATE_INTEGRATION_SYNTHETIC_SCHEMA1",
+    "db_version": 1,
+    "backup_version": 3,
+    "stores": [
+      "pressures",
+      "medications",
+      "intakes",
+      "intakeEvents"
+    ]
+  }
+}
