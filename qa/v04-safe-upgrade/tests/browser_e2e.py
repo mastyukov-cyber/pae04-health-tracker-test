@@ -13,6 +13,7 @@ SITE=Path(__file__).resolve().parents[1]/'site'
 REPORT=Path(__file__).resolve().parents[1]/'reports'
 REPORT.mkdir(exist_ok=True)
 DB='PAE04_HT_STABLE_CANDIDATE_INTEGRATION_SYNTHETIC_SCHEMA1'
+V03_DB='PAE04_HealthTracker_PWA_v021_INTEGRATION_SYNTHETIC_V03_CONFIRM_BUTTON_4STORE'
 STORE=['pressures','medications','intakes','intakeEvents']
 ASSETS=['','index.html','app.js','styles.css','sw.js','manifest.webmanifest','icons/icon.svg','icons/apple-touch-icon.png','icons/icon-192.png','icons/icon-512.png']
 class Handler(SimpleHTTPRequestHandler):
@@ -35,8 +36,8 @@ def wait_until(page, expression, timeout=15000):
         page.wait_for_timeout(100)
     raise AssertionError(f"Timed out waiting for browser condition: {expression}")
 
-def dbrows(page):
-    return page.evaluate('''async(name)=>{const db=await new Promise((resolve,reject)=>{const r=indexedDB.open(name);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});const names=[...db.objectStoreNames];const out={};for(const name of names){out[name]=await new Promise((resolve,reject)=>{const tx=db.transaction(name);const r=tx.objectStore(name).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}db.close();return out}''',DB)
+def dbrows(page,name=DB):
+    return page.evaluate('''async(name)=>{const db=await new Promise((resolve,reject)=>{const r=indexedDB.open(name);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});const names=[...db.objectStoreNames];const out={};for(const name of names){out[name]=await new Promise((resolve,reject)=>{const tx=db.transaction(name);const r=tx.objectStore(name).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}db.close();return out}''',name)
 
 def check_engine(p,engine,log):
     count=0
@@ -45,6 +46,7 @@ def check_engine(p,engine,log):
         count+=1;log.append(f'PASS {count} {label}')
     context=None;server=None;thread=None
     errors=[];outsiders=[]
+    log.append('REFERENCE_SET_OFFLINE_EMULATION=WebKit TypeError: Load failed in prior run 43420406244; separately retesting with the loopback origin stopped, without context.set_offline(True); related Playwright issue https://github.com/microsoft/playwright/issues/42775')
     try:
         server=ThreadingHTTPServer(('127.0.0.1',0),Handler)
         thread=Thread(target=server.serve_forever,daemon=True);thread.start()
@@ -123,6 +125,44 @@ def check_engine(p,engine,log):
         sub=context.browser.new_context(accept_downloads=True) if context.browser else None
         # persistent contexts do not expose browser: use a separate browser process via launch.
         b=browser_engine.launch(headless=True,args=['--no-sandbox'] if engine=='chromium' else [],executable_path='/usr/bin/chromium' if engine=='chromium' else None)
+
+        # Seed a filled synthetic v03-origin IndexedDB profile, then reopen the v04 app.
+        upgrade=b.new_context(accept_downloads=True,service_workers='allow')
+        seed=upgrade.new_page()
+        seed.goto(base+'index.html',wait_until='domcontentloaded')
+        wait_until(seed, 'document.querySelector("#stat-pressure")?.textContent==="0"')
+        seed_rows={
+            'pressures':[{'id':'v03-pressure-0001','systolic':120,'diastolic':80,'pulse':70,'dateTime':'2024-06-10T09:00','note':'Синтетическая запись v03','arm':'right','createdAt':'2024-06-10T09:00:00.000Z'}],
+            'medications':[{'id':'v03-medication-01','name':'Учебный препарат v03','dose':'10 мг','kind':'regular','from':None,'to':None,'createdAt':'2024-06-10T09:00:00.000Z'}],
+            'intakes':[{'id':'v03-intake-0001','medId':'v03-medication-01','date':'2024-06-10','markedAt':'2024-06-10T08:15:00.000Z','takenAtLocal':'2024-06-10T08:15'}],
+            'intakeEvents':[{'id':'v03-event-0001','intakeId':'v03-intake-0001','medId':'v03-medication-01','action':'marked','at':'2024-06-10T08:15:00.000Z','newTakenAtLocal':'2024-06-10T08:15'}]
+        }
+        seeded=seed.evaluate('''async({name,rows})=>{const db=await new Promise((resolve,reject)=>{const r=indexedDB.open(name,1);r.onupgradeneeded=()=>{const p=r.result.createObjectStore('pressures',{keyPath:'id'});const m=r.result.createObjectStore('medications',{keyPath:'id'});const i=r.result.createObjectStore('intakes',{keyPath:'id'});i.createIndex('byMedDay',['medId','date'],{unique:false});const e=r.result.createObjectStore('intakeEvents',{keyPath:'id'});e.createIndex('byIntakeId','intakeId',{unique:false})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});await new Promise((resolve,reject)=>{const tx=db.transaction(['pressures','medications','intakes','intakeEvents'],'readwrite');for(const n of Object.keys(rows))for(const row of rows[n])tx.objectStore(n).add(row);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error)});db.close();return true}''',{'name':V03_DB,'rows':seed_rows})
+        assert seeded is True
+        v03_profile=dbrows(seed,V03_DB)
+        assert {k:len(v) for k,v in v03_profile.items()}=={k:1 for k in STORE}
+        seed.close()
+        upgrade_page=upgrade.new_page()
+        upgrade_page.goto(base+'index.html',wait_until='domcontentloaded')
+        wait_until(upgrade_page, 'document.querySelector("#stat-pressure")?.textContent==="0"&&document.querySelector("#stat-meds")?.textContent==="0"')
+        assert all(not v for v in dbrows(upgrade_page).values())
+        assert dbrows(upgrade_page,V03_DB)==v03_profile
+        ok('Fresh v04 startup does not auto-migrate or hide/delete a filled synthetic v03 database')
+        v03_body={'format':exported['format'],'version':3,'exportedAt':'2026-11-13T10:00:00.000Z','data':v03_profile}
+        v03_backup={**v03_body,'sha256':sha256(canonical(v03_body).encode()).hexdigest()}
+        upgrade_page.locator('[data-page="backup"]').click()
+        upgrade_page.locator('#import-file').set_input_files({'name':'synthetic-v03-profile-backup-v3.json','mimeType':'application/json','buffer':json.dumps(v03_backup,ensure_ascii=False).encode()})
+        wait_until(upgrade_page, 'document.querySelector("#checkpoint-button")?.disabled===false')
+        with upgrade_page.expect_download(timeout=15000): upgrade_page.locator('#checkpoint-button').click()
+        upgrade_page.locator('#checkpoint-ack').check()
+        assert upgrade_page.locator('#import-button').is_enabled()
+        upgrade_page.locator('#import-button').click()
+        wait_until(upgrade_page, 'document.querySelector("#stat-pressure")?.textContent==="1"&&document.querySelector("#stat-meds")?.textContent==="1"')
+        transferred=dbrows(upgrade_page)
+        assert transferred==v03_profile and dbrows(upgrade_page,V03_DB)==v03_profile
+        ok('Synthetic v03 profile safely transfers only through confirmed v3 backup; source remains unchanged')
+        upgrade.close()
+
         sub=b.new_context(accept_downloads=True,service_workers='allow');rest=sub.new_page()
         rest.on('dialog',lambda d:d.accept())
         rest.goto(base+'index.html',wait_until='domcontentloaded')
@@ -180,6 +220,34 @@ def check_engine(p,engine,log):
         assert rest.locator('#import-button').is_disabled()
         assert len(dbrows(rest)['intakes'])==2
         ok('Tampered backup rejected without altering stored intakes')
+        before_conflict=dbrows(rest)
+        conflict=json.loads(json.dumps(exported))
+        conflict['data']['medications'][0]['dose']='Изменённое тестовое содержимое с тем же ID'
+        conflict_body={k:v for k,v in conflict.items() if k!='sha256'}
+        conflict['sha256']=sha256(canonical(conflict_body).encode()).hexdigest()
+        rest.locator('#import-file').set_input_files({'name':'synthetic-same-id-conflict.json','mimeType':'application/json','buffer':json.dumps(conflict,ensure_ascii=False).encode()})
+        wait_until(rest, 'document.querySelector("#import-preview")?.textContent?.includes("Конфликтов: 1")')
+        assert rest.locator('#import-button').is_disabled()
+        assert dbrows(rest)==before_conflict
+        ok('Same-ID different-content conflict is blocked without overwriting existing data')
+
+        rollback=rest.evaluate('''async()=>{
+          const names=['pressures','medications','intakes','intakeEvents'];
+          const read=async()=>{const out={};for(const name of names)out[name]=await getAll(name);return out};
+          const before=await read();
+          const first=before.pressures[0];
+          const newPressure={...first,id:'rollback-pressure-01'};
+          const conflictingPressure={...first,note:'намеренно отличающееся содержимое'};
+          const newMedication={...before.medications[0],id:'rollback-medication-01',name:'Учебный препарат rollback'};
+          const newIntake={...before.intakes[0],id:'rollback-intake-0001',status:'cancelled',cancelledAt:'2024-06-10T10:00:00.000Z'};
+          const newEvent={...before.intakeEvents[0],id:'rollback-event-0001',intakeId:newIntake.id,action:'cancelled',at:'2024-06-10T10:00:00.000Z',oldTakenAtLocal:before.intakes[0].takenAtLocal};
+          let failed=false;try{await atomicMerge({pressures:[newPressure,conflictingPressure],medications:[newMedication],intakes:[newIntake],intakeEvents:[newEvent]})}catch{failed=true}
+          const after=await read();return {failed,before,after};
+        }''')
+        assert rollback['failed'] is True and rollback['before']==rollback['after']
+        assert set(rollback['before'])==set(STORE)
+        ok('Intentional IndexedDB transaction failure rolls back writes across all four stores')
+
         # Checkpoint invalidated if underlying database changes after download.
         rest.locator('#import-file').set_input_files({'name':'synthetic-v3.json','mimeType':'application/json','buffer':filebytes})
         wait_until(rest, 'document.querySelector("#checkpoint-button")?.disabled===false')
@@ -198,20 +266,28 @@ def check_engine(p,engine,log):
         assert not errors,errors
         assert not outsiders,outsiders
         ok('No page JS errors or external origin requests in primary TEST browser')
-        # Browser persistence and ServiceWorker cached offline across new page.
+        # Check cache and controlling SW, then stop only the ephemeral HTTP origin.
         wait_until(page, 'Boolean(navigator.serviceWorker.controller)',timeout=15000)
+        cache_state=page.evaluate('''async()=>{const reg=await navigator.serviceWorker.ready;const cache=await caches.open('pae04-ht-stable-candidate-synthetic-schema1-cache-v04-20261113');const response=await cache.match(new URL('./index.html',location.href).href);return {controller:Boolean(navigator.serviceWorker.controller),active:reg.active?.state,cachedIndex:Boolean(response)}}''')
+        assert cache_state=={'controller':True,'active':'activated','cachedIndex':True}
         page.close()
         offline=context.new_page()
         offline.goto(base+'index.html',wait_until='domcontentloaded')
         wait_until(offline, 'Boolean(navigator.serviceWorker.controller)',timeout=15000)
-        assert len(dbrows(offline)['pressures'])==1
-        ok('Reload/new tab retains synthetic data in real IndexedDB')
-        context.set_offline(True)
-        cached=offline.evaluate("fetch('./index.html').then(async r=>({status:r.status,body:await r.text()}))")
-        assert cached['status']==200 and 'HEALTH TRACKER' in cached['body'].upper()
-        assert len(dbrows(offline)['intakes'])==2
-        context.set_offline(False)
-        ok(f'Real {engine} offline Service Worker returns cached HTML and IndexedDB retains two intakes')
+        before_offline=dbrows(offline)
+        assert len(before_offline['pressures'])==1 and len(before_offline['intakes'])==2
+        ok(f'{engine}: cached index.html exists and new page is controlled by active Service Worker')
+        server.shutdown();server.server_close()
+        if thread:thread.join(timeout=5)
+        server=None
+        response=offline.reload(wait_until='domcontentloaded',timeout=20000)
+        assert response is not None and response.from_service_worker()
+        assert 'HEALTH TRACKER' in offline.title().upper()
+        assert dbrows(offline)==before_offline
+        missing=offline.evaluate("fetch('./__uncached_v04_qa_resource__').then(()=>({ok:true}),e=>({ok:false,name:e.name}))")
+        assert missing['ok'] is False
+        log.append(f'OFFLINE_ORIGIN_STOPPED=PASS ENGINE={engine} reload_from_service_worker=true indexeddb_unchanged=true uncached_request_rejected=true context.set_offline_not_used')
+        ok(f'Real {engine} origin-stopped offline reload uses SW cache, retains IndexedDB, and rejects uncached request')
         sub.close();b.close()
         context.close();context=None
         log.append(f'RESULT=PASS ENGINE={engine} CHECKS={count} MODE=REAL_BROWSER_INDEXEDDB_AND_SW SYNTHETIC_ONLY')
