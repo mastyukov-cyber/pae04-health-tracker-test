@@ -41,6 +41,7 @@ def dbrows(page,name=DB):
 
 def check_engine(p,engine,log):
     count=0
+    scenario_failures=[]
     def ok(label):
         nonlocal count
         count+=1;log.append(f'PASS {count} {label}')
@@ -267,31 +268,47 @@ def check_engine(p,engine,log):
         assert not errors,errors
         assert not outsiders,outsiders
         ok('No page JS errors or external origin requests in primary TEST browser')
-        # Check cache and controlling SW, then stop only the ephemeral HTTP origin.
+        # Keep two controlled pages. Stop only the ephemeral loopback server;
+        # deliberately do not call browserContext.set_offline(True).
         wait_until(page, 'Boolean(navigator.serviceWorker.controller)',timeout=15000)
         cache_state=page.evaluate('''async()=>{const reg=await navigator.serviceWorker.ready;const names=await caches.keys();const cache=await caches.open('pae04-ht-stable-candidate-synthetic-schema1-cache-v04-20261113');const keys=await cache.keys();const absolute=new URL('./index.html',location.href).href;const response=await cache.match(absolute);const fallback=await caches.match(absolute);return {controller:Boolean(navigator.serviceWorker.controller),active:reg.active?.state,names,keys:keys.map(r=>r.url),absolute,cachedIndex:Boolean(response),anyCacheMatch:Boolean(fallback)}}''')
         log.append('OFFLINE_PREFLIGHT='+json.dumps(cache_state,ensure_ascii=False))
-        assert cache_state['controller'] is True and cache_state['active']=='activated' and cache_state['cachedIndex'] is True
-        page.close()
+        if cache_state['controller'] is True and cache_state['active']=='activated' and cache_state['cachedIndex'] is True:
+            ok(f'{engine}: cached index.html exists and page is controlled by active Service Worker')
+        else:
+            scenario_failures.append('Service Worker cache preflight did not find controlled cached index.html')
+            log.append(f'FAIL {engine}: cache preflight is incomplete; offline reload still attempted')
         offline=context.new_page()
         offline.goto(base+'index.html',wait_until='domcontentloaded')
         wait_until(offline, 'Boolean(navigator.serviceWorker.controller)',timeout=15000)
-        before_offline=dbrows(offline)
+        before_offline=dbrows(page)
         assert len(before_offline['pressures'])==1 and len(before_offline['intakes'])==2
-        ok(f'{engine}: cached index.html exists and new page is controlled by active Service Worker')
         server.shutdown();server.server_close()
         if thread:thread.join(timeout=5)
         server=None
-        response=offline.reload(wait_until='domcontentloaded',timeout=20000)
-        assert response is not None and response.from_service_worker
-        assert 'HEALTH TRACKER' in offline.title().upper()
-        assert dbrows(offline)==before_offline
-        missing=offline.evaluate("fetch('./__uncached_v04_qa_resource__').then(()=>({ok:true}),e=>({ok:false,name:e.name}))")
+        missing=page.evaluate("fetch('./__uncached_v04_qa_resource__').then(()=>({ok:true}),e=>({ok:false,name:e.name}))")
         assert missing['ok'] is False
-        log.append(f'OFFLINE_ORIGIN_STOPPED=PASS ENGINE={engine} reload_from_service_worker=true indexeddb_unchanged=true uncached_request_rejected=true context.set_offline_not_used')
-        ok(f'Real {engine} origin-stopped offline reload uses SW cache, retains IndexedDB, and rejects uncached request')
+        ok(f'{engine}: stopped origin rejects a request to a non-cached resource')
+        assert dbrows(page)==before_offline
+        ok(f'{engine}: existing page retains all IndexedDB rows after origin stops')
+        reload_ok=False
+        try:
+            response=offline.reload(wait_until='domcontentloaded',timeout=20000)
+            reload_ok=bool(response and response.from_service_worker and 'HEALTH TRACKER' in offline.title().upper())
+        except Exception as offline_error:
+            log.append(f'OFFLINE_RELOAD_ERROR ENGINE={engine} {type(offline_error).__name__}: {offline_error}')
+        if reload_ok:
+            assert dbrows(page)==before_offline
+            ok(f'{engine}: offline reload served by Service Worker; IndexedDB remains unchanged')
+            log.append(f'OFFLINE_ORIGIN_STOPPED=PASS ENGINE={engine} reload_from_service_worker=true indexeddb_unchanged=true uncached_request_rejected=true context.set_offline_not_used')
+        else:
+            scenario_failures.append('Service Worker did not return cached HTML for offline reload with loopback origin stopped')
+            log.append(f'FAIL OFFLINE_ORIGIN_STOPPED ENGINE={engine} reload_from_service_worker=false indexeddb_peer_unchanged={dbrows(page)==before_offline} uncached_request_rejected=true context.set_offline_not_used')
         sub.close();b.close()
         context.close();context=None
+        if scenario_failures:
+            log.append(f'RESULT=FAIL ENGINE={engine} CHECKS={count} FAILURES='+json.dumps(scenario_failures,ensure_ascii=False))
+            return None
         log.append(f'RESULT=PASS ENGINE={engine} CHECKS={count} MODE=REAL_BROWSER_INDEXEDDB_AND_SW SYNTHETIC_ONLY')
         return count
     except Exception as e:
