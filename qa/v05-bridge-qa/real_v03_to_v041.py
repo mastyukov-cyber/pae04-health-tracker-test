@@ -101,6 +101,7 @@ def execute(engine,log):
             browser=getattr(p,engine).launch(headless=True,args=["--no-sandbox"] if engine=="chromium" else [])
             context=browser.new_context(accept_downloads=True,service_workers="allow")
             old=context.new_page()
+            old.on("dialog",lambda dialog: dialog.accept())
             old.goto(origin+"/v03/index.html",wait_until="domcontentloaded")
             wait(old,"document.querySelector('#stat-pressure')?.textContent==='0'")
             old.locator('[data-page="meds"]').click()
@@ -120,9 +121,13 @@ def execute(engine,log):
             old.locator('#med-list .med-time-controls input[type="time"]').fill("20:15")
             old.locator("#med-list .intake-confirm-button").click()
             wait(old,"document.querySelectorAll('#med-list .intake-record').length===2")
-            two_intakes=rows(old,OLD_DB)
-            assert len(two_intakes["intakes"])==2 and len(two_intakes["intakeEvents"])==2, "two actual intake events not persisted"
-            ok("Actual old UI retains two intakes and their two audit events")
+            old.locator("#med-list .intake-record").first.locator('input[type="time"]').fill("09:10")
+            old.locator("#med-list .intake-record").first.get_by_role("button",name="Изменить время").click()
+            wait(old,"document.querySelector('#med-list')?.textContent?.includes('08:15 → 09:10')")
+            old.locator("#med-list .intake-record").nth(1).get_by_role("button",name="Отменить отметку").click()
+            wait(old,"document.querySelectorAll('#med-list .intake-record.cancelled').length===1")
+            assert len(rows(old,OLD_DB)["intakeEvents"])==4, "v03 did not retain four audit events"
+            ok("Actual old UI retains two intakes and all four correction/cancellation audit events")
             old.locator('[data-page="pressure"]').click()
             old.locator("#systolic").fill("121")
             old.locator("#diastolic").fill("79")
@@ -131,7 +136,7 @@ def execute(engine,log):
             old.locator('#pressure-form button[type="submit"]').click()
             wait(old,"document.querySelector('#stat-pressure')?.textContent==='1'")
             before=rows(old,OLD_DB)
-            assert [len(before[k]) for k in STORES]==[1,1,2,2], "actual v03 DB counts mismatch"
+            assert [len(before[k]) for k in STORES]==[1,1,2,4], "actual v03 DB counts mismatch"
             assert before["pressures"][0]["arm"]=="right"
             ok("Actual v03 IndexedDB has 4 complete stores with right-arm pressure")
             old.locator('[data-page="backup"]').click()
@@ -145,6 +150,7 @@ def execute(engine,log):
             evidence["source_counts"]={k:len(before[k]) for k in STORES}
             ok("Actual v03 interface exports full v3 JSON with valid SHA-256")
             new=context.new_page()
+            new.on("dialog",lambda dialog: dialog.accept())
             errors=[]
             new.on("pageerror",lambda e: errors.append(str(e)))
             new.goto(origin+"/v041/index.html",wait_until="domcontentloaded")
