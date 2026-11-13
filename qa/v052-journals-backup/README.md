@@ -10,7 +10,7 @@ Source remains distinct from TEST main, production and real medical data.
 - Cosmetics: improve history text contrast and reduce row whitespace.
 - Keep IndexedDB name/version, all four stores, v3 backup format, original import checkpoints/conflict protection; no encryption or medical advice.
 
-QA: 9 SHA-256 site files, 25 historical browser tests + 9 v05 UX + 29 viewport geometry + 13 new behavior tests per browser (Chromium and WebKit). No Pages deployment, no writes to main or Vault.
+QA: 9 SHA-256 site files, 25 historical browser tests + 9 v05 UX + 29 viewport geometry + 14 new behavior tests per browser (Chromium and WebKit). No Pages deployment, no writes to main or Vault.
 
 ## Known limits
 JSON backups remain plaintext, SHA-256 proves integrity only. Hard max 5 MB applies to selected backup files (same as v05.1 importer). Browser local storage is not guaranteed permanent. Never enter real medical records in synthetic TEST.
