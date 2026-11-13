@@ -93,7 +93,8 @@ def check_engine(p,engine,log):
         assert len(dbrows(page)['intakes'])==2
         ok('Same-time duplicate confirmation does not create extra record')
         initial_intakes=dbrows(page)['intakes']
-        first_id=initial_intakes[0]['id'];first_marked=initial_intakes[0]['markedAt']
+        target_intake=next(x for x in initial_intakes if x.get('takenAtLocal')=='2024-06-10T08:15')
+        first_id=target_intake['id'];first_marked=target_intake['markedAt']
         first_row=page.locator('#med-list .intake-record').first
         first_row.locator('input[type="time"]').fill('09:10')
         first_row.get_by_role('button',name='Изменить время').click()
