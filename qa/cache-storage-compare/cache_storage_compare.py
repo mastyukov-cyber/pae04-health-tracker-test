@@ -9,7 +9,7 @@ from urllib.request import urlopen
 import json, sys, time, traceback
 
 ROOT = Path(__file__).resolve().parents[1] / "v04-safe-upgrade" / "site"
-REPORT = Path(__file__).resolve().parents[1] / "reports"
+REPORT = Path(__file__).resolve().parent / "reports"
 DB = "PAE04_HT_STABLE_CANDIDATE_INTEGRATION_SYNTHETIC_SCHEMA1"
 CACHE = "pae04-ht-stable-candidate-synthetic-schema1-cache-v04-20261113"
 WORKER_FILES = [
@@ -165,13 +165,23 @@ def check_engine(playwright, engine, expected_version, log):
              idb_before == ["intakeEvents", "intakes", "medications", "pressures"],
              json.dumps(idb_before))
 
+        # Deliberately failing uncached fetch is isolated from the app page. WebKit
+        # may surface its expected network failure as a pageerror even when caught.
+        # Do not suppress or whitelist errors on the primary application page.
+        probe = context.new_page()
+        probe_errors = []
+        probe.on("pageerror", lambda error: probe_errors.append(str(error)))
+        probe.goto(base + "index.html", wait_until="domcontentloaded", timeout=20000)
+        if not wait_state(probe, "Boolean(navigator.serviceWorker.controller)"):
+            raise AssertionError("Uncached probe page is not controlled by Service Worker")
+
         server.shutdown()
         server.server_close()
         if thread:
             thread.join(timeout=5)
         server = None
 
-        uncached = page.evaluate("""async () => {
+        uncached = probe.evaluate("""async () => {
           try {
             const response = await fetch('./__uncached_cache_ab_probe__');
             return {rejected: response.status >= 400, status: response.status};
@@ -179,8 +189,21 @@ def check_engine(playwright, engine, expected_version, log):
             return {rejected: true, name: error.name, message: error.message};
           }
         }""")
+        probe.wait_for_timeout(150)
+        unexpected_probe_errors = [
+            error for error in probe_errors
+            if not (uncached["rejected"] and (
+                error.strip() == "TypeError: Load failed" or
+                "__uncached_cache_ab_probe__" in error
+            ))
+        ]
         mark("Stopped origin rejects uncached request", uncached["rejected"],
              json.dumps(uncached, ensure_ascii=False))
+        mark("Deliberate uncached probe has no unrelated JavaScript errors",
+             not unexpected_probe_errors,
+             json.dumps({"expected_probe_pageerrors": probe_errors,
+                         "unexpected": unexpected_probe_errors}, ensure_ascii=False))
+        probe.close()
 
         offline_response = None
         offline_error = None
@@ -229,6 +252,8 @@ def check_engine(playwright, engine, expected_version, log):
             "idb_before": idb_before,
             "idb_after_offline_reload": offline_idb,
             "uncached_request": uncached,
+            "uncached_probe_pageerrors": probe_errors,
+            "unexpected_uncached_probe_errors": unexpected_probe_errors,
             "offline_response_from_service_worker": sw_served,
             "offline_reload_error": offline_error,
             "service_worker_console": sw_console,
