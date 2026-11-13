@@ -1,4 +1,4 @@
-name: PAE-04 TEST v0.2.1 SAFE UPGRADE v04 HTTPS GitHub Pages (synthetic only)
+name: PAE-04 TEST v0.2.1 SAFE UPGRADE v04.1 HTTPS GitHub Pages (synthetic only)
 on:
   push:
     branches: [main]
@@ -21,7 +21,7 @@ jobs:
       - name: Checkout immutable QA-approved v04 release snapshot
         uses: actions/checkout@v4
         with:
-          ref: '2ba1e3eabbf90f174407784303344cf312675fae'
+          ref: 'b400558fd8c8147aeda50402c7aa634bdb8d455f'
           persist-credentials: false
       - name: Verify all 9 v04 resources and stage ONLY synthetic TEST site
         shell: bash
@@ -40,13 +40,13 @@ jobs:
           for name,digest in expected.items():
               assert hashlib.sha256((source/name).read_bytes()).hexdigest()==digest, "SHA256 mismatch: "+name
           html=(source/"index.html").read_text(encoding="utf-8")
-          assert "PAE-04 · v0.2.1 SAFE UPGRADE TEST v04" in html
-          assert "v0.2.1 · SAFE UPGRADE TEST v04 · OFFLINE-FIRST" in html
+          assert "PAE-04 · v0.2.1 SAFE UPGRADE TEST v04.1" in html
+          assert "v0.2.1 · SAFE UPGRADE TEST v04.1 · OFFLINE-FIRST" in html
           assert "TEST v02" not in html and "TEST v03" not in html
           app=(source/"app.js").read_text(encoding="utf-8")
           assert "PAE04_HT_STABLE_CANDIDATE_INTEGRATION_SYNTHETIC_SCHEMA1" in app
           assert "Учебный препарат" in app
-          print("RESULT=PASS VERSION=v04 FILES=9 SYNTHETIC_ONLY=True SOURCE_SHA=2ba1e3eabbf90f174407784303344cf312675fae")
+          print("RESULT=PASS VERSION=v04.1 FILES=9 SYNTHETIC_ONLY=True SOURCE_SHA=b400558fd8c8147aeda50402c7aa634bdb8d455f")
           PY
           mkdir -p dist
           cp -R qa/v04-safe-upgrade/site/. dist/
