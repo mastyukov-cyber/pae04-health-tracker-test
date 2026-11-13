@@ -1,0 +1,51 @@
+name: PAE-04 v05.4 Rolling Date Picker QA (synthetic only, NO DEPLOY)
+on:
+  push:
+    branches: [sandbox/pae04-v054-date-wheels]
+    paths:
+      - 'qa/v054-date-wheels/**'
+      - '.github/workflows/pae04-v054-date-wheels-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-date-picker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify 9 SHA-256 files and preserved IndexedDB/backup schema
+        run: python qa/v054-date-wheels/verify.py
+      - name: Validate original JavaScript syntax
+        run: node --check qa/v054-date-wheels/site/app.js
+      - name: Install Playwright 1.65.0 browsers
+        run: |
+          python -m pip install playwright==1.65.0
+          python -m playwright install --with-deps ${{ matrix.engine }}
+      - name: Preserved 25-test offline and IndexedDB regression
+        run: python qa/v054-date-wheels/tests/browser_e2e.py ${{ matrix.engine }}
+      - name: Preserved 9-test medication and pressure filters
+        run: python qa/v054-date-wheels/tests/v05_ux.py ${{ matrix.engine }}
+      - name: Preserved 29-test viewport and counter geometry
+        run: python qa/v054-date-wheels/tests/mobile_geometry.py ${{ matrix.engine }}
+      - name: Preserved 14-test search and backup verifier regression
+        run: python qa/v054-date-wheels/tests/v052_features.py ${{ matrix.engine }}
+      - name: Preserved 22-test no-focus-zoom 16px font checks
+        run: python qa/v054-date-wheels/tests/zoom_focus.py ${{ matrix.engine }}
+      - name: New day-month-year wheel, leap year, ISO, audit and backup tests
+        run: python qa/v054-date-wheels/tests/date_wheels.py ${{ matrix.engine }}
+      - name: Retain synthetic test logs and wheel screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-v054-${{ matrix.engine }}
+          path: qa/v054-date-wheels/reports/
+          if-no-files-found: warn
+          retention-days: 14
