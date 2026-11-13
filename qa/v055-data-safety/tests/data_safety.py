@@ -182,7 +182,7 @@ try:
     upgrade_page=upctx.new_page()
     url='http://127.0.0.1:'+str(upgrade_server.server_address[1])+'/index.html'
     upgrade_page.goto(url,wait_until='domcontentloaded')
-   assert upgrade_page.url==url
+    assert upgrade_page.url==url
     expect(upgrade_page.locator('#stat-pressure')).to_have_text('0',timeout=10000)
     upgrade_page.locator('[data-page=pressure]').click()
     upgrade_page.locator('#systolic').fill('116')
