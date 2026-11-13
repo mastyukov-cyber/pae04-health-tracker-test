@@ -73,7 +73,16 @@ def rows(page, database):
 def normalized(d):
     return {store:sorted(d[store], key=lambda row:row["id"]) for store in STORES}
 def wait(page,expr,timeout=15000):
-    page.wait_for_function(expr,timeout=timeout)
+    # Avoid page.wait_for_function string-eval: the shipped v03 CSP forbids unsafe-eval.
+    deadline=time.monotonic()+timeout/1000
+    while time.monotonic()<deadline:
+        try:
+            if page.evaluate(expr):
+                return True
+        except Exception:
+            pass
+        page.wait_for_timeout(120)
+    raise AssertionError("Browser readiness timed out: "+expr)
 def execute(engine,log):
     passed=0
     server=thread=browser=context=None
