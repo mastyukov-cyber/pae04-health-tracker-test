@@ -3,11 +3,11 @@
   "patch_sha256": "14f9eda87e1a80a9e8b4ddd9f0d3374670bff2e7f918440270da7527dda1c2e2",
   "patch_b64_sha256": "a09fcbbad05e7b45ec3408a5c8d65710e443b0c02435c58522f5de4ddadfe454",
   "target_files": {
-    "index.html": "e0047ba4ed12897f3e9a6da7d1ec8656c76b0288b8cc8a047fcba855d0437aba",
+    "index.html": "4929250e6ef09b1ce213724334ca9e202b11a240d58f2c9dee2cc6a4510ff5c6",
     "styles.css": "672770d0f732502ccfce33670ed167d12ba882ebc6bf50610616e6082c5fb90c",
-    "sw.js": "db303798274e07d33947c748c0f3309bf813a6fd5dc7fea083f47bed872cbbd7",
+    "sw.js": "2f9f764e7eae19d9ac3de17fe99657256be6b3bf627ae4df0c13d29240db19ce",
     "app.js": "7837f6df9b82c5cb0e8a98789ba0326ba9e597c27f43154ab969b117dd9caea6",
-    "manifest.webmanifest": "67b89a209c3e762066b2c1a55118933088810eda9a6f95db34c3dc95835a87dc",
+    "manifest.webmanifest": "689e3164cc9c39d2f97b96675e0555e8c6e990357c1432c77de3e24537aff8b6",
     "icons/icon-512.png": "b5509bdf65dc021a057dac3f6db52de87a5d13d64c34cdc5f8dfc677a4e4f18b",
     "icons/icon.svg": "377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606",
     "icons/icon-192.png": "455b1aa541ebd7574d441d82615efd6f02d277c2ecf727077aa274fbbbe74f05",
@@ -20,5 +20,10 @@
     "styles.css",
     "sw.js"
   ],
-  "target": "PAE04 v04 synthetic-only safe-upgrade candidate; no real data; not published"
+  "target": "PAE04 v04.1 pill navigation icon, synthetic-only; TEST candidate, not yet published",
+  "pill_icon_delta": [
+    "index.html",
+    "sw.js",
+    "manifest.webmanifest"
+  ]
 }

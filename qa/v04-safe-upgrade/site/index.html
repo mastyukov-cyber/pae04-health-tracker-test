@@ -19,7 +19,7 @@
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <div class="brand"><span class="brand-mark" aria-hidden="true">♥</span><div><strong>HEALTH TRACKER</strong><small>PAE-04 · v0.2.1 SAFE UPGRADE TEST v04</small></div></div>
+      <div class="brand"><span class="brand-mark" aria-hidden="true">♥</span><div><strong>HEALTH TRACKER</strong><small>PAE-04 · v0.2.1 SAFE UPGRADE TEST v04.1</small></div></div>
       <div class="topbar-right"><span class="connection" id="connection-status"><span class="status-dot"></span>Проверка соединения</span><span class="pill demo-pill">Только тестовые данные</span></div>
     </header>
 
@@ -27,7 +27,7 @@
       <nav class="sidebar" aria-label="Разделы">
         <button class="nav-item active" type="button" data-page="overview"><span class="nav-icon" aria-hidden="true">◫</span><span>Обзор</span></button>
         <button class="nav-item" type="button" data-page="pressure"><span class="nav-icon" aria-hidden="true">♡</span><span>Давление</span></button>
-        <button class="nav-item" type="button" data-page="meds"><span class="nav-icon" aria-hidden="true">✚</span><span>Лекарства</span></button>
+        <button class="nav-item" type="button" data-page="meds"><span class="nav-icon" aria-hidden="true">💊</span><span>Лекарства</span></button>
         <button class="nav-item" type="button" data-page="backup"><span class="nav-icon" aria-hidden="true">⇩</span><span>Копии данных</span></button>
         <div class="sidebar-foot">Работает без аккаунта<br />Нет облачной синхронизации<br />Данные только на устройстве</div>
       </nav>
@@ -37,7 +37,7 @@
         <div id="messages" role="status" aria-live="polite"></div>
 
         <section class="page active" id="page-overview" aria-labelledby="overview-title">
-          <div class="page-head"><div><p class="eyebrow">ЛИЧНЫЙ ЖУРНАЛ · ДЕМОНСТРАЦИЯ</p><h1 id="overview-title">Мой трекер</h1><p class="muted">Два независимых журнала. Полный контроль над локальными тестовыми данными.</p></div><span class="version-label">v0.2.1 · SAFE UPGRADE TEST v04 · OFFLINE-FIRST</span></div>
+          <div class="page-head"><div><p class="eyebrow">ЛИЧНЫЙ ЖУРНАЛ · ДЕМОНСТРАЦИЯ</p><h1 id="overview-title">Мой трекер</h1><p class="muted">Два независимых журнала. Полный контроль над локальными тестовыми данными.</p></div><span class="version-label">v0.2.1 · SAFE UPGRADE TEST v04.1 · OFFLINE-FIRST</span></div>
           <div class="stats"><article class="stat-card"><span>Измерений давления</span><strong id="stat-pressure">0</strong><small>В локальном журнале</small></article><article class="stat-card"><span>Препаратов</span><strong id="stat-meds">0</strong><small>Создано в справочнике</small></article><article class="stat-card"><span>Отметок приёма</span><strong id="stat-intakes">0</strong><small>Фактические отметки</small></article></div>
           <div class="two-col"><article class="panel"><div class="panel-heading"><h2>Последние измерения</h2><button class="text-button" data-go="pressure" type="button">Открыть журнал →</button></div><div id="overview-pressure" class="empty">Пока нет записей.</div></article><article class="panel"><div class="panel-heading"><h2>Лекарства сегодня</h2><button class="text-button" data-go="meds" type="button">Открыть лекарства →</button></div><div id="overview-meds" class="empty">Пока нет препаратов.</div></article></div>
           <p class="footnote">Пилот не выполняет медицинскую оценку, не отправляет напоминания и не связывается с Obsidian. Реальная миграция данных не выполняется.</p>
@@ -50,7 +50,7 @@
         </section>
 
         <section class="page" id="page-meds" aria-labelledby="meds-title">
-          <div class="page-head"><div><p class="eyebrow">МОДУЛЬ 02</p><h1 id="meds-title">Лекарства <small class="version-inline">v0.2.1 SAFE UPGRADE TEST v04</small></h1><p class="muted">Список препаратов отдельно от давления. Без напоминаний.</p></div><span class="tag">Отметка факта приёма</span></div>
+          <div class="page-head"><div><p class="eyebrow">МОДУЛЬ 02</p><h1 id="meds-title">Лекарства <small class="version-inline">v0.2.1 SAFE UPGRADE TEST v04.1</small></h1><p class="muted">Список препаратов отдельно от давления. Без напоминаний.</p></div><span class="tag">Отметка факта приёма</span></div>
           <div class="two-col uneven"><article class="panel"><h2>Добавить препарат</h2><form id="med-form" autocomplete="off"><label>Тестовый справочник<input id="catalog-search" list="demo-catalog" placeholder="Выберите пример или введите вручную" maxlength="100" /><datalist id="demo-catalog"><option value="Учебный препарат А"></option><option value="Учебный препарат Б"></option><option value="Учебный препарат В"></option></datalist></label><label>Название препарата<input id="med-name" maxlength="100" required placeholder="Например: Учебный препарат А" /></label><label>Исходная строка дозировки (необязательно)<input id="med-dose" maxlength="60" placeholder="Учебная дозировка; не заменяет назначение" /></label>
 <label>Дозировка препарата / концентрация (учебная)<input id="med-strength" type="number" min="0.001" max="100000" step="any" inputmode="decimal" placeholder="Например: 10" /></label>
 <div class="form-grid med-v021-grid"><label>Единица измерения<select id="med-unit"><option value="">Не указана</option><option>мг</option><option>мкг</option><option>мл</option><option>г</option><option>ЕД</option></select></label>
@@ -66,7 +66,7 @@
 <label class="checkpoint-label"><input id="checkpoint-ack" type="checkbox" disabled /> 2. Я нашёл и сохранил защитную копию отдельно</label>
 <p id="checkpoint-status" role="status" aria-live="polite" class="form-hint"></p></div>
 <button id="import-button" class="primary" type="button" disabled>3. Подтвердить безопасный импорт</button></article></div>
-          <div class="panel limitations"><h2>Границы версии v0.2.1 SAFE UPGRADE TEST v04</h2><p>Импорт работает без перезаписи существующих записей: новые объекты добавляются, совпадающие пропускаются, при конфликте идентификаторов импорт блокируется. Полное удаление, замена архива, зашифрованные копии и синхронизация с Mac здесь ещё не реализованы.</p><p>Это только синтетический кандидат. Папки одного сайта не изолируют IndexedDB. Для будущих STABLE и BETA нужны разные origin. Скачивание файла не гарантирует его сохранение: убедитесь в наличии копии перед импортом. Настоящие медицинские сведения вводить нельзя.</p></div>
+          <div class="panel limitations"><h2>Границы версии v0.2.1 SAFE UPGRADE TEST v04.1</h2><p>Импорт работает без перезаписи существующих записей: новые объекты добавляются, совпадающие пропускаются, при конфликте идентификаторов импорт блокируется. Полное удаление, замена архива, зашифрованные копии и синхронизация с Mac здесь ещё не реализованы.</p><p>Это только синтетический кандидат. Папки одного сайта не изолируют IndexedDB. Для будущих STABLE и BETA нужны разные origin. Скачивание файла не гарантирует его сохранение: убедитесь в наличии копии перед импортом. Настоящие медицинские сведения вводить нельзя.</p></div>
         </section>
       </main>
     </div>

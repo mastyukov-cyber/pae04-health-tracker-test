@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "HEALTH TRACKER · v0.2.1 SAFE UPGRADE TEST v04",
-  "short_name": "HT v0.2.1 v04 TEST",
+  "name": "HEALTH TRACKER · v0.2.1 SAFE UPGRADE TEST v04.1",
+  "short_name": "HT v0.2.1 v04.1 TEST",
   "description": "Изолированный кандидат безопасного обновления; только синтетические записи",
   "start_url": "./index.html",
   "scope": "./",
