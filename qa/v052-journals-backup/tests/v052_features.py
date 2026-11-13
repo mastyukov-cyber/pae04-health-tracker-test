@@ -43,7 +43,9 @@ try:
         page.locator('#pressure-datetime').fill(when)
         page.locator('#pressure-note').fill(note)
         page.locator('#pressure-form button[type="submit"]').click()
-        page.wait_for_function('document.querySelectorAll("#pressure-list .history-row").length=='+str(1 if note=='Утро' else 2))
+        expected=1 if note=='Утро' else 2
+        page.locator('#pressure-list .history-row').nth(expected-1).wait_for()
+        assert page.locator('#pressure-list .history-row').count()==expected
       assert len(read_all(page)['pressures'])==2
       ok('Synthetic right-arm pressure records added unchanged schema')
       before=read_all(page)
@@ -71,7 +73,9 @@ try:
       for med in ('Учебный препарат А','Учебный препарат Б'):
         page.locator('#med-name').fill(med)
         page.locator('#med-form button[type="submit"]').click()
-        page.wait_for_function('document.querySelectorAll("#med-list .med-block").length=='+str(1 if med.endswith('А') else 2))
+        expected=1 if med.endswith('А') else 2
+        page.locator('#med-list .med-block').nth(expected-1).wait_for()
+        assert page.locator('#med-list .med-block').count()==expected
       assert len(read_all(page)['medications'])==2
       ok('Two fictional medicine entries saved in legacy format')
       before_meds=read_all(page)
