@@ -120,6 +120,7 @@ try:
       assert read_all(page)==state_before
       ok('Malformed JSON FAIL without mutations')
       page.reload(wait_until='domcontentloaded')
+      page.locator('#stat-pressure').filter(has_text='2').wait_for()
       assert read_all(page)==state_before
       assert page.evaluate('document.documentElement.scrollWidth <= innerWidth+1')
       assert not js_errors,js_errors
