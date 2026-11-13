@@ -10,7 +10,7 @@ from playwright.sync_api import sync_playwright, expect
 engine=sys.argv[1]
 if engine not in ('chromium','webkit'):raise SystemExit('unsupported engine')
 ROOT=Path(__file__).resolve().parents[1]
-SITES={'v05.3':ROOT.parent/'v053-safari-input-zoom'/'site',
+SITES={'v05.3':ROOT/'fixtures'/'v053',
        'v05.4':ROOT.parent/'v054-date-wheels'/'site',
        'v05.5':ROOT/'site'}
 REPORTS=ROOT/'reports';REPORTS.mkdir(exist_ok=True)
@@ -168,6 +168,12 @@ try:
    class Upgrade(SimpleHTTPRequestHandler):
     def __init__(self,*a,**kw):super().__init__(*a,directory=str(upgrade['path']),**kw)
     def log_message(self,*a):pass
+    def send_head(self):
+     if 'If-Modified-Since' in self.headers:del self.headers['If-Modified-Since']
+     return super().send_head()
+    def end_headers(self):
+     self.send_header('Cache-Control','no-store, max-age=0')
+     super().end_headers()
    upgrade_server=ThreadingHTTPServer(('127.0.0.1',0),Upgrade)
    upgrade_thread=Thread(target=upgrade_server.serve_forever,daemon=True)
    upgrade_thread.start()
@@ -176,6 +182,7 @@ try:
     upgrade_page=upctx.new_page()
     url='http://127.0.0.1:'+str(upgrade_server.server_address[1])+'/index.html'
     upgrade_page.goto(url,wait_until='domcontentloaded')
+   assert upgrade_page.url==url
     expect(upgrade_page.locator('#stat-pressure')).to_have_text('0',timeout=10000)
     upgrade_page.locator('[data-page=pressure]').click()
     upgrade_page.locator('#systolic').fill('116')
