@@ -1,4 +1,4 @@
-name: PAE-04 TEST v05.5 Safari Zoom Fix GitHub Pages (synthetic only)
+name: PAE-04 TEST v05.5.1 Keyboard UX Fix GitHub Pages (synthetic only)
 on:
   push:
     branches: [main]
@@ -18,32 +18,32 @@ jobs:
     environment:
       name: github-pages
     steps:
-      - name: Checkout immutable QA-approved v05.5 release snapshot
+      - name: Checkout immutable QA-approved v05.5.1 release snapshot
         uses: actions/checkout@v4
         with:
-          ref: 'e50222c43190045902885ee8330bb8dbc6cf6e90'
+          ref: 'c8c5aee14d6b0d746d63aa5a0e568bb277fbe658'
           persist-credentials: false
-      - name: Verify pinned v05.5 manifest and all 9 SHA256 resources
+      - name: Verify pinned v05.5.1 manifest and all 9 SHA256 resources
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git hash-object qa/v055-data-safety/V055_MANIFEST.json)" = "d9c952c2ccc1cb9f1e23672f1e0546965d6cc875"
-          test "$(git hash-object qa/v055-data-safety/verify.py)" = "9a5d29ab738b9c00cacbdf26efe97c9c05e0416e"
-          python3 qa/v055-data-safety/verify.py
+          test "$(git hash-object qa/v0551-keyboard-ux/V0551_MANIFEST.json)" = "186e3dfd2f1c79c88baf602bd14b7e3bae547f3e"
+          test "$(git hash-object qa/v0551-keyboard-ux/verify.py)" = "d510adb9083e8b575f480a4152f7f014809aa8d3"
+          python3 qa/v0551-keyboard-ux/verify.py
           python3 - <<'PY'
           import json
           from pathlib import Path
-          root=Path('qa/v055-data-safety/site')
-          manifest=json.loads(Path('qa/v055-data-safety/V055_MANIFEST.json').read_text(encoding='utf-8'))
-          assert manifest['version']=='v05.5'
-          assert manifest['source_v054']=='aefffde27cc8bcd6d4922e724120fda4acd25c07'
-          assert manifest['source_test_main']=='6bb1149fc69d8232fb7a4a253475213101f7b2ad'
+          root=Path('qa/v0551-keyboard-ux/site')
+          manifest=json.loads(Path('qa/v0551-keyboard-ux/V0551_MANIFEST.json').read_text(encoding='utf-8'))
+          assert manifest['version']=='v05.5.1'
+          assert manifest['source_v055']=='e50222c43190045902885ee8330bb8dbc6cf6e90'
+          assert manifest['source_test_main']=='b032a8dccb33cb7ac6f84736cb1e6993d2b7a03c'
           assert len(manifest['sha256'])==9
           html=(root/'index.html').read_text(encoding='utf-8')
           app=(root/'app.js').read_text(encoding='utf-8')
           sw=(root/'sw.js').read_text(encoding='utf-8')
-          assert 'PAE-04 · v0.2.1 SAFE UX TEST v05.5' in html
-          assert 'v0.2.1 · SAFE UX TEST v05.5 · OFFLINE-FIRST' in html
+          assert 'PAE-04 · v0.2.1 SAFE UX TEST v05.5.1' in html
+          assert 'v0.2.1 · SAFE UX TEST v05.5.1 · OFFLINE-FIRST' in html
           assert 'id="pressure-search"' in html
           assert 'id="med-search"' in html
           assert 'id="verify-file"' in html
@@ -54,7 +54,18 @@ jobs:
           assert "const BACKUP_VERSION=3" in app
           assert 'function atomicMerge(data)' in app
           assert 'verifyDownloadedBackup' in app
-          assert 'cache-v055-20261114' in sw
+          assert 'cache-v0551-20261114' in sw
+          assert 'body.keyboard-editing .sidebar{display:none!important}' in (root/'styles.css').read_text(encoding='utf-8')
+          assert 'function setupMobileKeyboardUI()' in app
+          assert 'function syncMobileKeyboardUI()' in app
+          assert 'function dismissMobileKeyboard()' in app
+          assert "await addRecord('pressures',p);safetyNeedsNewCheck();dismissMobileKeyboard();" in app
+          assert 'setupWheelPicker();setupMobileKeyboardUI();' in app
+          for key in ('systolic','diastolic','pulse'):
+              i=html.index('id="'+key+'"')
+              attributes=html[i:html.index('/>',i)]
+              for flag in ('autocomplete="off"','autocorrect="off"','autocapitalize="off"','spellcheck="false"','enterkeyhint="next"'):
+                  assert flag in attributes,(key,flag)
           assert 'id="data-safety-panel"' in html
           assert 'id="safety-check"' in html
           assert 'id="safety-copy-status"' in html
@@ -72,15 +83,15 @@ jobs:
           assert 'width=device-width, initial-scale=1, viewport-fit=cover' in viewport
           assert 'user-scalable=no' not in viewport
           assert 'maximum-scale' not in viewport
-          print('RESULT=PASS VERSION=v05.5 FILES=9 SHA256_VERIFIED=9 SYNTHETIC_ONLY=True SOURCE_SHA=e50222c43190045902885ee8330bb8dbc6cf6e90')
+          print('RESULT=PASS VERSION=v05.5.1 FILES=9 SHA256_VERIFIED=9 SYNTHETIC_ONLY=True SOURCE_SHA=c8c5aee14d6b0d746d63aa5a0e568bb277fbe658')
           PY
           mkdir -p dist
-          cp -R qa/v055-data-safety/site/. dist/
+          cp -R qa/v0551-keyboard-ux/site/. dist/
           touch dist/.nojekyll
           find dist -type f | sort
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-      - name: Upload verified v05.5 TEST site directory
+      - name: Upload verified v05.5.1 TEST site directory
         uses: actions/upload-pages-artifact@v4
         with:
           path: dist
