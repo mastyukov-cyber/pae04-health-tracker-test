@@ -79,10 +79,16 @@ try:
       const form=document.querySelector('#pressure-form');
       const history=document.querySelector('#pressure-list').closest('.panel');
       history.scrollIntoView({block:'end'});
-      const mk=(y)=>new Touch({identifier:11,target:form,clientX:50,clientY:y,screenX:50,screenY:y});
-      form.dispatchEvent(new TouchEvent('touchstart',{bubbles:true,touches:[mk(370)],targetTouches:[mk(370)],changedTouches:[mk(370)]}));
-      form.dispatchEvent(new TouchEvent('touchmove',{bubbles:true,touches:[mk(260)],targetTouches:[mk(260)],changedTouches:[mk(260)]}));
-      form.dispatchEvent(new TouchEvent('touchend',{bubbles:true,touches:[],targetTouches:[],changedTouches:[mk(260)]}));
+      // Browser WebKit may block constructing native Touch/TouchEvent objects.
+      // Dispatch ordinary events carrying only the fields our passive handler reads.
+      const fire=(type,points)=>{
+        const event=new Event(type,{bubbles:true});
+        Object.defineProperty(event,'touches',{value:points.map(y=>({clientY:y}))});
+        form.dispatchEvent(event);
+      };
+      fire('touchstart',[370]);
+      fire('touchmove',[260]);
+      fire('touchend',[]);
    }""")
    expect(page.locator('body')).not_to_have_class(re.compile(r'\bnote-editing\b'),timeout=5000)
    assert page.locator('#pressure-note').input_value()=='Учебная заметка — не сохранять'
