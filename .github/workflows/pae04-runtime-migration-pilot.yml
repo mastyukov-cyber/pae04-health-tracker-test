@@ -1,0 +1,89 @@
+name: PAE-04 Runtime Migration Pilot Node26 Python312 PW1651 (SYNTHETIC NO DEPLOY)
+on:
+  push:
+    branches:
+      - sandbox/pae04-runtime-migration-pilot-v01
+    paths:
+      - '.github/workflows/pae04-runtime-migration-pilot.yml'
+      - 'qa/runtime-migration-pilot/**'
+  workflow_dispatch:
+    inputs:
+      qa_level:
+        description: 'FAST static / STANDARD UI / CRITICAL storage and WebKit / RELEASE full regression'
+        type: choice
+        options: [FAST, STANDARD, CRITICAL, RELEASE]
+        required: true
+        default: RELEASE
+permissions:
+  contents: read
+jobs:
+  fast:
+    name: FAST pinned runtimes, 9 SHA-256 and syntax
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Confirm exact FAST runtime versions
+        run: |
+          set -euo pipefail
+          node --version
+          python --version
+          node -e "if (process.versions.node.split('.')[0] !== '26') process.exit(2)"
+          python -c "import sys; assert sys.version_info[:2] == (3,12)"
+      - name: Verify unchanged app assets, backups and original 9 hashes
+        run: python qa/v0552-keyboard-polish/verify.py
+      - name: JavaScript syntax and all existing Python test compile
+        run: |
+          set -euo pipefail
+          node --check qa/v0552-keyboard-polish/site/app.js
+          python -m compileall -q qa/v0552-keyboard-polish/tests/
+          python -m compileall -q qa/runtime-migration-pilot/
+  browser:
+    name: ${{ matrix.engine }} QA ${{ github.event_name == 'push' && 'RELEASE' || inputs.qa_level }}
+    needs: fast
+    if: ${{ github.event_name == 'push' || inputs.qa_level != 'FAST' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    env:
+      PAE04_SYNTHETIC_ONLY: 'true'
+      QA_LEVEL: ${{ github.event_name == 'push' && 'RELEASE' || inputs.qa_level }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: qa/runtime-migration-pilot/requirements.txt
+      - name: Install strictly pinned Playwright Python 1.65.1
+        run: python -m pip install --requirement qa/runtime-migration-pilot/requirements.txt
+      - name: Install only selected synthetic browser engine
+        run: python -m playwright install --with-deps ${{ matrix.engine }}
+      - name: Runtime fail-closed probe, browser version and environment
+        run: python qa/runtime-migration-pilot/runtime_probe.py ${{ matrix.engine }}
+      - name: Verify immutable nine-asset site after setup
+        run: python qa/v0552-keyboard-polish/verify.py
+      - name: STANDARD + CRITICAL + RELEASE cumulative unchanged QA suites
+        run: python qa/runtime-migration-pilot/run_suite.py ${{ matrix.engine }} "$QA_LEVEL"
+      - name: Archive synthetic logs, screenshots and measured runtime
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-runtime-1651-${{ matrix.engine }}
+          path: |
+            qa/runtime-migration-pilot/reports/
+            qa/v0552-keyboard-polish/reports/
+          if-no-files-found: warn
+          retention-days: 14
