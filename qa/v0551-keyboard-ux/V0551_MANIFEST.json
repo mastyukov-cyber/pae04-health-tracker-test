@@ -1,0 +1,28 @@
+{
+  "version": "v05.5.1",
+  "purpose": "Keyboard UX focus-safe nav and iOS autofill reduction, synthetic-only TEST",
+  "source_v055": "e50222c43190045902885ee8330bb8dbc6cf6e90",
+  "source_test_main": "b032a8dccb33cb7ac6f84736cb1e6993d2b7a03c",
+  "sha256": {
+    "index.html": "f896bef3744a81c2e9886918b2c78670187507e2259525669fa5140c87343d35",
+    "app.js": "8f077a61d7606566ec803474d1b869291fa21569b0fe0aaecb8b20dc0169c13c",
+    "styles.css": "f78746155d26534f1ee86f5668eb42e06a605b25ef628d50523d0df45a9230f0",
+    "sw.js": "70979a63c9f8bfb135fd14e24ce87c093a476bcac5111ef059f6031a261d52ed",
+    "manifest.webmanifest": "deb832341265f32684b0d0dc0ec701304fee8f79f93c4670315f1e30a2560695",
+    "icons/icon.svg": "377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606",
+    "icons/apple-touch-icon.png": "7e321de521f7c91a8856a66e237b98bb48d36bc89c6246ab90cc0ffb4ce6e11b",
+    "icons/icon-192.png": "455b1aa541ebd7574d441d82615efd6f02d277c2ecf727077aa274fbbbe74f05",
+    "icons/icon-512.png": "b5509bdf65dc021a057dac3f6db52de87a5d13d64c34cdc5f8dfc677a4e4f18b"
+  },
+  "unchanged": {
+    "db_name": "PAE04_HT_STABLE_CANDIDATE_INTEGRATION_SYNTHETIC_SCHEMA1",
+    "db_version": 1,
+    "backup_version": 3,
+    "stores": [
+      "pressures",
+      "medications",
+      "intakes",
+      "intakeEvents"
+    ]
+  }
+}
