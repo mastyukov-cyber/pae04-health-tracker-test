@@ -185,16 +185,24 @@ body.wheel-modal-open{overflow:hidden}
   body.keyboard-editing .main{padding-bottom:max(22px,env(safe-area-inset-bottom))}
 }
 
-/* v05.5.2: explicit note-only keyboard dismissal, no form submit or DB writes. */
-.keyboard-done{display:none}
+/* v05.5.2 — layout-stable keyboard dismissal; hide by visibility, not display.
+   The position of the save button MUST NOT shift while tapping it. */
+.pressure-note-area{position:relative;margin-bottom:15px}
+.pressure-note-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px}
+.pressure-note-heading>label{margin:0;color:#516175;font-size:12px;font-weight:650;min-width:0}
+.pressure-note-area>textarea{margin-top:0}
+.keyboard-done{
+  display:inline-flex;align-items:center;justify-content:center;
+  visibility:hidden;opacity:0;pointer-events:none;
+  min-height:44px;min-width:76px;padding:8px 13px;
+  border:1px solid #c8d6e9;border-radius:12px;
+  background:#eef4ff;color:#235dac;font-size:16px;font-weight:650;
+}
 @media(max-width:740px){
-  body.note-editing #pressure-keyboard-done{
-    display:inline-flex;align-items:center;justify-content:center;
-    min-height:44px;margin:8px 0 13px;padding:8px 15px;
-    border:1px solid #c8d6e9;border-radius:12px;
-    background:#eef4ff;color:#235dac;font-size:16px;font-weight:650;
-  }
-  body.note-editing #pressure-keyboard-done:focus-visible{
-    outline:3px solid #a5c4ff;outline-offset:2px;
-  }
+  body.note-editing #pressure-keyboard-done{visibility:visible;opacity:1;pointer-events:auto}
+  body.note-editing #pressure-keyboard-done:focus-visible{outline:3px solid #a5c4ff;outline-offset:2px}
+}
+@media(min-width:741px){
+  .keyboard-done{display:none}
+  .pressure-note-heading{min-height:0;margin-bottom:7px}
 }

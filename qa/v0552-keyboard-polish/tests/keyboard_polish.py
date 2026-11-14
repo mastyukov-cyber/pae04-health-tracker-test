@@ -43,6 +43,7 @@ try:
    page.locator('#pressure-note').focus()
    expect(page.locator('body')).to_have_class(re.compile(r'\bnote-editing\b'),timeout=5000)
    expect(button).to_be_visible()
+   save_y=page.locator('#pressure-form button[type=submit]').evaluate('el=>el.offsetTop')
    assert page.locator('.sidebar').evaluate("el=>getComputedStyle(el).display")=='none'
    ok('Focused note shows accessible done control while hiding bottom navigation')
    assert button.get_attribute('type')=='button'
@@ -53,6 +54,7 @@ try:
    expect(button).to_be_hidden()
    assert page.locator('.sidebar').evaluate("el=>getComputedStyle(el).display")!='none'
    assert page.locator('#pressure-note').input_value()=='Учебная заметка — не сохранять'
+   assert page.locator('#pressure-form button[type=submit]').evaluate('el=>el.offsetTop')==save_y,'Save button moved on keyboard dismissal'
    assert page.evaluate('async()=>await readBackupSnapshot()')==before
    ok('Done dismisses keyboard without saving or clearing the draft')
    page.locator('#pressure-note').focus()
@@ -103,7 +105,7 @@ try:
    page.locator('#pulse').fill('70')
    page.locator('#pressure-note').fill('Учебное измерение')
    page.locator('#pressure-note').focus()
-   page.evaluate("document.querySelector('#pressure-form').requestSubmit()")
+   page.locator('#pressure-form button[type=submit]').click()
    expect(page.locator('#stat-pressure')).to_have_text('1',timeout=10000)
    expect(page.locator('body')).not_to_have_class(re.compile(r'\bnote-editing\b'),timeout=5000)
    record=page.evaluate("async()=>await readBackupSnapshot()")

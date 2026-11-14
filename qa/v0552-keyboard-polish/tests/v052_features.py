@@ -50,7 +50,15 @@ try:
         page.locator('#pressure-note').fill(note)
         page.locator('#pressure-form button[type="submit"]').click()
         expected=1 if note=='Утро' else 2
-        page.locator('#pressure-list .history-row').nth(expected-1).wait_for()
+        try:
+          page.locator('#pressure-list .history-row').nth(expected-1).wait_for(timeout=12000)
+        except Exception:
+          print('DIAGNOSTIC form validity=',page.locator('#pressure-form').evaluate('form=>form.checkValidity()'),flush=True)
+          print('DIAGNOSTIC error=',page.locator('#messages').inner_text(),flush=True)
+          print('DIAGNOSTIC inputs=',page.locator('#pressure-form').evaluate('form=>({sys:form.elements.systolic.value,dia:form.elements.diastolic.value,pulse:form.elements.pulse.value,dt:form.elements.dateTime.value,note:form.elements.note.value})'),flush=True)
+          print('DIAGNOSTIC database=',read_all(page),flush=True)
+          page.screenshot(path=str(OUT/f'pressure-save-fail-{ENGINE}.png'))
+          raise
         assert page.locator('#pressure-list .history-row').count()==expected
       assert len(read_all(page)['pressures'])==2
       ok('Synthetic right-arm pressure records added unchanged schema')
