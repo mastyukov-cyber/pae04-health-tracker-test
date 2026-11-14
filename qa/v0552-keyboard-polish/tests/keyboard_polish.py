@@ -41,7 +41,7 @@ try:
    ok('Done control initially hidden and note autofill opt-out retained')
    page.locator('#pressure-note').fill('Учебная заметка — не сохранять')
    page.locator('#pressure-note').focus()
-   expect(page.locator('body')).to_have_class(re.compile(r'\\bnote-editing\\b'),timeout=5000)
+   expect(page.locator('body')).to_have_class(re.compile(r'\bnote-editing\b'),timeout=5000)
    expect(button).to_be_visible()
    assert page.locator('.sidebar').evaluate("el=>getComputedStyle(el).display")=='none'
    ok('Focused note shows accessible done control while hiding bottom navigation')
@@ -49,7 +49,7 @@ try:
    assert 'без сохранения' in button.get_attribute('aria-label')
    before=page.evaluate('async()=>await readBackupSnapshot()')
    button.click()
-   expect(page.locator('body')).not_to_have_class(re.compile(r'\\bnote-editing\\b'),timeout=5000)
+   expect(page.locator('body')).not_to_have_class(re.compile(r'\bnote-editing\b'),timeout=5000)
    expect(button).to_be_hidden()
    assert page.locator('.sidebar').evaluate("el=>getComputedStyle(el).display")!='none'
    assert page.locator('#pressure-note').input_value()=='Учебная заметка — не сохранять'
@@ -58,7 +58,7 @@ try:
    page.locator('#pressure-note').focus()
    expect(button).to_be_visible()
    page.locator('#pressure-list').locator('xpath=..').locator('h2').click()
-   expect(page.locator('body')).not_to_have_class(re.compile(r'\\bnote-editing\\b'),timeout=5000)
+   expect(page.locator('body')).not_to_have_class(re.compile(r'\bnote-editing\b'),timeout=5000)
    expect(button).to_be_hidden()
    assert page.locator('#pressure-note').input_value()=='Учебная заметка — не сохранять'
    assert page.evaluate('async()=>await readBackupSnapshot()')==before
@@ -67,7 +67,7 @@ try:
    expect(button).to_be_visible()
    page.evaluate("navigate('backup')")
    expect(page.locator('#page-backup')).to_be_visible()
-   expect(page.locator('body')).not_to_have_class(re.compile(r'\\bnote-editing\\b'),timeout=5000)
+   expect(page.locator('body')).not_to_have_class(re.compile(r'\bnote-editing\b'),timeout=5000)
    assert page.evaluate('document.activeElement.id')!='pressure-note'
    assert page.evaluate('async()=>await readBackupSnapshot()')==before
    ok('Leaving pressure section blurs keyboard without changing database')
@@ -84,7 +84,7 @@ try:
       form.dispatchEvent(new TouchEvent('touchmove',{bubbles:true,touches:[mk(260)],targetTouches:[mk(260)],changedTouches:[mk(260)]}));
       form.dispatchEvent(new TouchEvent('touchend',{bubbles:true,touches:[],targetTouches:[],changedTouches:[mk(260)]}));
    }""")
-   expect(page.locator('body')).not_to_have_class(re.compile(r'\\bnote-editing\\b'),timeout=5000)
+   expect(page.locator('body')).not_to_have_class(re.compile(r'\bnote-editing\b'),timeout=5000)
    assert page.locator('#pressure-note').input_value()=='Учебная заметка — не сохранять'
    ok('Synthetic upward touch scroll toward history dismisses note keyboard')
    page.locator('#pressure-search').focus()
@@ -99,7 +99,7 @@ try:
    page.locator('#pressure-note').focus()
    page.evaluate("document.querySelector('#pressure-form').requestSubmit()")
    expect(page.locator('#stat-pressure')).to_have_text('1',timeout=10000)
-   expect(page.locator('body')).not_to_have_class(re.compile(r'\\bnote-editing\\b'),timeout=5000)
+   expect(page.locator('body')).not_to_have_class(re.compile(r'\bnote-editing\b'),timeout=5000)
    record=page.evaluate("async()=>await readBackupSnapshot()")
    assert len(record['pressures'])==1
    assert record['pressures'][0]['systolic']==121 and record['pressures'][0]['diastolic']==79
