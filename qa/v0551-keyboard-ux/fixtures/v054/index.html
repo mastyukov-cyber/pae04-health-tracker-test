@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="theme-color" content="#f5f7fb" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="HT Pilot" />
+  <meta name="description" content="Изолированный офлайн-прототип HEALTH TRACKER. Только синтетические данные." />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png" />
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./styles.css" />
+  <title>HEALTH TRACKER · PWA Pilot</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">♥</span><div><strong>HEALTH TRACKER</strong><small>PAE-04 · v0.2.1 SAFE UX TEST v05.4</small></div></div>
+      <div class="topbar-right"><span class="connection" id="connection-status"><span class="status-dot"></span>Проверка соединения</span><span class="pill demo-pill">Только тестовые данные</span></div>
+    </header>
+
+    <div class="layout">
+      <nav class="sidebar" aria-label="Разделы">
+        <button class="nav-item active" type="button" data-page="overview"><span class="nav-icon" aria-hidden="true">◫</span><span>Обзор</span></button>
+        <button class="nav-item" type="button" data-page="pressure"><span class="nav-icon" aria-hidden="true">♡</span><span>Давление</span></button>
+        <button class="nav-item" type="button" data-page="meds"><span class="nav-icon" aria-hidden="true">💊</span><span>Лекарства</span></button>
+        <button class="nav-item" type="button" data-page="backup"><span class="nav-icon" aria-hidden="true">⇩</span><span>Копии данных</span></button>
+        <div class="sidebar-foot">Работает без аккаунта<br />Нет облачной синхронизации<br />Данные только на устройстве</div>
+      </nav>
+
+      <main class="main" id="main">
+        <div class="alert"><span class="alert-icon" aria-hidden="true">ⓘ</span><span><b>Изолированный эксперимент.</b> Используйте только вымышленные показатели и препараты. Это не медицинский инструмент и не версия для повседневного учёта.</span></div>
+        <div id="messages" role="status" aria-live="polite"></div>
+
+        <section class="page active" id="page-overview" aria-labelledby="overview-title">
+          <div class="page-head"><div><p class="eyebrow">ЛИЧНЫЙ ЖУРНАЛ · ДЕМОНСТРАЦИЯ</p><h1 id="overview-title">Мой трекер</h1><p class="muted">Два независимых журнала. Полный контроль над локальными тестовыми данными.</p></div><span class="version-label">v0.2.1 · SAFE UX TEST v05.4 · OFFLINE-FIRST</span></div>
+          <div class="stats"><article class="stat-card"><span>Измерений давления</span><strong id="stat-pressure">0</strong><small>В локальном журнале</small></article><article class="stat-card"><span>Препаратов</span><strong id="stat-meds">0</strong><small>Создано в справочнике</small></article><article class="stat-card"><span>Отметок приёма</span><strong id="stat-intakes">0</strong><small>Фактические отметки</small></article></div>
+          <div class="two-col"><article class="panel"><div class="panel-heading"><h2>Последние измерения</h2><button class="text-button" data-go="pressure" type="button">Открыть журнал →</button></div><div id="overview-pressure" class="empty">Пока нет записей.</div></article><article class="panel"><div class="panel-heading"><h2>Лекарства сегодня</h2><button class="text-button" data-go="meds" type="button">Открыть лекарства →</button></div><div id="overview-meds" class="empty">Пока нет препаратов.</div></article></div>
+          <p class="footnote">Пилот не выполняет медицинскую оценку, не отправляет напоминания и не связывается с Obsidian. Реальная миграция данных не выполняется.</p>
+        </section>
+
+        <section class="page" id="page-pressure" aria-labelledby="pressure-title">
+          <div class="page-head"><div><p class="eyebrow">МОДУЛЬ 01</p><h1 id="pressure-title">Давление</h1><p class="muted">Ручной ввод показаний тонометра. Рука измерения фиксирована: правая.</p></div><span class="tag">Правая рука</span></div>
+          <div class="two-col uneven"><article class="panel"><h2>Новое измерение</h2><form id="pressure-form" autocomplete="off"><div class="form-grid"><label>Систолическое, мм рт. ст.<input type="number" id="systolic" name="systolic" min="50" max="300" required inputmode="numeric" placeholder="120" /></label><label>Диастолическое, мм рт. ст.<input type="number" id="diastolic" name="diastolic" min="30" max="200" required inputmode="numeric" placeholder="80" /></label><label>Пульс, уд/мин (необязательно)<input type="number" id="pulse" name="pulse" min="25" max="250" inputmode="numeric" placeholder="70" /></label><div class="wheel-field pressure-date-field"><span class="wheel-field-title">Дата и время</span><input type="datetime-local" id="pressure-datetime" name="dateTime" class="wheel-source" aria-hidden="true" tabindex="-1" required /><button type="button" class="wheel-trigger" data-wheel-target="pressure-datetime" aria-label="Выбрать дату и время измерения прокруткой"><span class="wheel-value" data-wheel-label="pressure-datetime">Выберите дату и время</span><span aria-hidden="true">⌄</span></button></div></div><label>Заметка (необязательно)<textarea id="pressure-note" name="note" maxlength="250" rows="2" placeholder="Только тестовый текст"></textarea></label><div class="fixed-arm"><span aria-hidden="true">✓</span> Рука измерения: правая (не изменяется)</div><button type="submit" class="primary">Сохранить тестовое измерение</button></form></article>
+          <article class="panel"><div class="panel-heading v05-filter-head"><h2>История</h2><div class="v05-filter-actions"><label class="v05-filter" for="pressure-filter">Период <select id="pressure-filter"><option value="0">Всё время</option><option value="7">7 дней</option><option value="30">30 дней</option></select></label><span class="count" id="pressure-count">0 записей</span></div></div><label class="compact-search" for="pressure-search">Поиск по истории давления<input id="pressure-search" type="search" maxlength="80" autocomplete="off" placeholder="Показания, дата или заметка" /></label><div id="pressure-list" class="list-body empty">Пока нет измерений.</div></article></div>
+        </section>
+
+        <section class="page" id="page-meds" aria-labelledby="meds-title">
+          <div class="page-head"><div><p class="eyebrow">МОДУЛЬ 02</p><h1 id="meds-title">Лекарства</h1><p class="muted">Список препаратов отдельно от давления. Без напоминаний.</p></div><span class="tag">Отметка факта приёма</span></div>
+          <div class="two-col uneven"><article class="panel"><h2>Добавить препарат</h2><form id="med-form" autocomplete="off"><label>Тестовый справочник<input id="catalog-search" list="demo-catalog" placeholder="Выберите пример или введите вручную" maxlength="100" /><datalist id="demo-catalog"><option value="Учебный препарат А"></option><option value="Учебный препарат Б"></option><option value="Учебный препарат В"></option></datalist></label><label>Название препарата<input id="med-name" maxlength="100" required placeholder="Например: Учебный препарат А" /></label><label>Исходная строка дозировки (необязательно)<input id="med-dose" maxlength="60" placeholder="Учебная дозировка; не заменяет назначение" /></label>
+<label>Дозировка препарата / концентрация (учебная)<input id="med-strength" type="number" min="0.001" max="100000" step="any" inputmode="decimal" placeholder="Например: 10" /></label>
+<div class="form-grid med-v021-grid"><label>Единица измерения<select id="med-unit"><option value="">Не указана</option><option>мг</option><option>мкг</option><option>мл</option><option>г</option><option>ЕД</option></select></label>
+<label>Форма выпуска<select id="med-form-factor"><option value="">Не указана</option><option>таблетки</option><option>капсулы</option><option>капли</option><option>раствор</option><option>другое</option></select></label></div><label>Тип приёма<select id="med-kind"><option value="regular">Постоянный</option><option value="course">Курсовой</option><option value="asNeeded">Ситуативный</option></select></label><div class="form-grid course-fields" id="course-fields" hidden><div class="wheel-field"><span class="wheel-field-title">Начало курса</span><input id="course-from" class="wheel-source" aria-hidden="true" tabindex="-1" type="date" /><button type="button" class="wheel-trigger" data-wheel-target="course-from" aria-label="Выбрать дату начала курса прокруткой"><span class="wheel-value" data-wheel-label="course-from">Не указана</span><span aria-hidden="true">⌄</span></button></div><div class="wheel-field"><span class="wheel-field-title">Окончание курса</span><input id="course-to" class="wheel-source" aria-hidden="true" tabindex="-1" type="date" /><button type="button" class="wheel-trigger" data-wheel-target="course-to" aria-label="Выбрать дату окончания курса прокруткой"><span class="wheel-value" data-wheel-label="course-to">Не указана</span><span aria-hidden="true">⌄</span></button></div></div><p class="form-hint">v0.2.1 INTEGRATION TEST: только названия «Учебный препарат …». Число означает характеристику препарата, а не рекомендацию по приёму. Старые текстовые дозировки не преобразуются автоматически.</p><button class="primary" type="submit">Добавить тестовый препарат</button></form></article>
+          <article class="panel"><div class="panel-heading"><h2>Журнал приёма</h2><div class="inline-date wheel-intake-field"><span>Дата</span><input id="intake-date" class="wheel-source" aria-hidden="true" tabindex="-1" type="date" /><button type="button" class="wheel-trigger" data-wheel-target="intake-date" aria-label="Выбрать дату приёма прокруткой"><span class="wheel-value" data-wheel-label="intake-date">Сегодня</span><span aria-hidden="true">⌄</span></button></div></div><p class="form-hint">Кнопка «Подтвердить приём» сохраняет один факт на указанное время. Для другого приёма выберите новое время и нажмите кнопку ещё раз. Повторная отметка на то же время заблокирована. Каждая отметка, отмена и исправление времени сохраняются в журнале. В старых записях время может быть неизвестно — не подставляется автоматически.</p><label class="compact-search" for="med-search">Найти препарат<input id="med-search" type="search" maxlength="100" autocomplete="off" placeholder="Название препарата" /></label><div id="med-list" class="list-body empty">Препараты ещё не добавлены.</div><div class="section-divider"></div><div class="v05-filter-actions v05-intake-head"><h3>Последние отметки</h3><label class="v05-filter" for="intake-filter">Показать <select id="intake-filter"><option value="all">Все</option><option value="active">Подтверждённые</option><option value="cancelled">Отменённые</option></select></label></div><div id="intake-list" class="list-body empty">Отметок пока нет.</div></article></div>
+        </section>
+
+        <section class="page" id="page-backup" aria-labelledby="backup-title">
+          <div class="page-head"><div><p class="eyebrow">ЛОКАЛЬНЫЕ ДАННЫЕ</p><h1 id="backup-title">Резервные копии</h1><p class="muted">Экспорт, проверка SHA-256 и восстановление отсутствующих записей.</p></div><span class="tag">JSON · SHA-256</span></div>
+          <div class="two-col"><article class="panel action-panel"><div class="round-icon">⇩</div><h2>Экспортировать копию</h2><p>Скачать файл с измерениями, препаратами и отметками приёма. Файл не отправляется на сервер.</p><button id="export-button" class="primary" type="button">Скачать резервную копию</button><p class="form-hint"><strong>Внимание:</strong> JSON не зашифрован. SHA-256 проверяет целостность, но не скрывает содержимое. Сохраняйте файл в защищённом месте.</p><div class="verify-box"><h3>Проверить скачанную копию</h3><p>Выберите сохранённый JSON, чтобы проверить SHA-256 и количество записей. Проверка не выполняет импорт.</p><label class="file-label" for="verify-file">Проверить JSON без импорта</label><input id="verify-file" type="file" accept=".json,application/json" /><div id="verify-result" role="status" aria-live="polite"></div></div></article>
+          <article class="panel action-panel"><div class="round-icon">⇧</div><h2>Восстановить из файла</h2><p>Сначала проверяем файл и конфликты, затем скачиваем защитную копию текущих записей. Импорт разрешается только после подтверждения сохранения копии.</p><label class="file-label" for="import-file">Выбрать JSON-файл</label><input id="import-file" type="file" accept=".json,application/json" /><div id="import-preview" class="import-preview" role="status" aria-live="polite"></div>
+<div class="checkpoint-steps"><button id="checkpoint-button" type="button" disabled>1. Скачать защитную копию текущих записей</button>
+<label class="checkpoint-label"><input id="checkpoint-ack" type="checkbox" disabled /> 2. Я нашёл и сохранил защитную копию отдельно</label>
+<p id="checkpoint-status" role="status" aria-live="polite" class="form-hint"></p></div>
+<button id="import-button" class="primary" type="button" disabled>3. Подтвердить безопасный импорт</button></article></div>
+          <div class="panel limitations"><h2>Границы версии v0.2.1 SAFE UX TEST v05.4</h2><p>Импорт работает без перезаписи существующих записей: новые объекты добавляются, совпадающие пропускаются, при конфликте идентификаторов импорт блокируется. Полное удаление, замена архива, зашифрованные копии и синхронизация с Mac здесь ещё не реализованы.</p><p>Это только синтетический кандидат v05.2. Фильтры журналов не изменяют сохранённые записи. Папки одного сайта не изолируют IndexedDB. Для будущих STABLE и BETA нужны разные origin. Скачивание файла не гарантирует его сохранение: убедитесь в наличии копии перед импортом. Настоящие медицинские сведения вводить нельзя.</p></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+    <!-- PAE-04 v05.4: self-contained, local-only wheel date picker. No calendar and no data writes until Apply. -->
+    <div id="wheel-modal" class="wheel-backdrop" hidden>
+      <section class="wheel-dialog" role="dialog" aria-modal="true" aria-labelledby="wheel-title">
+        <div class="wheel-head">
+          <button type="button" class="wheel-text-btn" id="wheel-cancel">Отмена</button>
+          <h2 id="wheel-title">Выбор даты</h2>
+          <button type="button" class="wheel-text-btn wheel-done" id="wheel-apply">Готово</button>
+        </div>
+        <p class="wheel-preview" id="wheel-preview" aria-live="polite"></p>
+        <div class="wheel-columns">
+          <div class="wheel-col"><span class="wheel-col-name">День</span><div id="wheel-day" class="wheel-scroll" role="listbox" tabindex="0" aria-label="День"></div></div>
+          <div class="wheel-col wheel-col-month"><span class="wheel-col-name">Месяц</span><div id="wheel-month" class="wheel-scroll" role="listbox" tabindex="0" aria-label="Месяц"></div></div>
+          <div class="wheel-col"><span class="wheel-col-name">Год</span><div id="wheel-year" class="wheel-scroll" role="listbox" tabindex="0" aria-label="Год"></div></div>
+        </div>
+        <label class="wheel-time-row" id="wheel-time-row" hidden>Время измерения <input type="time" id="wheel-time" step="60" /></label>
+        <button type="button" class="wheel-clear" id="wheel-clear" hidden>Не указывать дату</button>
+        <p class="wheel-help">Прокручивайте день, месяц и год. Дата сохраняется только после кнопки «Готово».</p>
+      </section>
+    </div>
+  <script src="./app.js" defer></script>
+</body>
+</html>

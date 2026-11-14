@@ -16,10 +16,12 @@ from playwright.sync_api import sync_playwright, expect
 engine=sys.argv[1]
 if engine not in ('chromium','webkit'):raise SystemExit('unsupported engine')
 ROOT=Path(__file__).resolve().parents[1]
-SITES={'v05.3':ROOT.parent/'v055-data-safety'/'fixtures'/'v053',
-       'v05.4':ROOT.parent/'v054-date-wheels'/'site',
+SITES={'v05.3':ROOT/'fixtures'/'v053',
+       'v05.4':ROOT/'fixtures'/'v054',
        'v05.5':ROOT/'fixtures'/'v055',
        'v05.5.1':ROOT/'site'}
+for version,folder in SITES.items():
+ assert (folder/'index.html').is_file(),('Missing synthetic fixture',version,str(folder))
 REPORTS=ROOT/'reports';REPORTS.mkdir(exist_ok=True)
 state={'path':SITES['v05.5.1']}
 class Handler(SimpleHTTPRequestHandler):
