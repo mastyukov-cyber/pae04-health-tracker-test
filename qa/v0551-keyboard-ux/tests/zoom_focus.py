@@ -1,3 +1,9 @@
+# Mobile UX: dismiss active editing keyboard before tapping the deliberately hidden bottom menu.
+def nav_to(page,name):
+ page.evaluate("document.activeElement.blur()")
+ page.locator("body.keyboard-editing").wait_for(state="hidden",timeout=5000)
+ page.locator("[data-page="+name+"]").click()
+
 #!/usr/bin/env python3
 """PAE-04 v05.5.1 synthetic Safari focus/zoom prevention checks. No real data, localhost only."""
 from pathlib import Path
@@ -44,7 +50,7 @@ try:
    ok('Version v05.5.1 and pinch zoom remain enabled')
    for width in (320,375,390,430,600,740,768,820,1024):
     page.set_viewport_size({'width':width,'height':844})
-    page.locator('[data-page="pressure"]').click()
+    nav_to(page,'pressure')
     pressure=check_sizes(page,width,'pressure')
     for id in ('pressure-search','systolic','diastolic','pulse','pressure-datetime','pressure-note','pressure-filter'):
      c=next((x for x in pressure if x['id']==id),None)
@@ -56,7 +62,7 @@ try:
     page.locator('#pressure-search').fill('')
     ok(str(width)+'px pressure search, numeric fields, notes, date and select >=16px')
     if width in (390,768):page.screenshot(path=str(reports/f'{engine}-{width}-pressure.png'))
-    page.locator('[data-page="meds"]').click()
+    nav_to(page,'meds')
     meds=check_sizes(page,width,'medicines')
     for id in ('catalog-search','med-name','med-dose','med-strength','med-unit','med-form-factor','med-kind','intake-date','med-search','intake-filter'):
      c=next((x for x in meds if x['id']==id),None)
@@ -81,7 +87,7 @@ try:
    time.wait_for()
    assert time.evaluate('(el)=>parseFloat(getComputedStyle(el).fontSize)')>=16
    ok('Dynamically created intake time input >=16px')
-   page.locator('[data-page="backup"]').click()
+   nav_to(page,'backup')
    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
    assert not errors,errors
    assert not external,external

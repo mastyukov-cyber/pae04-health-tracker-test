@@ -1,3 +1,9 @@
+# Mobile UX: dismiss active editing keyboard before tapping the deliberately hidden bottom menu.
+def nav_to(page,name):
+ page.evaluate("document.activeElement.blur()")
+ page.locator("body.keyboard-editing").wait_for(state="hidden",timeout=5000)
+ page.locator("[data-page="+name+"]").click()
+
 #!/usr/bin/env python3
 """PAE-04 v05.5.1 browser-simulated mobile keyboard UX QA (synthetic only).
 
@@ -50,7 +56,7 @@ try:
    assert 'maximum-scale' not in page.locator('meta[name="viewport"]').get_attribute('content')
    assert 'user-scalable=no' not in page.locator('meta[name="viewport"]').get_attribute('content')
    ok('Native iOS pinch zoom remains enabled')
-   page.locator('[data-page=pressure]').click()
+   nav_to(page,'pressure')
    for id in ('systolic','diastolic','pulse'):
     field=page.locator('#'+id)
     for name,value in [('autocomplete','off'),('autocorrect','off'),('autocapitalize','off'),('spellcheck','false')]:
@@ -113,17 +119,17 @@ try:
    expect(page.locator('#pressure-list .history-row')).to_have_count(1)
    ok('Search focus does not cause bottom nav overlap; read-only search works')
    blur(page)
-   page.locator('[data-page=meds]').click()
+   nav_to(page,'meds')
    focus(page,'med-name');focus_nav_hidden(page)
    ok('Medicine text entry gets same keyboard-safe navigation behavior')
    blur(page)
-   page.locator('[data-page=pressure]').click()
+   nav_to(page,'pressure')
    page.locator('[data-wheel-target=pressure-datetime]').click()
    assert page.locator('#wheel-modal').is_visible()
    page.locator('#wheel-cancel').click()
    assert page.locator('#wheel-modal').is_hidden()
    ok('Day/month/year wheel remains available and cancellable')
-   page.locator('[data-page=backup]').click()
+   nav_to(page,'backup')
    expect(page.locator('#safety-db-status')).to_contain_text('PASS')
    ok('Local Data Safety integrity scan still succeeds')
    assert not errors,errors

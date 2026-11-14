@@ -1,3 +1,9 @@
+# Mobile UX: dismiss active editing keyboard before tapping the deliberately hidden bottom menu.
+def nav_to(page,name):
+ page.evaluate("document.activeElement.blur()")
+ page.locator("body.keyboard-editing").wait_for(state="hidden",timeout=5000)
+ page.locator("[data-page="+name+"]").click()
+
 #!/usr/bin/env python3
 """PAE-04 v05.5 synthetic Data Safety Gate. Never touches personal records."""
 from pathlib import Path
@@ -51,7 +57,7 @@ try:
    page.locator('.brand small').wait_for()
    assert 'v05.5.1' in page.locator('.brand small').inner_text()
    ok('v05.5 isolated synthetic build loads')
-   page.locator('[data-page=backup]').click()
+   nav_to(page,'backup')
    page.locator('#safety-db-status.safety-good').wait_for()
    assert 'PASS' in page.locator('#safety-db-status').inner_text()
    assert_counts(db(page),[0,0,0,0])
@@ -64,7 +70,7 @@ try:
    page.locator('#safety-db-status.safety-good').wait_for()
    assert_counts(db(page),[0,0,0,0])
    ok('Manual integrity scan is read-only')
-   page.locator('[data-page=pressure]').click()
+   nav_to(page,'pressure')
    page.locator('#systolic').fill('121')
    page.locator('#diastolic').fill('79')
    page.locator('#pulse').fill('70')
@@ -74,14 +80,14 @@ try:
    assert_counts(db(page),[1,0,0,0])
    assert 'повторно прочитано' in page.locator('#messages').inner_text()
    ok('Pressure transaction commits and record verified by fresh IndexedDB read')
-   page.locator('[data-page=backup]').click()
+   nav_to(page,'backup')
    assert 'повторите проверку' in page.locator('#safety-db-status').inner_text()
    assert 'не проверена' in page.locator('#safety-copy-status').inner_text()
    page.locator('#safety-check').click()
    page.locator('#safety-db-status.safety-good').wait_for()
    assert '1 записей' in page.locator('#safety-db-status').inner_text()
    ok('Mutation invalidates previous scan; new digest verifies actual DB')
-   page.locator('[data-page=meds]').click()
+   nav_to(page,'meds')
    page.locator('#med-name').fill('Учебный препарат А')
    page.locator('#med-kind').select_option('regular')
    page.locator('#med-form button[type=submit]').click()
@@ -95,7 +101,7 @@ try:
    d=db(page);assert_counts(d,[1,1,1,1])
    assert d['intakeEvents'][0]['intakeId']==d['intakes'][0]['id']
    ok('Intake and audit event saved atomically and both confirmed after commit')
-   page.locator('[data-page=backup]').click()
+   nav_to(page,'backup')
    page.locator('#safety-check').click()
    page.locator('#safety-db-status.safety-good').wait_for()
    assert '4 записей' in page.locator('#safety-db-status').inner_text()
@@ -112,7 +118,7 @@ try:
    assert 'совпал с текущей базой' in page.locator('#safety-copy-status').inner_text()
    assert_counts(db(page),[1,1,1,1])
    ok('Selected backup SHA-256 passes and matches CURRENT database without import')
-   page.locator('[data-page=pressure]').click()
+   nav_to(page,'pressure')
    page.locator('#systolic').fill('129')
    page.locator('#diastolic').fill('82')
    page.locator('#pulse').fill('66')
@@ -120,7 +126,7 @@ try:
    page.locator('#pressure-form button[type=submit]').click()
    page.locator('#pressure-list .history-row').nth(1).wait_for()
    assert_counts(db(page),[2,1,1,1])
-   page.locator('[data-page=backup]').click()
+   nav_to(page,'backup')
    assert 'не проверена' in page.locator('#safety-copy-status').inner_text()
    page.locator('#verify-file').set_input_files({'name':'synthetic-old.json','mimeType':'application/json','buffer':file_bytes})
    page.locator('#verify-result .verify-pass').wait_for()
@@ -136,7 +142,7 @@ try:
    page.reload(wait_until='domcontentloaded')
    page.locator('#stat-pressure').filter(has_text='2').wait_for()
    assert_counts(db(page),[2,1,1,1])
-   page.locator('[data-page=backup]').click()
+   nav_to(page,'backup')
    page.locator('#safety-db-status.safety-good').wait_for()
    ok('App reload preserves all rows, auto-runs integrity scan')
    receiver_server,receiver_thread=new_server(SITES['v05.5.1'])
@@ -147,7 +153,7 @@ try:
    receiver.locator('#stat-pressure').filter(has_text='0').wait_for()
    assert_counts(db(receiver),[0,0,0,0])
    ok('Separate origin simulates another device with empty local DB')
-   receiver.locator('[data-page=backup]').click()
+   nav_to(receiver,'backup')
    receiver.locator('#import-file').set_input_files({'name':'migrated-backup.json','mimeType':'application/json','buffer':file_bytes})
    expect(receiver.locator('#checkpoint-button')).to_be_enabled(timeout=10000)
    with receiver.expect_download() as checkpoint:
@@ -185,7 +191,7 @@ try:
     upgrade_page.goto(url,wait_until='domcontentloaded')
     assert upgrade_page.url==url
     expect(upgrade_page.locator('#stat-pressure')).to_have_text('0',timeout=10000)
-    upgrade_page.locator('[data-page=pressure]').click()
+    nav_to(upgrade_page,'pressure')
     upgrade_page.locator('#systolic').fill('116')
     upgrade_page.locator('#diastolic').fill('74')
     upgrade_page.locator('#pressure-datetime').fill('2024-01-09T08:30')

@@ -1,3 +1,9 @@
+# Mobile UX: dismiss active editing keyboard before tapping the deliberately hidden bottom menu.
+def nav_to(page,name):
+ page.evaluate("document.activeElement.blur()")
+ page.locator("body.keyboard-editing").wait_for(state="hidden",timeout=5000)
+ page.locator("[data-page="+name+"]").click()
+
 #!/usr/bin/env python3
 """PAE-04 v05.5.1 synthetic only. Browser QA for read-only search and standalone SHA256 backup verification."""
 from pathlib import Path
@@ -35,7 +41,7 @@ try:
       page.locator('.brand small').wait_for()
       assert 'v05.5.1' in page.locator('.brand small').inner_text()
       ok('v05.5.1 version and local synthetic build present')
-      page.locator('[data-page="pressure"]').click()
+      nav_to(page,'pressure')
       for systolic,diastolic,when,note in ((121,79,'2024-06-10T09:00','Утро'),(132,84,'2024-06-11T18:00','Вечер')):
         page.locator('#systolic').fill(str(systolic))
         page.locator('#diastolic').fill(str(diastolic))
@@ -69,7 +75,7 @@ try:
       assert page.locator('#pressure-list .history-row').count()==2
       assert read_all(page)==before
       ok('Pressure period filter stays compatible and preserves database')
-      page.locator('[data-page="meds"]').click()
+      nav_to(page,'meds')
       for med in ('Учебный препарат А','Учебный препарат Б'):
         page.locator('#med-name').fill(med)
         page.locator('#med-form button[type="submit"]').click()
@@ -90,7 +96,7 @@ try:
       page.locator('#med-search').fill('')
       assert page.locator('#med-list .med-block').count()==2
       ok('Medicine search empty state and reset')
-      page.locator('[data-page="backup"]').click()
+      nav_to(page,'backup')
       assert 'JSON не зашифрован' in page.locator('#page-backup').inner_text()
       assert 'не выполняет импорт' in page.locator('#page-backup').inner_text()
       ok('Backup plaintext and no-import safety notices visible')

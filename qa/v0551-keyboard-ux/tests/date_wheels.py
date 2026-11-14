@@ -1,3 +1,9 @@
+# Mobile UX: dismiss active editing keyboard before tapping the deliberately hidden bottom menu.
+def nav_to(page,name):
+ page.evaluate("document.activeElement.blur()")
+ page.locator("body.keyboard-editing").wait_for(state="hidden",timeout=5000)
+ page.locator("[data-page="+name+"]").click()
+
 #!/usr/bin/env python3
 """Synthetic-only real-browser QA: v05.5.1 date wheels, calendar removal, ISO persistence."""
 from pathlib import Path
@@ -46,7 +52,7 @@ try:
    assert page.locator('#intake-date').get_attribute('type')=='date'
    assert 'maximum-scale' not in page.locator('meta[name=viewport]').get_attribute('content')
    ok('4 wheel triggers and preserved original ISO date input types')
-   page.locator('[data-page="pressure"]').click()
+   nav_to(page,'pressure')
    assert page.locator('#pressure-datetime').input_value()
    baseline=get_db(page)
    pick(page,'pressure-datetime')
@@ -97,7 +103,7 @@ try:
    assert '30 апреля' in page.locator('#wheel-preview').inner_text().lower()
    page.locator('#wheel-cancel').click()
    ok('Switch March 31 to April clamps day to 30')
-   page.locator('[data-page="meds"]').click()
+   nav_to(page,'meds')
    pick(page,'intake-date')
    assert page.locator('#wheel-time').is_hidden()
    set_wheel(page,'year',2024);set_wheel(page,'month',6);set_wheel(page,'day',10)
@@ -136,7 +142,7 @@ try:
    intake=get_db(page)['intakes']
    assert len(intake)==1 and intake[0]['date']=='2024-06-10' and intake[0]['takenAtLocal']=='2024-06-10T08:15'
    ok('Selected intake day flows to unchanged atomic audit and medicine history')
-   page.locator('[data-page="backup"]').click()
+   nav_to(page,'backup')
    with page.expect_download() as download:page.locator('#export-button').click()
    data=json.loads(Path(download.value.path()).read_text(encoding='utf-8'))
    assert data['version']==3
@@ -144,7 +150,7 @@ try:
    assert data['data']['medications'][0]['from']=='2024-06-01'
    assert data['data']['intakes'][0]['takenAtLocal']=='2024-06-10T08:15'
    ok('Export v3 dates unchanged with all 4 legacy stores')
-   page.locator('[data-page="pressure"]').click()
+   nav_to(page,'pressure')
    for width in (320,375,390,430,768):
     page.set_viewport_size({'width':width,'height':844})
     pick(page,'pressure-datetime')
