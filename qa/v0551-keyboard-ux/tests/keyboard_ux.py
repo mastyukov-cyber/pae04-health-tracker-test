@@ -130,7 +130,9 @@ try:
    assert page.locator('#wheel-modal').is_hidden()
    ok('Day/month/year wheel remains available and cancellable')
    nav_to(page,'backup')
-   expect(page.locator('#safety-db-status')).to_contain_text('PASS')
+   expect(page.locator('#safety-db-status')).to_contain_text('повторите проверку')
+   page.locator('#safety-check').click()
+   expect(page.locator('#safety-db-status')).to_contain_text('PASS',timeout=10000)
    ok('Local Data Safety integrity scan still succeeds')
    assert not errors,errors
    assert not third_party,third_party
