@@ -1,4 +1,4 @@
-name: PAE-04 TEST v05.3 Safari Zoom Fix GitHub Pages (synthetic only)
+name: PAE-04 TEST v05.5 Safari Zoom Fix GitHub Pages (synthetic only)
 on:
   push:
     branches: [main]
@@ -18,32 +18,32 @@ jobs:
     environment:
       name: github-pages
     steps:
-      - name: Checkout immutable QA-approved v05.3 release snapshot
+      - name: Checkout immutable QA-approved v05.5 release snapshot
         uses: actions/checkout@v4
         with:
-          ref: '74975f15904a4c99e068a31e6030e12a21bf3c21'
+          ref: 'e50222c43190045902885ee8330bb8dbc6cf6e90'
           persist-credentials: false
-      - name: Verify pinned v05.3 manifest and all 9 SHA256 resources
+      - name: Verify pinned v05.5 manifest and all 9 SHA256 resources
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git hash-object qa/v053-safari-input-zoom/V053_MANIFEST.json)" = "79a34179b5407ea5aa004bb9db06dd787adc607e"
-          test "$(git hash-object qa/v053-safari-input-zoom/verify.py)" = "dc9a8033da8f8c4d869f29b46a62b10eeb461e1b"
-          python3 qa/v053-safari-input-zoom/verify.py
+          test "$(git hash-object qa/v055-data-safety/V055_MANIFEST.json)" = "d9c952c2ccc1cb9f1e23672f1e0546965d6cc875"
+          test "$(git hash-object qa/v055-data-safety/verify.py)" = "9a5d29ab738b9c00cacbdf26efe97c9c05e0416e"
+          python3 qa/v055-data-safety/verify.py
           python3 - <<'PY'
           import json
           from pathlib import Path
-          root=Path('qa/v053-safari-input-zoom/site')
-          manifest=json.loads(Path('qa/v053-safari-input-zoom/V053_MANIFEST.json').read_text(encoding='utf-8'))
-          assert manifest['version']=='v05.3'
-          assert manifest['source_v052']=='4bb075108e6903dd60e6dccef56b6627089336e9'
-          assert manifest['source_test_main']=='965cee6fce65f4359f90400470c7ff4c65306a5e'
+          root=Path('qa/v055-data-safety/site')
+          manifest=json.loads(Path('qa/v055-data-safety/V055_MANIFEST.json').read_text(encoding='utf-8'))
+          assert manifest['version']=='v05.5'
+          assert manifest['source_v054']=='aefffde27cc8bcd6d4922e724120fda4acd25c07'
+          assert manifest['source_test_main']=='6bb1149fc69d8232fb7a4a253475213101f7b2ad'
           assert len(manifest['sha256'])==9
           html=(root/'index.html').read_text(encoding='utf-8')
           app=(root/'app.js').read_text(encoding='utf-8')
           sw=(root/'sw.js').read_text(encoding='utf-8')
-          assert 'PAE-04 · v0.2.1 SAFE UX TEST v05.3' in html
-          assert 'v0.2.1 · SAFE UX TEST v05.3 · OFFLINE-FIRST' in html
+          assert 'PAE-04 · v0.2.1 SAFE UX TEST v05.5' in html
+          assert 'v0.2.1 · SAFE UX TEST v05.5 · OFFLINE-FIRST' in html
           assert 'id="pressure-search"' in html
           assert 'id="med-search"' in html
           assert 'id="verify-file"' in html
@@ -54,7 +54,17 @@ jobs:
           assert "const BACKUP_VERSION=3" in app
           assert 'function atomicMerge(data)' in app
           assert 'verifyDownloadedBackup' in app
-          assert 'cache-v053-20261114' in sw
+          assert 'cache-v055-20261114' in sw
+          assert 'id="data-safety-panel"' in html
+          assert 'id="safety-check"' in html
+          assert 'id="safety-copy-status"' in html
+          assert 'id="wheel-modal"' in html
+          assert 'data-wheel-target="pressure-datetime"' in html
+          assert 'function verifyRecordAfterWrite(store,record)' in app
+          assert 'async function verifyIntakeAudit(record,auditEvent)' in app
+          assert 'function checkLocalIntegrity()' in app
+          assert 'function safetyExternalBackupVerified(expected,contentMatches)' in app
+          assert 'navigator.storage.persist(' not in app
           css=(root/'styles.css').read_text(encoding='utf-8')
           assert 'font-size: 16px !important;' in css
           assert 'input:not([type="checkbox"])' in css
@@ -62,15 +72,15 @@ jobs:
           assert 'width=device-width, initial-scale=1, viewport-fit=cover' in viewport
           assert 'user-scalable=no' not in viewport
           assert 'maximum-scale' not in viewport
-          print('RESULT=PASS VERSION=v05.3 FILES=9 SHA256_VERIFIED=9 SYNTHETIC_ONLY=True SOURCE_SHA=74975f15904a4c99e068a31e6030e12a21bf3c21')
+          print('RESULT=PASS VERSION=v05.5 FILES=9 SHA256_VERIFIED=9 SYNTHETIC_ONLY=True SOURCE_SHA=e50222c43190045902885ee8330bb8dbc6cf6e90')
           PY
           mkdir -p dist
-          cp -R qa/v053-safari-input-zoom/site/. dist/
+          cp -R qa/v055-data-safety/site/. dist/
           touch dist/.nojekyll
           find dist -type f | sort
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-      - name: Upload verified v05.3 TEST site directory
+      - name: Upload verified v05.5 TEST site directory
         uses: actions/upload-pages-artifact@v4
         with:
           path: dist
