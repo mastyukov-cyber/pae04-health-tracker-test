@@ -61,6 +61,7 @@ try:
         page.locator('#ui01-pressure').get_by_text('Сегодня измерений пока нет').wait_for()
         check('No today measurement means no invented measurement',page.locator('#ui01-pressure .ui01-empty').count()==1)
         check('No empty medicine groups',page.locator('.ui01-med-group').count()==0)
+        check('Large font is default on first launch',page.locator('#ui01-font-label').inner_text()=='3 / 5')
         page.locator('#ui01-font-more').click()
         page.locator('#ui01-font-more').click()
         check('Font A+ changes tier',page.locator('#ui01-font-label').inner_text()=='5 / 5')
