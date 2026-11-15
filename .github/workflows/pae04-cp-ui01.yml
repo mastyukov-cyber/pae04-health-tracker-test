@@ -1,8 +1,8 @@
 name: PAE-04 CP-UI01 Apple Light Comfort (SYNTHETIC NO DEPLOY)
 on:
-  push:
+  pull_request:
     branches:
-      - sandbox/pae04-cp-ui01-apple-light
+      - sandbox/pae04-cp-med05-ci
     paths:
       - '.github/workflows/pae04-cp-ui01.yml'
       - 'qa/cp-ui01/**'
