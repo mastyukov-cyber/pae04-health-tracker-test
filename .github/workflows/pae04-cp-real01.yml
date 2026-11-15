@@ -53,6 +53,13 @@ jobs:
           node --check qa/cp-real01/generated-site/app.js
           node --check qa/cp-real01/generated-site/med_guard.mjs
           node --check qa/cp-real01/generated-site/personal_adapter.js
+      - name: Save detached PWA files for separate HTTPS preview (no publish)
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-cp-real01-preview-site
+          path: qa/cp-real01/generated-site/
+          retention-days: 14
+          if-no-files-found: error
   browsers:
     needs: static
     runs-on: ubuntu-24.04
