@@ -112,5 +112,5 @@ try:
   browser.close()
 finally:
  server.shutdown()
-assert counter==18,f'Expected 18 checks, got {counter}'
+assert counter==19,f'Expected 19 checks, got {counter}'
 print(f'RESULT=PASS ENGINE={engine} CP_REAL01={counter}/{counter} SCREENSHOTS=4')
