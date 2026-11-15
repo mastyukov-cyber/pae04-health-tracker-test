@@ -21,7 +21,7 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/pae04-cpmed05
           base64 --decode qa/cp-med05/cpmed05-source.tar.xz.b64 > /tmp/pae04-cpmed05/source.tar.xz
-          echo 'd350c37ff264f55860f2aa00b1fd0b1836e073b48ea4d0a2700914cbb506e4ed  /tmp/pae04-cpmed05/source.tar.xz' | sha256sum --check -
+          echo 'f34c148fd7dc5d8522bca45f18f4a5f83eb62624be56e9d184b21546a7abcf98  /tmp/pae04-cpmed05/source.tar.xz' | sha256sum --check -
           tar -xJf /tmp/pae04-cpmed05/source.tar.xz -C /tmp/pae04-cpmed05
           test ! -e qa/med-guard-ci
           cp -R /tmp/pae04-cpmed05/med-guard-ci qa/med-guard-ci
@@ -67,7 +67,7 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/pae04-cpmed05
           base64 --decode qa/cp-med05/cpmed05-source.tar.xz.b64 > /tmp/pae04-cpmed05/source.tar.xz
-          echo 'd350c37ff264f55860f2aa00b1fd0b1836e073b48ea4d0a2700914cbb506e4ed  /tmp/pae04-cpmed05/source.tar.xz' | sha256sum --check -
+          echo 'f34c148fd7dc5d8522bca45f18f4a5f83eb62624be56e9d184b21546a7abcf98  /tmp/pae04-cpmed05/source.tar.xz' | sha256sum --check -
           tar -xJf /tmp/pae04-cpmed05/source.tar.xz -C /tmp/pae04-cpmed05
           test ! -e qa/med-guard-ci
           cp -R /tmp/pae04-cpmed05/med-guard-ci qa/med-guard-ci
