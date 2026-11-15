@@ -182,5 +182,5 @@ try:
         browser.close()
 finally:
     httpd.shutdown()
-assert len(passes)==24,(len(passes),passes)
+assert len(passes)==25,(len(passes),passes)
 print(f"RESULT=PASS ENGINE={engine} CP_UI02={len(passes)}/{len(passes)} SCREENSHOTS=4",flush=True)
