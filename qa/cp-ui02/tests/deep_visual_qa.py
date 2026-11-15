@@ -147,8 +147,20 @@ try:
         expect(page.locator("#ui01-font-label")).to_have_text("5 / 5")
         pass_if("Maximum font and narrow layout available",True)
         page.screenshot(path=str(reports/f"{engine}-03-large-font-320.png"),full_page=True)
+        overflow=page.evaluate("""() => ({
+          viewport:innerWidth,
+          document:document.documentElement.scrollWidth,
+          body:document.body.scrollWidth,
+          overflowing:[...document.querySelectorAll('body *')].map(e=>{
+            const r=e.getBoundingClientRect();
+            return {tag:e.tagName,id:e.id,cls:String(e.className).slice(0,60),
+                    left:Math.round(r.left),right:Math.round(r.right),
+                    width:Math.round(r.width),scroll:e.scrollWidth,client:e.clientWidth};
+          }).filter(x=>x.right>innerWidth+2||x.left< -2).slice(0,16)
+        })""")
+        print("OVERFLOW_DIAG="+json.dumps(overflow,ensure_ascii=False),flush=True)
         pass_if("No horizontal overflow at 320px",
-                page.evaluate("document.documentElement.scrollWidth<=innerWidth+2"))
+                overflow["document"]<=overflow["viewport"]+2)
         page.set_viewport_size({"width":390,"height":844})
         # Simulate device waking up three minutes after midnight.
         page.clock.fast_forward("03:00")
