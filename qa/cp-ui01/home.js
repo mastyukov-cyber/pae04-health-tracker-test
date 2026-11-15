@@ -31,8 +31,11 @@
   }
   function readFont() {
     try {
-      const n=Number(localStorage.getItem(FONT_KEY));
-      if(Number.isInteger(n)&&n>=0&&n<SCALES.length)scaleIndex=n;
+      const raw=localStorage.getItem(FONT_KEY);
+      if(raw!==null){
+        const n=Number(raw);
+        if(Number.isInteger(n)&&n>=0&&n<SCALES.length)scaleIndex=n;
+      }
     } catch (_) { /* private browsing: retain working controls without persistence */ }
     applyFont();
   }
