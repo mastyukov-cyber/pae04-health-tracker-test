@@ -1,0 +1,111 @@
+name: PAE-04 CP-REAL02 Stage Safari Preview Files (NO PAGES DEPLOY)
+on:
+  push:
+    branches:
+      - sandbox/pae04-cp-real02-safari-pages
+    paths:
+      - '.github/workflows/pae04-cp-real02-stage.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: pae04-cp-real02-staging
+  cancel-in-progress: false
+jobs:
+  stage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    if: github.repository == 'mastyukov-cyber/pae04-health-tracker-test' && github.ref == 'refs/heads/sandbox/pae04-cp-real02-safari-pages'
+    steps:
+      - name: Checkout ONLY the authorized staging branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+      - name: Prepare pinned Node.js 26 and Python 3.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Refuse runtime or source drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'mastyukov-cyber/pae04-health-tracker-test'
+          test "$GITHUB_REF" = 'refs/heads/sandbox/pae04-cp-real02-safari-pages'
+          test ! -e docs
+          node -e "if(process.versions.node.split('.')[0]!=='26')process.exit(2)"
+          python -c "import sys; assert sys.version_info[:2]==(3,12)"
+          python qa/v0552-keyboard-polish/verify.py
+          test -f qa/cp-real01/personal_profile.json
+          test -f qa/cp-real01/personal_adapter.js
+          test -f qa/cp-ui02/fix_narrow_nav.py
+      - name: Restore exact verified CP-MED05.1 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pae04-real02
+          base64 --decode qa/cp-med05/cpmed05-source.tar.xz.b64 > /tmp/pae04-real02/med.tar.xz
+          echo 'ecf0651ffb1eecb99f6a5ef1f3bfdb312af92d469d595458441f75e368c528b8  /tmp/pae04-real02/med.tar.xz' | sha256sum --check -
+          tar -xJf /tmp/pae04-real02/med.tar.xz -C /tmp/pae04-real02
+          test ! -e qa/med-guard-ci
+          cp -R /tmp/pae04-real02/med-guard-ci qa/med-guard-ci
+      - name: Build isolated full PWA without changing the original candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python qa/med-guard-ci/build_candidate.py --source qa/v0552-keyboard-polish/site --output qa/med-guard-ci/generated-site
+          python qa/cp-ui01/build_candidate.py --source qa/med-guard-ci/generated-site --output qa/cp-ui01/generated-site
+          python qa/cp-ui02/fix_narrow_nav.py qa/cp-ui01/generated-site
+          python qa/cp-real01/build_candidate.py --source qa/cp-ui01/generated-site --output qa/cp-real01/generated-site
+          python qa/cp-real01/tests/static_qa.py qa/cp-real01/generated-site
+          node --check qa/cp-real01/generated-site/app.js
+          node --check qa/cp-real01/generated-site/med_guard.mjs
+          node --check qa/cp-real01/generated-site/home.js
+          node --check qa/cp-real01/generated-site/personal_adapter.js
+      - name: Copy only the detached site to new docs (NOT a Pages deploy)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e docs
+          mkdir -p docs
+          cp -R qa/cp-real01/generated-site/. docs/
+          test -s docs/index.html
+          test -s docs/app.js
+          test -s docs/sw.js
+          test -s docs/manifest.webmanifest
+          test -s docs/personal_profile.json
+          test -s docs/personal_adapter.js
+          test -s docs/home.js
+          test -s docs/home.css
+          test -s docs/med_guard.mjs
+          test -s docs/med_matcher.mjs
+          touch docs/.nojekyll
+          printf 'User-agent: *\nDisallow: /\n' > docs/robots.txt
+          ! grep -q 'Учебный препарат А' docs/index.html
+          grep -q 'Капотен' docs/personal_profile.json
+          grep -q 'cache-cpreal01-' docs/sw.js
+          python - <<'PY'
+          from pathlib import Path
+          p=Path("docs")
+          files=[f for f in p.rglob("*") if f.is_file()]
+          assert len(files) >= 17 and len(files) <= 50, len(files)
+          assert sum(f.stat().st_size for f in files)<2_000_000
+          assert not any(f.is_symlink() for f in p.rglob("*"))
+          print(f"CP_REAL02_STAGING_INVARIANTS=PASS files={len(files)} bytes={sum(f.stat().st_size for f in files)}")
+          PY
+      - name: Stage docs/ ONLY on this branch via a non-force Git push
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/sandbox/pae04-cp-real02-safari-pages'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- docs/
+          git diff --cached --quiet && { echo 'BLOCKED: no new site to stage'; exit 1; }
+          test "$(git diff --cached --name-only | grep -v '^docs/' | wc -l)" -eq 0
+          git commit -m 'PAE-04 CP-REAL02: stage verified separate Safari preview static files under docs only'
+          git push origin HEAD:refs/heads/sandbox/pae04-cp-real02-safari-pages
+          echo 'CP_REAL02_STAGE_PUSH=PASS; PAGES_NOT_ENABLED_OR_CHANGED'
