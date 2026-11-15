@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "HEALTH TRACKER · v0.2.1 SAFE UX TEST v05.5.2",
-  "short_name": "HT v0.2.1 v05.5.1 TEST",
-  "description": "Изолированный кандидат безопасного обновления; только синтетические записи",
+  "name": "HEALTH TRACKER · Персональный тестовый предпросмотр",
+  "short_name": "Health Tracker TEST",
+  "description": "Персональный тестовый PWA для iPhone Safari. Локальный учёт давления и препаратов, без синхронизации с основной версией.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
