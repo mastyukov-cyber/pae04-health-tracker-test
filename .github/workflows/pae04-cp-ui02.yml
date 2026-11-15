@@ -43,6 +43,7 @@ jobs:
           set -euo pipefail
           python qa/med-guard-ci/build_candidate.py --source qa/v0552-keyboard-polish/site --output qa/med-guard-ci/generated-site
           python qa/cp-ui01/build_candidate.py --source qa/med-guard-ci/generated-site --output qa/cp-ui02/generated-site
+          python qa/cp-ui02/fix_narrow_nav.py qa/cp-ui02/generated-site
           python qa/cp-ui01/tests/static_qa.py qa/cp-ui02/generated-site
           python -m py_compile qa/cp-ui02/tests/deep_visual_qa.py
           node --check qa/cp-ui02/generated-site/home.js
@@ -88,6 +89,7 @@ jobs:
           set -euo pipefail
           python qa/med-guard-ci/build_candidate.py --source qa/v0552-keyboard-polish/site --output qa/med-guard-ci/generated-site
           python qa/cp-ui01/build_candidate.py --source qa/med-guard-ci/generated-site --output qa/cp-ui02/generated-site
+          python qa/cp-ui02/fix_narrow_nav.py qa/cp-ui02/generated-site
           python qa/cp-ui01/tests/static_qa.py qa/cp-ui02/generated-site
       - name: Independent synthetic visual and midnight E2E
         run: |
