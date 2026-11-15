@@ -63,6 +63,7 @@ jobs:
         engine: [chromium, webkit]
     env:
       PAE04_PERSONAL_PREVIEW_ONLY: 'true'
+      PAE04_SYNTHETIC_ONLY: 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
