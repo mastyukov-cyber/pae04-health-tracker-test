@@ -1,0 +1,104 @@
+name: PAE-04 CP-UI02 Midnight, Courses and Visual QA (SYNTHETIC NO DEPLOY)
+on:
+  pull_request:
+    branches:
+      - sandbox/pae04-cp-ui01-apple-light
+    paths:
+      - '.github/workflows/pae04-cp-ui02.yml'
+      - 'qa/cp-ui02/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Strict runtime and immutable original
+        run: |
+          set -euo pipefail
+          node -v
+          python --version
+          node -e "if(process.versions.node.split('.')[0] !== '26')process.exit(2)"
+          python -c "import sys; assert sys.version_info[:2]==(3,12)"
+          python qa/v0552-keyboard-polish/verify.py
+      - name: Restore exact CP-MED05.1 synthetic package
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pae04-cpui02
+          base64 --decode qa/cp-med05/cpmed05-source.tar.xz.b64 > /tmp/pae04-cpui02/med.tar.xz
+          echo 'ecf0651ffb1eecb99f6a5ef1f3bfdb312af92d469d595458441f75e368c528b8  /tmp/pae04-cpui02/med.tar.xz' | sha256sum --check -
+          tar -xJf /tmp/pae04-cpui02/med.tar.xz -C /tmp/pae04-cpui02
+          test ! -e qa/med-guard-ci
+          cp -R /tmp/pae04-cpui02/med-guard-ci qa/med-guard-ci
+      - name: Build detached test site (no source overwrite)
+        run: |
+          set -euo pipefail
+          python qa/med-guard-ci/build_candidate.py --source qa/v0552-keyboard-polish/site --output qa/med-guard-ci/generated-site
+          python qa/cp-ui01/build_candidate.py --source qa/med-guard-ci/generated-site --output qa/cp-ui02/generated-site
+          python qa/cp-ui01/tests/static_qa.py qa/cp-ui02/generated-site
+          python -m py_compile qa/cp-ui02/tests/deep_visual_qa.py
+          node --check qa/cp-ui02/generated-site/home.js
+          node --check qa/cp-ui02/generated-site/app.js
+  visual:
+    needs: static
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    env:
+      PAE04_SYNTHETIC_ONLY: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+      - name: Restore exact synthetic medication module
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pae04-cpui02
+          base64 --decode qa/cp-med05/cpmed05-source.tar.xz.b64 > /tmp/pae04-cpui02/med.tar.xz
+          echo 'ecf0651ffb1eecb99f6a5ef1f3bfdb312af92d469d595458441f75e368c528b8  /tmp/pae04-cpui02/med.tar.xz' | sha256sum --check -
+          tar -xJf /tmp/pae04-cpui02/med.tar.xz -C /tmp/pae04-cpui02
+          test ! -e qa/med-guard-ci
+          cp -R /tmp/pae04-cpui02/med-guard-ci qa/med-guard-ci
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: qa/med-guard-ci/requirements.txt
+      - name: Pin Playwright 1.65.1 and selected browser
+        run: |
+          set -euo pipefail
+          python -m pip install -r qa/med-guard-ci/requirements.txt
+          python -m playwright install --with-deps ${{ matrix.engine }}
+          node -e "if(process.versions.node.split('.')[0] !== '26')process.exit(2)"
+          python -c "import sys,importlib.metadata as m; assert sys.version_info[:2]==(3,12) and m.version('playwright')=='1.65.1'"
+      - name: Build detached candidate and verify invariants
+        run: |
+          set -euo pipefail
+          python qa/med-guard-ci/build_candidate.py --source qa/v0552-keyboard-polish/site --output qa/med-guard-ci/generated-site
+          python qa/cp-ui01/build_candidate.py --source qa/med-guard-ci/generated-site --output qa/cp-ui02/generated-site
+          python qa/cp-ui01/tests/static_qa.py qa/cp-ui02/generated-site
+      - name: Independent synthetic visual and midnight E2E
+        run: |
+          set -euo pipefail
+          mkdir -p qa/cp-ui02/reports/${{ matrix.engine }}
+          python qa/cp-ui02/tests/deep_visual_qa.py ${{ matrix.engine }} qa/cp-ui02/generated-site qa/cp-ui02/reports/${{ matrix.engine }} | tee qa/cp-ui02/reports/${{ matrix.engine }}/test.log
+      - name: Upload only synthetic screenshots and CI test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-cp-ui02-${{ matrix.engine }}-screenshots
+          path: qa/cp-ui02/reports/${{ matrix.engine }}/
+          retention-days: 14
+          if-no-files-found: warn
