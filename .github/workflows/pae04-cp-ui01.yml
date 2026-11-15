@@ -1,0 +1,113 @@
+name: PAE-04 CP-UI01 Apple Light Comfort (SYNTHETIC NO DEPLOY)
+on:
+  push:
+    branches:
+      - sandbox/pae04-cp-ui01-apple-light
+    paths:
+      - '.github/workflows/pae04-cp-ui01.yml'
+      - 'qa/cp-ui01/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fast:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Pin exact runtimes, refuse fallback
+        run: |
+          node --version
+          python --version
+          node -e "if(process.versions.node.split('.')[0] !== '26')process.exit(2)"
+          python -c "import sys; assert sys.version_info[:2]==(3,12)"
+      - name: Verify unchanged original v05.5.2 source
+        run: python qa/v0552-keyboard-polish/verify.py
+      - name: Restore checked CP-MED05.1 synthetic sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pae04-ui01
+          base64 --decode qa/cp-med05/cpmed05-source.tar.xz.b64 > /tmp/pae04-ui01/med.tar.xz
+          echo 'ecf0651ffb1eecb99f6a5ef1f3bfdb312af92d469d595458441f75e368c528b8  /tmp/pae04-ui01/med.tar.xz' | sha256sum --check -
+          tar -xJf /tmp/pae04-ui01/med.tar.xz -C /tmp/pae04-ui01
+          test ! -e qa/med-guard-ci
+          cp -R /tmp/pae04-ui01/med-guard-ci qa/med-guard-ci
+      - name: Preserve previously accepted medicine safety checks
+        run: |
+          node qa/med-guard-ci/tests/test_guard.mjs
+          node qa/med-guard-ci/tests/atomic_qa.mjs
+          python qa/med-guard-ci/tests/patcher_qa.py
+      - name: Build isolated medication plus Apple Light Comfort candidate
+        run: |
+          python qa/med-guard-ci/build_candidate.py --source qa/v0552-keyboard-polish/site --output qa/med-guard-ci/generated-site
+          python qa/cp-ui01/build_candidate.py --source qa/med-guard-ci/generated-site --output qa/cp-ui01/generated-site
+          python qa/cp-ui01/tests/static_qa.py qa/cp-ui01/generated-site
+          node --check qa/cp-ui01/generated-site/app.js
+          node --check qa/cp-ui01/generated-site/home.js
+          node --check qa/cp-ui01/generated-site/med_guard.mjs
+          python -m compileall -q qa/cp-ui01
+  browsers:
+    needs: fast
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    env:
+      PAE04_SYNTHETIC_ONLY: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore verified medication module
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pae04-ui01
+          base64 --decode qa/cp-med05/cpmed05-source.tar.xz.b64 > /tmp/pae04-ui01/med.tar.xz
+          echo 'ecf0651ffb1eecb99f6a5ef1f3bfdb312af92d469d595458441f75e368c528b8  /tmp/pae04-ui01/med.tar.xz' | sha256sum --check -
+          tar -xJf /tmp/pae04-ui01/med.tar.xz -C /tmp/pae04-ui01
+          test ! -e qa/med-guard-ci
+          cp -R /tmp/pae04-ui01/med-guard-ci qa/med-guard-ci
+      - name: Install exactly Playwright 1.65.1 and selected browser
+        run: |
+          python -m pip install -r qa/med-guard-ci/requirements.txt
+          python -m playwright install --with-deps ${{ matrix.engine }}
+          node -e "if(process.versions.node.split('.')[0] !== '26')process.exit(2)"
+          python -c "import sys,importlib.metadata as m; assert sys.version_info[:2]==(3,12) and m.version('playwright')=='1.65.1'"
+      - name: Run untouched v05.5.2 regression
+        run: python qa/runtime-migration-pilot/run_suite.py ${{ matrix.engine }} RELEASE
+      - name: Build isolated site with both accepted modules
+        run: |
+          python qa/med-guard-ci/build_candidate.py --source qa/v0552-keyboard-polish/site --output qa/med-guard-ci/generated-site
+          python qa/cp-ui01/build_candidate.py --source qa/med-guard-ci/generated-site --output qa/cp-ui01/generated-site
+          python qa/cp-ui01/tests/static_qa.py qa/cp-ui01/generated-site
+      - name: Check medicine input regression
+        run: python qa/med-guard-ci/tests/browser_e2e.py ${{ matrix.engine }}
+      - name: Test new Apple Light Comfort home in browser
+        run: |
+          mkdir -p qa/cp-ui01/reports
+          python qa/cp-ui01/tests/browser_qa.py ${{ matrix.engine }} qa/cp-ui01/generated-site | tee qa/cp-ui01/reports/${{ matrix.engine }}.log
+      - name: Upload synthetic QA output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-cp-ui01-${{ matrix.engine }}
+          path: |
+            qa/cp-ui01/reports/
+            qa/runtime-migration-pilot/reports/
+            qa/v0552-keyboard-polish/reports/
+          retention-days: 14
+          if-no-files-found: warn
