@@ -15,8 +15,9 @@ assert engine in ('chromium','webkit') and site.is_dir()
 now=datetime.datetime.now(ZoneInfo('Europe/Moscow'))
 day=now.date().isoformat()
 yesterday=(now.date()-datetime.timedelta(days=1)).isoformat()
-handler=functools.partial(http.server.SimpleHTTPRequestHandler,directory=str(site))
-class Quiet(handler):
+class Quiet(http.server.SimpleHTTPRequestHandler):
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,directory=str(site),**kwargs)
     def log_message(self,*args): pass
 server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Quiet)
 t=threading.Thread(target=server.serve_forever,daemon=True);t.start()
