@@ -1,0 +1,278 @@
+{
+  "schema": "PAE04_PERSONAL_QA_PROFILE_V1",
+  "captured_on": "2026-11-15",
+  "purpose": "PERSONAL_TEST_ONLY",
+  "privacy": "User explicitly allows public real names and reported doses; actual intake history remains empty.",
+  "existing_record_action": "REFUSE_NONEMPTY_MEDICATION_DATABASE",
+  "medicines": [
+    {
+      "key": "edarbi",
+      "name": "Эдарби",
+      "kind": "regular",
+      "category": "medicine",
+      "dose": "20 мг",
+      "timing": "Точное время не указано",
+      "product_strength_mg": 20,
+      "ingredient": "азилсартана медоксомил",
+      "form": "таблетки",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "espiro",
+      "name": "Эспиро",
+      "kind": "regular",
+      "category": "medicine",
+      "dose": "25 мг",
+      "timing": "Утром, точный час не указан",
+      "product_strength_mg": 25,
+      "ingredient": "эплеренон",
+      "form": "таблетки",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "liprimar",
+      "name": "Липримар",
+      "kind": "regular",
+      "category": "medicine",
+      "dose": "10 мг",
+      "timing": "Точное время не указано",
+      "product_strength_mg": 10,
+      "ingredient": "аторвастатин",
+      "form": "таблетки",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "betaloc",
+      "name": "Беталок ЗОК",
+      "kind": "regular",
+      "category": "medicine",
+      "dose": "12,5 мг",
+      "timing": "Точное время не указано",
+      "product_strength_mg": null,
+      "ingredient": "метопролол",
+      "form": "таблетки с пролонгированным высвобождением",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "capoten",
+      "name": "Капотен",
+      "kind": "asNeeded",
+      "category": "medicine",
+      "dose": "Личная дозировка не уточнена",
+      "timing": "По необходимости",
+      "product_strength_mg": null,
+      "catalog_tablet_strength_mg": 25,
+      "ingredient": "каптоприл",
+      "form": "таблетки",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "hemohim",
+      "name": "Atomy HemoHIM",
+      "kind": "regular",
+      "category": "supplement",
+      "dose": "20 мл дважды в день",
+      "timing": "Утром и вечером, без точного часа",
+      "product_strength_mg": null,
+      "ingredient": "растительные экстракты",
+      "form": "пакетики 20 мл",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "ginseng",
+      "name": "Atomy Korean Red Ginseng Jelly",
+      "kind": "regular",
+      "category": "supplement",
+      "dose": "1 саше ежедневно",
+      "timing": "Точное время не указано",
+      "product_strength_mg": null,
+      "ingredient": "красный женьшень",
+      "form": "желе в саше",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "turmacin",
+      "name": "Atomy Turmacin MSM",
+      "kind": "course",
+      "category": "supplement",
+      "dose": "4 таблетки в сутки: 2 утром, 2 вечером",
+      "timing": "С едой",
+      "product_strength_mg": null,
+      "ingredient": "MSM и селен",
+      "form": "таблетки",
+      "from": "2026-11-13",
+      "to": null
+    },
+    {
+      "key": "omega3",
+      "name": "Atomy rTG Omega-3",
+      "kind": "course",
+      "category": "supplement",
+      "dose": "2 капсулы в сутки",
+      "timing": "С едой",
+      "product_strength_mg": null,
+      "ingredient": "EPA и DHA",
+      "form": "капсулы",
+      "from": "2026-11-13",
+      "to": null
+    },
+    {
+      "key": "probiotics",
+      "name": "Atomy Probiotics 10+",
+      "kind": "course",
+      "category": "supplement",
+      "dose": "1 пакетик в день; курс завершён",
+      "timing": "Завершено 13.11.2026",
+      "product_strength_mg": null,
+      "ingredient": "пробиотические культуры",
+      "form": "саше",
+      "from": null,
+      "to": "2026-11-13"
+    }
+  ],
+  "reference_catalog": [
+    {
+      "id": "product-edarbi-20",
+      "name": "Эдарби",
+      "aliases": [
+        "Эдарби®"
+      ],
+      "ingredient": "азилсартана медоксомил",
+      "strength": 20,
+      "unit": "мг",
+      "form": "таблетки",
+      "type": "medicine"
+    },
+    {
+      "id": "product-espiro-25",
+      "name": "Эспиро",
+      "aliases": [
+        "Эспиро®"
+      ],
+      "ingredient": "эплеренон",
+      "strength": 25,
+      "unit": "мг",
+      "form": "таблетки",
+      "type": "medicine"
+    },
+    {
+      "id": "product-liprimar-10",
+      "name": "Липримар",
+      "aliases": [
+        "Липримар®"
+      ],
+      "ingredient": "аторвастатин",
+      "strength": 10,
+      "unit": "мг",
+      "form": "таблетки",
+      "type": "medicine"
+    },
+    {
+      "id": "product-betaloc-zok-25",
+      "name": "Беталок ЗОК",
+      "aliases": [
+        "Беталок® ЗОК"
+      ],
+      "ingredient": "метопролол",
+      "strength": 25,
+      "unit": "мг",
+      "form": "таблетки",
+      "type": "medicine"
+    },
+    {
+      "id": "product-capoten-25",
+      "name": "Капотен",
+      "aliases": [
+        "Капотен®"
+      ],
+      "ingredient": "каптоприл",
+      "strength": 25,
+      "unit": "мг",
+      "form": "таблетки",
+      "type": "medicine"
+    },
+    {
+      "id": "supplement-hemohim",
+      "name": "Atomy HemoHIM",
+      "aliases": [
+        "ХемоХИМ",
+        "HemoHIM"
+      ],
+      "ingredient": "растительные экстракты",
+      "strength": null,
+      "unit": "",
+      "form": "пакетики 20 мл",
+      "type": "supplement"
+    },
+    {
+      "id": "supplement-ginseng",
+      "name": "Atomy Korean Red Ginseng Jelly",
+      "aliases": [
+        "Korean Red Ginseng Jelly"
+      ],
+      "ingredient": "красный женьшень",
+      "strength": null,
+      "unit": "",
+      "form": "желе в саше",
+      "type": "supplement"
+    },
+    {
+      "id": "supplement-turmacin",
+      "name": "Atomy Turmacin MSM",
+      "aliases": [
+        "Turmacin MSM"
+      ],
+      "ingredient": "MSM и селен",
+      "strength": null,
+      "unit": "",
+      "form": "таблетки",
+      "type": "supplement"
+    },
+    {
+      "id": "supplement-omega3",
+      "name": "Atomy rTG Omega-3",
+      "aliases": [
+        "rTG Omega-3"
+      ],
+      "ingredient": "EPA и DHA",
+      "strength": null,
+      "unit": "",
+      "form": "капсулы",
+      "type": "supplement"
+    },
+    {
+      "id": "supplement-probiotics",
+      "name": "Atomy Probiotics 10+",
+      "aliases": [
+        "Probiotics 10+"
+      ],
+      "ingredient": "пробиотические культуры",
+      "strength": null,
+      "unit": "",
+      "form": "саше",
+      "type": "supplement"
+    }
+  ],
+  "sources": {
+    "edarbi": "https://nizhpharm.ru/products/edarbi.html",
+    "espiro": "https://www.akrikhin.ru/upload/iblock/e4d/espiro.pdf",
+    "liprimar": "https://www.viatris.ru/ru-ru/препараты/product-catalog/liprimar-10mg",
+    "betaloc": "https://www.rlsnet.ru/drugs/betalok-zok-11175",
+    "capoten": "https://www.rlsnet.ru/drugs/kapoten-1567",
+    "hemohim": "https://us.atomy.com/product/A00001"
+  },
+  "constraints": {
+    "seed_intakes": false,
+    "seed_pressures": false,
+    "do_not_change_prescriptions": true,
+    "backup_format": 3,
+    "offline": true
+  }
+}

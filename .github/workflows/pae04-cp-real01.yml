@@ -1,0 +1,119 @@
+name: PAE-04 CP-REAL01 Personal iPhone Medications (PREVIEW ONLY)
+on:
+  pull_request:
+    branches:
+      - sandbox/pae04-cp-ui02-visual-qa
+    paths:
+      - '.github/workflows/pae04-cp-real01.yml'
+      - 'qa/cp-real01/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Pin runtimes; refuse fallback
+        run: |
+          set -euo pipefail
+          node -e "if(process.versions.node.split('.')[0] !== '26')process.exit(2)"
+          python -c "import sys; assert sys.version_info[:2]==(3,12)"
+          python qa/v0552-keyboard-polish/verify.py
+      - name: Restore unchanged CP-MED05.1 artifact
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pae04-real01
+          base64 --decode qa/cp-med05/cpmed05-source.tar.xz.b64 > /tmp/pae04-real01/med.tar.xz
+          echo 'ecf0651ffb1eecb99f6a5ef1f3bfdb312af92d469d595458441f75e368c528b8  /tmp/pae04-real01/med.tar.xz' | sha256sum --check -
+          tar -xJf /tmp/pae04-real01/med.tar.xz -C /tmp/pae04-real01
+          cp -R /tmp/pae04-real01/med-guard-ci qa/med-guard-ci
+      - name: Keep original medication-guard regression
+        run: |
+          set -euo pipefail
+          node qa/med-guard-ci/tests/test_guard.mjs
+          node qa/med-guard-ci/tests/atomic_qa.mjs
+          python qa/med-guard-ci/tests/patcher_qa.py
+      - name: Build detached real-name candidate only
+        run: |
+          set -euo pipefail
+          python qa/med-guard-ci/build_candidate.py --source qa/v0552-keyboard-polish/site --output qa/med-guard-ci/generated-site
+          python qa/cp-ui01/build_candidate.py --source qa/med-guard-ci/generated-site --output qa/cp-ui01/generated-site
+          python qa/cp-ui02/fix_narrow_nav.py qa/cp-ui01/generated-site
+          python qa/cp-real01/build_candidate.py --source qa/cp-ui01/generated-site --output qa/cp-real01/generated-site
+          python qa/cp-real01/tests/static_qa.py qa/cp-real01/generated-site
+          python -m py_compile qa/cp-real01/tests/browser_qa.py
+          node --check qa/cp-real01/generated-site/app.js
+          node --check qa/cp-real01/generated-site/med_guard.mjs
+          node --check qa/cp-real01/generated-site/personal_adapter.js
+      - name: Save detached PWA files for separate HTTPS preview (no publish)
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-cp-real01-preview-site
+          path: qa/cp-real01/generated-site/
+          retention-days: 14
+          if-no-files-found: error
+  browsers:
+    needs: static
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    env:
+      PAE04_PERSONAL_PREVIEW_ONLY: 'true'
+      PAE04_SYNTHETIC_ONLY: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore exact verified guard
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pae04-real01
+          base64 --decode qa/cp-med05/cpmed05-source.tar.xz.b64 > /tmp/pae04-real01/med.tar.xz
+          echo 'ecf0651ffb1eecb99f6a5ef1f3bfdb312af92d469d595458441f75e368c528b8  /tmp/pae04-real01/med.tar.xz' | sha256sum --check -
+          tar -xJf /tmp/pae04-real01/med.tar.xz -C /tmp/pae04-real01
+          cp -R /tmp/pae04-real01/med-guard-ci qa/med-guard-ci
+      - name: Install pinned Playwright and requested browser
+        run: |
+          set -euo pipefail
+          python -m pip install -r qa/med-guard-ci/requirements.txt
+          python -m playwright install --with-deps ${{ matrix.engine }}
+          python -c "import sys,importlib.metadata as m; assert sys.version_info[:2]==(3,12) and m.version('playwright')=='1.65.1'"
+          node -e "if(process.versions.node.split('.')[0] !== '26')process.exit(2)"
+      - name: Keep original v05.5.2 RELEASE regression
+        run: python qa/runtime-migration-pilot/run_suite.py ${{ matrix.engine }} RELEASE
+      - name: Build isolated personal iPhone candidate
+        run: |
+          set -euo pipefail
+          python qa/med-guard-ci/build_candidate.py --source qa/v0552-keyboard-polish/site --output qa/med-guard-ci/generated-site
+          python qa/cp-ui01/build_candidate.py --source qa/med-guard-ci/generated-site --output qa/cp-ui01/generated-site
+          python qa/cp-ui02/fix_narrow_nav.py qa/cp-ui01/generated-site
+          python qa/cp-real01/build_candidate.py --source qa/cp-ui01/generated-site --output qa/cp-real01/generated-site
+          python qa/cp-real01/tests/static_qa.py qa/cp-real01/generated-site
+      - name: Personal real names and doses, no real intake E2E
+        run: |
+          set -euo pipefail
+          mkdir -p qa/cp-real01/reports/${{ matrix.engine }}
+          python qa/cp-real01/tests/browser_qa.py ${{ matrix.engine }} qa/cp-real01/generated-site qa/cp-real01/reports/${{ matrix.engine }} | tee qa/cp-real01/reports/${{ matrix.engine }}/test.log
+      - name: Screenshot artifacts (no deployment)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-cp-real01-${{ matrix.engine }}
+          path: qa/cp-real01/reports/${{ matrix.engine }}/
+          retention-days: 14
+          if-no-files-found: warn
