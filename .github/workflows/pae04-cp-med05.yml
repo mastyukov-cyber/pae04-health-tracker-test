@@ -1,0 +1,104 @@
+name: PAE-04 CP-MED05 synthetic guard / Node26 Python312 Playwright1651
+on:
+  push:
+    branches: [sandbox/pae04-cp-med05-ci]
+    paths:
+      - '.github/workflows/pae04-cp-med05.yml'
+      - 'qa/med-guard-ci/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fast:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore verified isolated CP-MED05 sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pae04-cpmed05
+          base64 --decode qa/cp-med05/cpmed05-source.tar.xz.b64 > /tmp/pae04-cpmed05/source.tar.xz
+          echo '3f4e189d1a677ea8977468d0c6b5a3acb113ccfcf7515cc51002d6205edf1004  /tmp/pae04-cpmed05/source.tar.xz' | sha256sum --check -
+          tar -xJf /tmp/pae04-cpmed05/source.tar.xz -C /tmp/pae04-cpmed05
+          test ! -e qa/med-guard-ci
+          cp -R /tmp/pae04-cpmed05/med-guard-ci qa/med-guard-ci
+          test -f qa/med-guard-ci/tests/browser_e2e.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fail closed if wrong runtime
+        run: |
+          node -e "if(process.versions.node.split('.')[0] !== '26')process.exit(2)"
+          python -c "import sys; assert sys.version_info[:2] == (3,12)"
+      - name: Verify immutable original v05.5.2
+        run: python qa/v0552-keyboard-polish/verify.py
+      - name: Synthetic duplicate and transaction tests
+        run: |
+          node qa/med-guard-ci/tests/test_guard.mjs
+          node qa/med-guard-ci/tests/atomic_qa.mjs
+          python qa/med-guard-ci/tests/patcher_qa.py
+      - name: Build detached candidate and test static invariants
+        run: |
+          python qa/med-guard-ci/build_candidate.py --source qa/v0552-keyboard-polish/site --output qa/med-guard-ci/generated-site
+          python qa/med-guard-ci/tests/candidate_static.py qa/med-guard-ci/generated-site
+          node --check qa/med-guard-ci/generated-site/app.js
+          node --check qa/med-guard-ci/generated-site/med_guard.mjs
+  browsers:
+    needs: fast
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    env:
+      PAE04_SYNTHETIC_ONLY: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore verified isolated CP-MED05 sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pae04-cpmed05
+          base64 --decode qa/cp-med05/cpmed05-source.tar.xz.b64 > /tmp/pae04-cpmed05/source.tar.xz
+          echo '3f4e189d1a677ea8977468d0c6b5a3acb113ccfcf7515cc51002d6205edf1004  /tmp/pae04-cpmed05/source.tar.xz' | sha256sum --check -
+          tar -xJf /tmp/pae04-cpmed05/source.tar.xz -C /tmp/pae04-cpmed05
+          test ! -e qa/med-guard-ci
+          cp -R /tmp/pae04-cpmed05/med-guard-ci qa/med-guard-ci
+          test -f qa/med-guard-ci/tests/browser_e2e.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: qa/med-guard-ci/requirements.txt
+      - name: Install pinned browser QA runtime
+        run: |
+          python -m pip install -r qa/med-guard-ci/requirements.txt
+          python -m playwright install --with-deps ${{ matrix.engine }}
+          python -c "import sys; assert sys.version_info[:2] == (3,12)"
+          node -e "if(process.versions.node.split('.')[0] !== '26')process.exit(2)"
+          python -c "import importlib.metadata as m; assert m.version('playwright') == '1.65.1'"
+      - name: Confirm existing 376-check regression unchanged
+        run: python qa/runtime-migration-pilot/run_suite.py ${{ matrix.engine }} RELEASE
+      - name: Build exact detached v05.5.2 CP-MED05 candidate
+        run: python qa/med-guard-ci/build_candidate.py --source qa/v0552-keyboard-polish/site --output qa/med-guard-ci/generated-site
+      - name: Browser acceptance with synthetic data only
+        run: python qa/med-guard-ci/tests/browser_e2e.py ${{ matrix.engine }}
+      - name: Upload isolated QA reports only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cp-med05-${{ matrix.engine }}-qa
+          path: |
+            qa/runtime-migration-pilot/reports/
+            qa/v0552-keyboard-polish/reports/
+          if-no-files-found: warn
+          retention-days: 14
