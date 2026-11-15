@@ -98,6 +98,7 @@ jobs:
         run: python qa/med-guard-ci/tests/browser_e2e.py ${{ matrix.engine }}
       - name: Test new Apple Light Comfort home in browser
         run: |
+          set -euo pipefail
           mkdir -p qa/cp-ui01/reports
           python qa/cp-ui01/tests/browser_qa.py ${{ matrix.engine }} qa/cp-ui01/generated-site | tee qa/cp-ui01/reports/${{ matrix.engine }}.log
       - name: Upload synthetic QA output
