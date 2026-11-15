@@ -85,14 +85,31 @@ try:
         check('Home medicine action logs real time via audited intake',page.locator('#ui01-meds .is-taken').count()==1)
         page.reload(wait_until='networkidle')
         check('Medicine intake survives reload',page.locator('#ui01-meds .is-taken').count()==1)
-        enter_med(page,'Учебный препарат В','asNeeded')
-        check('As-needed section visible when populated','Ситуативные' in page.locator('#ui01-meds').inner_text())
+        # Similar educational names must not silently create another medication card.
+        page.locator('[data-page="meds"]').click()
+        page.locator('#med-name').fill('Учебный препарат В')
+        page.locator('#med-kind').select_option('asNeeded')
+        page.locator('#med-form button[type="submit"]').click()
+        page.wait_for_timeout(250)
+        check('Similar synthetic name does not silently bypass duplicate review',
+              page.locator('#stat-meds').text_content()=='1')
+        # Test a legitimate regimen in an independent, initially empty browser profile.
+        isolated=browser.new_context(viewport={'width':390,'height':844},
+                                     timezone_id='Europe/Moscow',reduced_motion='reduce')
+        separate=isolated.new_page()
+        separate.on('pageerror',lambda e: errors.append(str(e)))
+        separate.goto(url,wait_until='networkidle')
+        enter_med(separate,'Учебный препарат В','asNeeded')
+        check('As-needed section visible when populated',
+              'Ситуативные' in separate.locator('#ui01-meds').inner_text())
         check('No yesterday context for as-needed meds',
-              page.locator('.ui01-med-group').last.locator('.ui01-yesterday-time').count()==0)
+              separate.locator('.ui01-med-group').last.locator('.ui01-yesterday-time').count()==0)
         for width in (320,375,390,430):
-            page.set_viewport_size({'width':width,'height':844})
-            bb=page.locator('#ui01-pressure').bounding_box()
-            check(str(width)+'px home card inside viewport',bb is not None and bb['x']>=-2 and bb['x']+bb['width']<=width+2)
+            separate.set_viewport_size({'width':width,'height':844})
+            bb=separate.locator('#ui01-pressure').bounding_box()
+            check(str(width)+'px home card inside viewport',
+                  bb is not None and bb['x']>=-2 and bb['x']+bb['width']<=width+2)
+        isolated.close()
         check('No unexpected browser JS error',not errors)
         browser.close()
 finally:
