@@ -1,0 +1,5 @@
+.med-guard-panel{margin:-5px 0 18px;padding:12px 14px;border-radius:13px;background:#f4f8fe;border:1px solid #d5e3f8;color:#344761;line-height:1.5;font-size:15px}
+.med-guard-panel:empty{display:none}.med-guard-panel.is-blocked{background:#fff8ed;border-color:#eed8b7}.med-guard-message{margin:0 0 8px;font-size:15px}
+.med-guard-option,.med-guard-confirm{display:block;min-height:48px;width:100%;margin:8px 0 0;padding:12px 14px;border:1px solid #adc6ee;border-radius:12px;background:#fff;color:#1e579e;text-align:left;font-size:16px;font-weight:650;cursor:pointer}
+.med-guard-confirm{background:#205fb8;color:white;text-align:center;border-color:#205fb8}
+.med-guard-option:focus-visible,.med-guard-confirm:focus-visible{outline:3px solid #6795df;outline-offset:2px}

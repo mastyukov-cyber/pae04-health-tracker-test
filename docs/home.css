@@ -1,0 +1,84 @@
+/* PAE-04 CP-UI01 Apple Light Comfort. Only the detached synthetic candidate. */
+:root{--ht-home-scale:1.14}
+#page-overview.ui01-home{padding-bottom:24px;max-width:760px;margin:0 auto;font-size:calc(16px * var(--ht-home-scale));color:#18283c}
+.ui01-home *{box-sizing:border-box}
+.ui01-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0 22px}
+.ui01-title{margin:0;font-size:calc(28px * var(--ht-home-scale));line-height:1.17;font-weight:750;letter-spacing:-.035em}
+.ui01-date{display:block;color:#68798c;font-size:calc(13px * var(--ht-home-scale));margin-top:7px;text-transform:capitalize}
+.ui01-font-tools{display:flex;gap:5px;align-items:center;flex-shrink:0}
+.ui01-font-tools button{min-width:45px;min-height:45px;border-radius:12px;background:#fff;color:#286ed6;border:1px solid #d7e2f2;font-size:18px;font-weight:750}
+.ui01-font-tools button:disabled{opacity:.4}
+#ui01-font-label{font-size:11px;color:#617086;min-width:26px;text-align:center;white-space:nowrap}
+.ui01-card{background:#fff;border:1px solid #e6ecf2;border-radius:22px;box-shadow:0 5px 16px #20375608;padding:clamp(15px,4vw,24px);margin-bottom:17px}
+.ui01-card-title,.ui01-section-title{font-size:calc(20px * var(--ht-home-scale));font-weight:730;line-height:1.25;margin:0 0 14px;letter-spacing:-.015em}
+.ui01-empty{font-size:calc(15px * var(--ht-home-scale));line-height:1.5;color:#607186;margin:10px 0 20px}
+.ui01-reading-list{display:flex;flex-direction:column;gap:0;margin-bottom:12px}
+.ui01-reading{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:1px solid #edf1f5;padding:12px 0}
+.ui01-reading:first-child{padding-top:2px}
+.ui01-reading:last-child{border:0}
+.ui01-bp{font-variant-numeric:tabular-nums;font-size:calc(24px * var(--ht-home-scale));font-weight:760;letter-spacing:-.025em;white-space:nowrap}
+.ui01-reading-meta{font-size:calc(13px * var(--ht-home-scale));color:#65788d}
+.ui01-yesterday{display:flex;flex-direction:column;gap:6px;border-top:1px solid #edf1f5;padding:14px 0 16px;margin:8px 0}
+.ui01-muted{color:#69798b;font-size:calc(13px * var(--ht-home-scale));line-height:1.35;overflow-wrap:anywhere}
+.ui01-yesterday-bp{color:#4c627b;font-size:calc(18px * var(--ht-home-scale));font-variant-numeric:tabular-nums}
+.ui01-wide-button{width:100%;min-height:53px;font-size:calc(15px * var(--ht-home-scale));border-radius:13px}
+#ui01-meds{margin-top:20px}
+.ui01-section-title{margin-bottom:16px}
+.ui01-med-group{margin-bottom:13px}
+.ui01-group-title{font-size:calc(18px * var(--ht-home-scale));margin:0 0 12px;font-weight:750}
+.ui01-med-row{display:flex;gap:14px;align-items:center;padding:13px 0;border-top:1px solid #eff1f5;min-width:0}
+.ui01-med-row:first-of-type{border-top:0}
+.ui01-check{display:grid;place-items:center;min-height:48px;min-width:48px;max-height:48px;border-radius:14px;border:2px solid #b9c8db;background:#fff;color:#71829a;font-size:29px;line-height:1;flex-shrink:0}
+.ui01-check.is-taken{border-color:#2b7d63;color:#fff;background:#2b7d63;font-size:23px}
+.ui01-check:focus-visible,.ui01-font-tools button:focus-visible{outline:3px solid #86b0f3;outline-offset:3px}
+.ui01-med-description{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1;overflow-wrap:anywhere}
+.ui01-med-name{font-size:calc(17px * var(--ht-home-scale));font-weight:700;line-height:1.25}
+.ui01-yesterday-time{font-size:calc(13px * var(--ht-home-scale));color:#69798b}
+.ui01-today-time{font-size:calc(13px * var(--ht-home-scale));font-weight:650;color:#26674f}
+.ui01-note{font-size:calc(12px * var(--ht-home-scale));line-height:1.6;color:#69798b;margin:12px 3px 0}
+.ui01-compat{display:none!important}
+/* Font controls cover the other modules as well without suppressing iOS pinch zoom. */
+body .page:not(#page-overview) .panel h2{font-size:calc(17px * var(--ht-home-scale))}
+body .page:not(#page-overview) .panel .row-title{font-size:calc(14px * var(--ht-home-scale))}
+body .page:not(#page-overview) .panel .row-subtitle{font-size:calc(12px * var(--ht-home-scale))}
+body .page:not(#page-overview) input:not([type="checkbox"]):not([type="file"]),
+body .page:not(#page-overview) select,
+body .page:not(#page-overview) textarea{font-size:max(16px,calc(14px * var(--ht-home-scale)))}
+body .page:not(#page-overview) button{font-size:calc(13px * var(--ht-home-scale))}
+body .nav-item{font-size:calc(14px * var(--ht-home-scale))}
+@media(max-width:740px){
+  .ui01-top{margin:9px 0 18px;align-items:flex-start}
+  .ui01-title{font-size:calc(24px * var(--ht-home-scale))}
+  .ui01-font-tools button{min-width:42px;min-height:44px}
+  .ui01-med-row{gap:10px}
+  #page-overview.ui01-home{min-width:0}
+}
+@media(max-width:355px){
+  .ui01-top{flex-wrap:wrap}
+  .ui01-font-tools{margin-left:auto}
+  .ui01-bp{font-size:calc(20px * var(--ht-home-scale))}
+}
+@media(prefers-reduced-motion:reduce){.ui01-home *{transition:none!important;scroll-behavior:auto!important}}
+/* CP-UI02: 320px high-font navigation overflow fix */
+@media(max-width:355px){
+  body .sidebar{min-width:0;max-width:100%;gap:0}
+  body .sidebar .nav-item{
+    flex:1 1 0;min-width:0;width:0;
+    padding:7px 1px;
+    font-size:calc(10px * var(--ht-home-scale));
+    text-align:center;white-space:normal;overflow-wrap:anywhere;
+  }
+  body .sidebar .nav-item span:last-child{
+    max-width:100%;min-width:0;overflow-wrap:anywhere;
+  }
+}
+
+/* CP-REAL01: personal test profile and dose labels, no fake intake records */
+.ui01-personal-dose{color:#365a80;font-size:calc(13px * var(--ht-home-scale));line-height:1.4}
+.pae04-profile-panel{background:#f4f8ff;border:1px solid #bcd1ee;border-radius:17px;
+  padding:16px;margin:15px 0;line-height:1.45}
+.pae04-profile-panel button{width:100%;min-height:52px;background:#286ed6;color:#fff;
+  border:0;border-radius:12px;font-size:16px;font-weight:700;padding:10px}
+.pae04-profile-panel button:disabled{background:#8b9ab0}
+.pae04-profile-panel p{margin:7px 0;color:#41556e;font-size:14px;overflow-wrap:anywhere}
+@media(max-width:355px){.pae04-profile-panel{padding:12px}}
