@@ -1,0 +1,77 @@
+{
+  "status": "SOURCE_VERIFIED / SCOPED_STATIC_QA_PASS / BROWSER_NOT_RUN / RELEASE_NO-GO",
+  "source": {
+    "commit": "12e63a63b7a76dd903b71abfd536e7dffeff11cb",
+    "sha256": "0abb256031187036e8d282eaedc08ffaf970e9de1cffd7cda7814cc84fb8c4cb",
+    "bytes": 84089
+  },
+  "candidate": {
+    "bytes": 192367,
+    "files": 17,
+    "changed": [
+      "app.js",
+      "index.html",
+      "manifest.webmanifest",
+      "med_guard.mjs",
+      "offline_status.js",
+      "styles.css",
+      "sw.js"
+    ]
+  },
+  "checks": {
+    "passed": 40,
+    "failed": 0,
+    "items": [
+      "17 entries",
+      "seven changed files",
+      "no DB rename",
+      "no DB migration",
+      "backup version 3",
+      "original stores",
+      "one med query",
+      "hidden old dose",
+      "name autocomplete",
+      "new version metadata",
+      "offline cache rotated",
+      "two/three checkboxes unchanged",
+      "quantity checked",
+      "cancellations collapsed not deleted",
+      "core JS syntax",
+      "guard JS syntax",
+      "fraction ¼",
+      "fraction ½",
+      "fraction 1/2",
+      "fraction 0,5",
+      "fraction ¾",
+      "fraction 1½",
+      "fraction 2",
+      "reject 0",
+      "reject -1",
+      "reject 51",
+      "reject 2/0",
+      "reject abc",
+      "old intake no quantity",
+      "new 1/2 tablet quantity",
+      "reject malformed {\"takenQuantity\":{\"numerator\":0,\"denominator\":2},\"takenUnit\":\"таблетка\"}",
+      "reject malformed {\"takenQuantity\":{\"numerator\":1,\"denominator\":2}}",
+      "reject malformed {\"takenUnit\":\"таблетка\"}",
+      "catalog alias хемохим",
+      "catalog alias HemoHIM",
+      "catalog alias ХемоХИМ",
+      "catalog alias хемо хим",
+      "catalog alias МСМ",
+      "alias requires explicit choice",
+      "candidate sized"
+    ]
+  },
+  "not_run": [
+    "apply_release.py",
+    "Node 26",
+    "Chromium",
+    "Safari/WebKit",
+    "offline cold start",
+    "backup restore",
+    "physical iPhone"
+  ],
+  "main_untouched": true
+}
