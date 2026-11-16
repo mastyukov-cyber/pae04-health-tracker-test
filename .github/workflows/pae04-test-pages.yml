@@ -55,7 +55,7 @@ jobs:
           sw = (root / "sw.js").read_text(encoding="utf-8")
           offline = (root / "offline_status.js").read_text(encoding="utf-8")
           manifest = json.loads((root / "manifest.webmanifest").read_text(encoding="utf-8"))
-          assert "TEST CP-MULTI03" in html
+          assert "TEST v0.6.2-test.1" in html
           assert 'qa-cyber-banner' in html
           assert "PAE04_GH_CYBER_MULTI03_TEST_SCHEMA1" in app
           assert "PAE04_HT_STABLE_CANDIDATE_INTEGRATION_SYNTHETIC_SCHEMA1" not in app
@@ -63,8 +63,8 @@ jobs:
           assert "medDailySlots" in app and "medDailyTarget" in app
           assert "pae04-ghcyber-multi03-test-cache-" in sw
           assert "pae04-ghcyber-multi03-test-cache-" in offline
-          assert "CPMULTI03-github-cyber-test-20261116" in sw
-          assert "CPMULTI03-github-cyber-test-20261116" in offline
+          assert "CPMULTI03-v062test1-20261116" in sw
+          assert "CPMULTI03-v062test1-20261116" in offline
           assert manifest["scope"] == "./" and manifest["start_url"] == "./index.html"
           assert "personal_profile.json" not in found and "personal_adapter.js" not in found
           print("PAE-04 TEST PAGES FILES=17 SHA256=PASS; NO_PERSONAL_PROFILE; ISOLATED_DB")
