@@ -28,7 +28,7 @@ jobs:
           set -euo pipefail
           ZIP="release/health-tracker-test.zip"
           test -f "$ZIP"
-          printf '%s  %s\n' 'e60956322a5ef1a196359403433d26585064e2ed02c0a68547334fb3ba954c6f' "$ZIP" | sha256sum -c -
+          printf '%s  %s\n' '0abb256031187036e8d282eaedc08ffaf970e9de1cffd7cda7814cc84fb8c4cb' "$ZIP" | sha256sum -c -
           mkdir -p dist
           unzip -q "$ZIP" -d dist
           python3 - <<'PY'
@@ -37,7 +37,7 @@ jobs:
           import json
           
           root = Path("dist")
-          expected = {".nojekyll":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","app.js":"36e8938498d992a6ccb6a73904ba15be4adfd2c2e07ebf079274630f819143bd","home.css":"922d3c9fe41be8e46d259bcc89f29098a22d4fa4480961c3342f4404b68f155d","home.js":"1df9ae2e61dd8c626d3927b8f9a052249a0e40744670654bd7fb23c89fb15da1","icons/apple-touch-icon.png":"7e321de521f7c91a8856a66e237b98bb48d36bc89c6246ab90cc0ffb4ce6e11b","icons/icon-192.png":"455b1aa541ebd7574d441d82615efd6f02d277c2ecf727077aa274fbbbe74f05","icons/icon-512.png":"b5509bdf65dc021a057dac3f6db52de87a5d13d64c34cdc5f8dfc677a4e4f18b","icons/icon.svg":"377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606","index.html":"2dd5348b5a9c0f930b0b04947687a7720793658c496698da3ab8a628345aa2e8","manifest.webmanifest":"ac5fc56248b45343b13443daaf798b965a4f98f1093280ddae0ef8a7adc4bdda","med_guard.css":"4b606c41bfee2be98ffd90123bc55c19f00888c0c3e18ff2f618ab0e18276389","med_guard.mjs":"5aa603b10a15163865a460769c03f50574e63fb8db56b979661f77fef1f48ba8","med_matcher.mjs":"216b1cdc709d29147eba923973f530ef27c89b5422859c91dac74453666ccd08","offline_status.js":"585be9e23c955eb699ff45c28de878ef227a7ba0a638f5ba1fa86672da7d0a77","robots.txt":"331ea9090db0c9f6f597bd9840fd5b171830f6e0b3ba1cb24dfa91f0c95aedc1","styles.css":"bd5d4f42d6ee5ef285988345cf5cca3fe19ced911b6485c32f5f30f5d7b2ecfb","sw.js":"1066d461630d2c54fa5bbb693af32a66ec9b45349ee8fd4568ab32d991ed2c41"}
+          expected = {".nojekyll":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","app.js":"36e8938498d992a6ccb6a73904ba15be4adfd2c2e07ebf079274630f819143bd","home.css":"922d3c9fe41be8e46d259bcc89f29098a22d4fa4480961c3342f4404b68f155d","home.js":"1df9ae2e61dd8c626d3927b8f9a052249a0e40744670654bd7fb23c89fb15da1","icons/apple-touch-icon.png":"7e321de521f7c91a8856a66e237b98bb48d36bc89c6246ab90cc0ffb4ce6e11b","icons/icon-192.png":"455b1aa541ebd7574d441d82615efd6f02d277c2ecf727077aa274fbbbe74f05","icons/icon-512.png":"b5509bdf65dc021a057dac3f6db52de87a5d13d64c34cdc5f8dfc677a4e4f18b","icons/icon.svg":"377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606","index.html":"d14432b9bf9f728d63c55c96368f66a1aab1655281e1deeeb52bec71ef585291","manifest.webmanifest":"fd9cbf6fc245b82730b9d6ae9b919a857dd685c47a10062312b53d2058ec36cf","med_guard.css":"4b606c41bfee2be98ffd90123bc55c19f00888c0c3e18ff2f618ab0e18276389","med_guard.mjs":"5aa603b10a15163865a460769c03f50574e63fb8db56b979661f77fef1f48ba8","med_matcher.mjs":"216b1cdc709d29147eba923973f530ef27c89b5422859c91dac74453666ccd08","offline_status.js":"8bf1c4c63cef748990c750d3d5cdcff278583efed5353abbfedbd577926efcd9","robots.txt":"331ea9090db0c9f6f597bd9840fd5b171830f6e0b3ba1cb24dfa91f0c95aedc1","styles.css":"bd5d4f42d6ee5ef285988345cf5cca3fe19ced911b6485c32f5f30f5d7b2ecfb","sw.js":"0945a188269432ec7b1ae96fb15c848cdde9294995e793bea3c3c0857118feed"}
           found = set()
           for p in root.rglob("*"):
               if p.is_symlink():
