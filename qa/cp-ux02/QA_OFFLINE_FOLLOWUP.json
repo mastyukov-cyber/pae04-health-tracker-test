@@ -1,0 +1,49 @@
+{
+  "project": "PAE-04",
+  "checkpoint": "CP-UX02-OFFLINE01",
+  "status": "SCOPED_SYNTHETIC_SW_QA_PASS / SAFARI_NOT_RUN / RELEASE_NO-GO",
+  "parent_candidate_commit": "e90c10d9fc88c5d581bfd50258420fa677bd80a7",
+  "parent_candidate_zip_blob": "7434118c85d8fc96b6d2a8905e669106e48d114d",
+  "branch": "qa/cp-ux02-offlinefix-20261117",
+  "files": 17,
+  "changes_inside_zip": [
+    "offline_status.js",
+    "sw.js"
+  ],
+  "byte_length": 192650,
+  "tests_passed": 21,
+  "tests_failed": 0,
+  "test_names": [
+    "only SW and offline status changed",
+    "17 PWA files preserved",
+    "cache ids match",
+    "new SW syntax parses",
+    "offline helper parses",
+    "no IDB modifications",
+    "no HTML changes",
+    "no CSS changes",
+    "clean install retains current cache",
+    "clean install claims clients",
+    "one previous cache preserved",
+    "two previous caches preserved",
+    "unrelated cache preserved",
+    "oldest two caches removed",
+    "most recent previous kept",
+    "new cache survives eviction",
+    "all files precached",
+    "client claim occurs once",
+    "QA candidate under size budget",
+    "new archive has EOCD",
+    "new archive has 17 entries"
+  ],
+  "cache_strategy": "Retain current plus two most recently created previous PAE-04 static app shell caches, purge older; unrelated caches untouched.",
+  "limitations": [
+    "Full Safari/WebKit service worker upgrade NOT RUN",
+    "Actual cross-version open tabs NOT RUN",
+    "No independent Python apply_release.py run",
+    "Source PWA 40/40 static checks were not repeated in this scoped SW patch; app.js unchanged"
+  ],
+  "no_real_health_data": true,
+  "mac_access": false,
+  "main_untouched": true
+}
