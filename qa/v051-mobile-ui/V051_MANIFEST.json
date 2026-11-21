@@ -1,0 +1,15 @@
+{
+  "version": "v05.1",
+  "source_v05": "e58aae8bbbb8a7dcd9ec9fd4355309b906b2851d",
+  "sha256": {
+    "index.html": "7dc0b5ba7dee551ed95f5a9809e967fc369b614556a75c461fa6aa3dee17ad59",
+    "styles.css": "118845e2bc58b311605c636d1d50578a76b83fe7d2a907405c739c0294e1c7bd",
+    "sw.js": "c00f0bf6f563074c20b4ac7376f1fb947e26cd5c53994bb51693616fb4d84433",
+    "manifest.webmanifest": "27cd3c7c9849b8bd0cd457136639517d657c5db10621a245122084fd314691f2",
+    "app.js": "673452db182dbebe1cd1d3f0464c3eb125e817e5ae6b3ed22160a143c4046a78",
+    "icons/icon.svg": "377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606",
+    "icons/apple-touch-icon.png": "7e321de521f7c91a8856a66e237b98bb48d36bc89c6246ab90cc0ffb4ce6e11b",
+    "icons/icon-192.png": "455b1aa541ebd7574d441d82615efd6f02d277c2ecf727077aa274fbbbe74f05",
+    "icons/icon-512.png": "b5509bdf65dc021a057dac3f6db52de87a5d13d64c34cdc5f8dfc677a4e4f18b"
+  }
+}

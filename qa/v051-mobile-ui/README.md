@@ -1,0 +1,1 @@
+PAE-04 v05.1 visual QA on synthetic test data only. Nine verified site files, app.js byte-identical to v05, local IndexedDB schema unchanged. Count 0,1,10,100 equal baseline; mobile date, heading, filters fit. NO TEST PUBLISHING.\n
