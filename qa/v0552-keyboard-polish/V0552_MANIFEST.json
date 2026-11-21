@@ -1,0 +1,28 @@
+{
+  "version": "v05.5.2",
+  "purpose": "iPhone Safari Keyboard UX polish — dismiss on history scroll/tap, done button for note, safe navigation; SYNTHETIC ONLY",
+  "source_v0551": "c8c5aee14d6b0d746d63aa5a0e568bb277fbe658",
+  "source_test_main": "fcd8914f50330158d566e56811d62a0551a48865",
+  "sha256": {
+    "index.html": "606a6c0f709870770a2016872cb677284a001584831a3da2a3bedfc4ef2f8774",
+    "app.js": "87fb7d02f97e011faf90c797e31fda969c0fc5cb5e304685af53423fe0594cf7",
+    "styles.css": "a31106d4c31b428d336d73879daefea89b1f69afcb85f575d87a73bad4ea93fc",
+    "sw.js": "5e21e287c62471a74a1e323073fd92aa3e4ea118c3aa2acb8fb3d9e706b711fa",
+    "manifest.webmanifest": "47333fd11abc14b416afa8599516ce599a8f1d88863c8cc25cd6173a967b3079",
+    "icons/icon.svg": "377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606",
+    "icons/apple-touch-icon.png": "7e321de521f7c91a8856a66e237b98bb48d36bc89c6246ab90cc0ffb4ce6e11b",
+    "icons/icon-192.png": "455b1aa541ebd7574d441d82615efd6f02d277c2ecf727077aa274fbbbe74f05",
+    "icons/icon-512.png": "b5509bdf65dc021a057dac3f6db52de87a5d13d64c34cdc5f8dfc677a4e4f18b"
+  },
+  "unchanged": {
+    "db_name": "PAE04_HT_STABLE_CANDIDATE_INTEGRATION_SYNTHETIC_SCHEMA1",
+    "db_version": 1,
+    "backup_version": 3,
+    "stores": [
+      "pressures",
+      "medications",
+      "intakes",
+      "intakeEvents"
+    ]
+  }
+}
