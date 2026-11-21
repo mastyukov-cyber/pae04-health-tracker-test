@@ -1,0 +1,156 @@
+name: PAE-04 TEST Safari cache fix R2 one-shot
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/pae04-v233-safari-cachefix-r2-once.yml
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pae04-test-site-pages
+  cancel-in-progress: false
+jobs:
+  publish_cachefix_once:
+    if: >-
+      github.repository == 'mastyukov-cyber/pae04-health-tracker-test' &&
+      github.event_name == 'push' &&
+      github.event.before == 'd43905580ced4e61fce38d0f32de3efe08a85e1b' &&
+      github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+    steps:
+      - name: Checkout pinned old TEST
+        uses: actions/checkout@v4
+        with:
+          path: legacy
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Checkout exact unchanged PR15
+        uses: actions/checkout@v4
+        with:
+          repository: mastyukov/health-tracker
+          ref: 3020e5c1278e5073c229a0ed36a35a9815658c15
+          path: candidate
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Exact R2 patch and isolated site packaging STOP_FIRST
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'mastyukov-cyber/pae04-health-tracker-test'
+          test "$GITHUB_REF" = 'refs/heads/main'
+          test "$(git -C legacy rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git -C candidate rev-parse HEAD)" = '3020e5c1278e5073c229a0ed36a35a9815658c15'
+          python3 - <<'PAE04_SAFARI_CACHEFIX_R2_ONCE'
+          from pathlib import Path, PurePosixPath
+          import hashlib, json, os, stat, zipfile
+          
+          EXPECTED_OLD='0abb256031187036e8d282eaedc08ffaf970e9de1cffd7cda7814cc84fb8c4cb'
+          EXPECTED_PREVIOUS='d43905580ced4e61fce38d0f32de3efe08a85e1b'
+          EXPECTED_PR15='3020e5c1278e5073c229a0ed36a35a9815658c15'
+          EXPECTED_PATCH='ea14a14faab805c46a38a707a4fce9f097defdfc412479a9a54dcc0e64ac7b1b'
+          PATCH_R2="""--- a/sw.js
+          +++ b/sw.js
+          @@ -78,6 +78,11 @@
+             const url=new URL(request.url);
+             const scope=new URL(self.registration.scope);
+             if(request.method!=='GET'||url.origin!==scope.origin||!url.pathname.startsWith(scope.pathname))return;
+          +  // PAE-04 TEST v2.3.3: nested PWA has its own narrower Service Worker.
+          +  // Do not respondWith() nested /v233 requests: let Safari fetch/register it.
+          +  // IndexedDB, root app caches, and root navigation remain untouched.
+          +  if(url.pathname===scope.pathname+'v233' ||
+          +     url.pathname.startsWith(scope.pathname+'v233/'))return;
+             event.respondWith((async()=>{
+               try{
+                 const hit=await matchAppShell(request);
+          """
+          PINS={".nojekyll":"e69de29bb2d1d6434b8b29ae775ad8c2e48c5391","CP_MED05_BUILD.json":"73cae13ae3002afd9a139805e7152acfc1ad4762","CP_REAL01_BUILD.json":"b7010ad22f5503f1e63148514f628765e6edd248","CP_UI01_BUILD.json":"b92bd7c5e2720a663cf502ee2abfa9650a7e6dfa","app.js":"3725145e5c48a23027723cc62de9572c0be7feec","home.css":"f38d59e4ef42fa44e64dd471d677881fccb5d040","home.js":"e579cc0db5c8e360b3a57870d0e3bc36a087f1c7","icons/apple-touch-icon.png":"4cf9879b433979d1508c8ffdbb312e29123ef549","icons/icon-192.png":"c07d28a59f0d773c2e18af62b261b50389f60a94","icons/icon-512.png":"09673205f1b64d689d8899c1096031ba351f34cc","icons/icon.svg":"05b76763ede5f0d88e2b855f3d90ed72ddf64842","index.html":"beb4be69b81e31deb5d03543749ef549ce4953e2","manifest.webmanifest":"e74f10f038d5a4e1c04936c1246435de58282d35","med_guard.css":"1ebdff67c6ae4088759bc1c9059ee7f2f5fd6b2e","med_guard.mjs":"9435ec752a887f0e6e5b696be6eaefc7d6999704","med_matcher.mjs":"cf08822f5e71c8fb505fbec066e5eec9145215c6","offline_status.js":"15bebef4326103c10189bacbf118037a9f64e5b8","personal_adapter.js":"277b8bc2435d4bd9f4b30c89db15570ca2f2656f","personal_profile.json":"5b21b52962b8ff2ebc48e5a394ef3cd308d50b4c","robots.txt":"1f53798bb4fe33c86020be7f10c44f29486fd190","styles.css":"33fc30b7c85f7cdbf60f43a206fb1f47a9c72fb4","sw.js":"eca3ff2677e9ea8397214a015e92b90b0011a2a1"}
+          DIST=Path("dist")
+          OLD=Path("legacy/release/health-tracker-test.zip")
+          NEW=Path("candidate/site")
+          
+          def gate(ok, message):
+              if not ok: raise SystemExit("BLOCKED_STOP_FIRST_"+message)
+          
+          event=json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
+          gate(event.get("before")==EXPECTED_PREVIOUS,"EVENT_BEFORE")
+          gate(event.get("after")==os.environ["GITHUB_SHA"],"EVENT_AFTER")
+          gate(OLD.is_file() and OLD.stat().st_size==84089,"OLD_ZIP_BYTES")
+          gate(hashlib.sha256(OLD.read_bytes()).hexdigest()==EXPECTED_OLD,"OLD_ZIP_SHA256")
+          gate(hashlib.sha256(PATCH_R2.encode("utf-8")).hexdigest()==EXPECTED_PATCH and len(PATCH_R2.encode("utf-8"))==657,"PATCH_R2_SHA256")
+          gate(not DIST.exists(),"DIST_ALREADY_EXISTS")
+          gate(NEW.is_dir() and len(PINS)==22,"PR15_SITE_ABSENT")
+          actual={}
+          for f in NEW.rglob("*"):
+              gate(not f.is_symlink(),"PR15_SYMLINK")
+              if f.is_file():
+                  name=f.relative_to(NEW).as_posix()
+                  raw=f.read_bytes()
+                  actual[name]=hashlib.sha1(b"blob "+str(len(raw)).encode()+b"\0"+raw).hexdigest()
+          gate(actual==PINS,"PR15_PINNED_22_BLOBS")
+          gate("v2.3.3" in (NEW/"index.html").read_text(encoding="utf-8"),"PR15_VERSION")
+          manifest=json.loads((NEW/"manifest.webmanifest").read_text(encoding="utf-8"))
+          gate(manifest.get("scope")=="./" and manifest.get("start_url")=="./index.html","PR15_SUBPATH_MANIFEST")
+          
+          lines=PATCH_R2.splitlines(keepends=True)
+          gate(lines[:3]==["--- a/sw.js\n","+++ b/sw.js\n","@@ -78,6 +78,11 @@\n"],"R2_PATCH_HEADER")
+          gate(all(l.startswith((" ","+")) for l in lines[3:]),"R2_PATCH_IS_NOT_ADD_ONLY")
+          add=[l for l in lines[3:] if l.startswith("+")]
+          gate(len(add)==5,"R2_PATCH_ADDITION_COUNT")
+          context=b"".join(l[1:].encode("utf-8") for l in lines[3:] if l.startswith(" "))
+          next_context=b"".join(l[1:].encode("utf-8") for l in lines[3:])
+          injection=b"".join(l[1:].encode("utf-8") for l in add)
+          gate(b"caches.delete" not in injection and b"indexedDB" not in injection and b"respondWith" in injection,"R2_PATCH_GUARD")
+          
+          items={}
+          with zipfile.ZipFile(OLD,"r") as z:
+              gate(z.testzip() is None,"OLD_ZIP_CRC")
+              for item in z.infolist():
+                  name=item.filename
+                  p=PurePosixPath(name)
+                  gate(not p.is_absolute() and ".." not in p.parts and not name.startswith("/") and "\\" not in name,"OLD_ZIP_PATH")
+                  gate(not stat.S_ISLNK(item.external_attr>>16),"OLD_ZIP_SYMLINK")
+                  if item.is_dir(): continue
+                  gate(name not in items and item.file_size<150000,"OLD_ZIP_REPEAT_OR_SIZE")
+                  items[name]=z.read(item)
+          gate(len(items)==17 and "sw.js" in items and "index.html" in items,"OLD_ZIP_ALLOWLIST")
+          old_sw=items["sw.js"]
+          gate(hashlib.sha256(old_sw).hexdigest()=="0945a188269432ec7b1ae96fb15c848cdde9294995e793bea3c3c0857118feed","OLD_SW_SHA256")
+          gate(old_sw.count(context)==1 and old_sw.count(injection)==0,"OLD_SW_PATCH_CONTEXT")
+          new_sw=old_sw.replace(context,next_context,1)
+          gate(new_sw.replace(injection,b"",1)==old_sw,"PATCH_NOT_ADD_ONLY")
+          gate(len(new_sw.splitlines())==len(old_sw.splitlines())+5,"SW_NOT_FIVE_LINES")
+          
+          DIST.mkdir()
+          for name,contents in items.items():
+              path=DIST/name
+              path.parent.mkdir(parents=True,exist_ok=True)
+              path.write_bytes(new_sw if name=="sw.js" else contents)
+          for name,contents in items.items():
+              current=(DIST/name).read_bytes()
+              gate(current==(new_sw if name=="sw.js" else contents),"ROOT_PRESERVE_"+name)
+          for name in PINS:
+              raw=(NEW/name).read_bytes()
+              path=DIST/"v233"/name
+              path.parent.mkdir(parents=True,exist_ok=True)
+              path.write_bytes(raw)
+              gate(path.read_bytes()==raw,"PR15_COPY_"+name)
+          gate(len([f for f in DIST.rglob("*") if f.is_file()])==39,"TOTAL_FILE_COUNT")
+          gate(not any(f.is_symlink() for f in DIST.rglob("*")),"DIST_SYMLINK")
+          print("PASS_TEST_ROOT_16_ORIGINAL_PLUS_SW_R2_PATCHED; PR15_22_BYTES_UNCHANGED",flush=True)
+          print("PASS_PATCH_R2_SHA256; ROOT_OLD_SW_SHA256; CANDIDATE_22_GIT_BLOBS",flush=True)
+          print("ROOT_SW_PATCHED_SHA256="+hashlib.sha256(new_sw).hexdigest(),flush=True)
+          print("TEST_PATH=/v233/; NO_IDB_OR_CACHE_CLEAR_COMMANDS; NO_PROFILE_CONTENT_LOGGED",flush=True)
+          PAE04_SAFARI_CACHEFIX_R2_ONCE
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+      - name: Deploy TEST only
+        id: deployment
+        uses: actions/deploy-pages@v4
