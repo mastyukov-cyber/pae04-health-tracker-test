@@ -1,0 +1,240 @@
+name: PAE-04 HOME-V7 isolated synthetic TEST preview one-shot
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/pae04-home-v7-preview-once.yml
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pae04-test-site-pages
+  cancel-in-progress: false
+jobs:
+  publish_home_v7_once:
+    if: >-
+      github.repository == 'mastyukov-cyber/pae04-health-tracker-test' &&
+      github.event_name == 'push' &&
+      github.event.before == 'dcdffbe9f9b681acd0065b0d8e3b3eb59e3532a9' &&
+      github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+    steps:
+      - name: Checkout pinned existing TEST source
+        uses: actions/checkout@v4
+        with:
+          path: legacy
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Checkout exact unchanged v2.3.3 TEST content
+        uses: actions/checkout@v4
+        with:
+          repository: mastyukov/health-tracker
+          ref: 3020e5c1278e5073c229a0ed36a35a9815658c15
+          path: prior
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Checkout HOME-V7 runtime only, exclude private profile
+        uses: actions/checkout@v4
+        with:
+          repository: mastyukov/health-tracker
+          ref: c7aa694aa8f169d8f81caa2679bb10aae61382c0
+          path: candidate
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+          /site/index.html
+          /site/app.js
+          /site/home.js
+          /site/home.css
+          /site/styles.css
+          /site/sw.js
+          /site/offline_status.js
+          /site/manifest.webmanifest
+          /site/med_guard.mjs
+          /site/med_matcher.mjs
+          /site/med_guard.css
+          /site/icons/icon.svg
+          /site/icons/apple-touch-icon.png
+          /site/icons/icon-192.png
+          /site/icons/icon-512.png
+          persist-credentials: false
+      - name: Verify and package isolated HOME-V7 with STOP_FIRST
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'mastyukov-cyber/pae04-health-tracker-test'
+          test "$GITHUB_REF" = 'refs/heads/main'
+          test "$(git -C legacy rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git -C prior rev-parse HEAD)" = '3020e5c1278e5073c229a0ed36a35a9815658c15'
+          test "$(git -C candidate rev-parse HEAD)" = 'c7aa694aa8f169d8f81caa2679bb10aae61382c0'
+          python3 - <<'PAE04_HOME_V7_TEST_ONCE'
+          from pathlib import Path, PurePosixPath
+          import hashlib, json, os, shutil, stat, subprocess, zipfile
+          
+          OLD_ZIP=Path("legacy/release/health-tracker-test.zip")
+          PRIOR=Path("prior/site")
+          CAND=Path("candidate/site")
+          DIST=Path("dist")
+          EXPECTED_PREV="dcdffbe9f9b681acd0065b0d8e3b3eb59e3532a9"
+          EXPECTED_PR15="3020e5c1278e5073c229a0ed36a35a9815658c15"
+          EXPECTED_V7="c7aa694aa8f169d8f81caa2679bb10aae61382c0"
+          EXPECTED_ZIP="0abb256031187036e8d282eaedc08ffaf970e9de1cffd7cda7814cc84fb8c4cb"
+          EXPECTED_ROOT_R2="e5e759174748aeb49b76393e53a21710b462cfaa4763a2c127752162ac4280d0"
+          PINS_233={".nojekyll":"e69de29bb2d1d6434b8b29ae775ad8c2e48c5391","CP_MED05_BUILD.json":"73cae13ae3002afd9a139805e7152acfc1ad4762","CP_REAL01_BUILD.json":"b7010ad22f5503f1e63148514f628765e6edd248","CP_UI01_BUILD.json":"b92bd7c5e2720a663cf502ee2abfa9650a7e6dfa","app.js":"3725145e5c48a23027723cc62de9572c0be7feec","home.css":"f38d59e4ef42fa44e64dd471d677881fccb5d040","home.js":"e579cc0db5c8e360b3a57870d0e3bc36a087f1c7","icons/apple-touch-icon.png":"4cf9879b433979d1508c8ffdbb312e29123ef549","icons/icon-192.png":"c07d28a59f0d773c2e18af62b261b50389f60a94","icons/icon-512.png":"09673205f1b64d689d8899c1096031ba351f34cc","icons/icon.svg":"05b76763ede5f0d88e2b855f3d90ed72ddf64842","index.html":"beb4be69b81e31deb5d03543749ef549ce4953e2","manifest.webmanifest":"e74f10f038d5a4e1c04936c1246435de58282d35","med_guard.css":"1ebdff67c6ae4088759bc1c9059ee7f2f5fd6b2e","med_guard.mjs":"9435ec752a887f0e6e5b696be6eaefc7d6999704","med_matcher.mjs":"cf08822f5e71c8fb505fbec066e5eec9145215c6","offline_status.js":"15bebef4326103c10189bacbf118037a9f64e5b8","personal_adapter.js":"277b8bc2435d4bd9f4b30c89db15570ca2f2656f","personal_profile.json":"5b21b52962b8ff2ebc48e5a394ef3cd308d50b4c","robots.txt":"1f53798bb4fe33c86020be7f10c44f29486fd190","styles.css":"33fc30b7c85f7cdbf60f43a206fb1f47a9c72fb4","sw.js":"eca3ff2677e9ea8397214a015e92b90b0011a2a1"}
+          PINS_V7={"index.html":"beb4be69b81e31deb5d03543749ef549ce4953e2","app.js":"3725145e5c48a23027723cc62de9572c0be7feec","home.js":"2859025ad28919a4956392d7431a947f1ad151e4","home.css":"e49331b5da9c1632f1d4b384ac05bc57506f50f9","styles.css":"33fc30b7c85f7cdbf60f43a206fb1f47a9c72fb4","sw.js":"04d3a5f9938fb939d43fca37efc6268e474e21ea","offline_status.js":"43560156ccde7b6c89a45977a0ff177ae2bf96cc","manifest.webmanifest":"e74f10f038d5a4e1c04936c1246435de58282d35","med_guard.mjs":"9435ec752a887f0e6e5b696be6eaefc7d6999704","med_matcher.mjs":"cf08822f5e71c8fb505fbec066e5eec9145215c6","med_guard.css":"1ebdff67c6ae4088759bc1c9059ee7f2f5fd6b2e","icons/icon.svg":"05b76763ede5f0d88e2b855f3d90ed72ddf64842","icons/apple-touch-icon.png":"4cf9879b433979d1508c8ffdbb312e29123ef549","icons/icon-192.png":"c07d28a59f0d773c2e18af62b261b50389f60a94","icons/icon-512.png":"09673205f1b64d689d8899c1096031ba351f34cc"}
+          ISOLATED_DB="PAE04_HOME_V7_SYNTHETIC_ISOLATED_20261121"
+          QA_CACHE_PREFIX="pae04-home-v7-qa-synthetic-cache-"
+          
+          def gate(ok, label):
+              if not ok: raise SystemExit("BLOCKED_STOP_FIRST_"+label)
+          
+          def blobsha(raw):
+              return hashlib.sha1(b"blob "+str(len(raw)).encode()+b"\0"+raw).hexdigest()
+          
+          def once(content, old, new, label):
+              gate(content.count(old)==1,label+"_ANCHOR")
+              return content.replace(old,new,1)
+          
+          def git_sha(path):
+              return subprocess.check_output(["git","-C",path,"rev-parse","HEAD"],text=True).strip()
+          
+          event=json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
+          gate(event.get("before")==EXPECTED_PREV,"EVENT_PARENT")
+          gate(event.get("after")==os.environ["GITHUB_SHA"],"EVENT_HEAD")
+          gate(git_sha("legacy")==os.environ["GITHUB_SHA"],"LEGACY_COMMIT")
+          gate(git_sha("prior")==EXPECTED_PR15,"V233_COMMIT")
+          gate(git_sha("candidate")==EXPECTED_V7,"V7_COMMIT")
+          gate(not DIST.exists(),"DIST_ALREADY_EXISTS")
+          gate(OLD_ZIP.is_file() and OLD_ZIP.stat().st_size==84089,"LEGACY_ZIP_SIZE")
+          gate(hashlib.sha256(OLD_ZIP.read_bytes()).hexdigest()==EXPECTED_ZIP,"LEGACY_ZIP_SHA")
+          gate(len(PINS_233)==22 and len(PINS_V7)==15,"EXPECTED_PINS")
+          
+          entries={}
+          with zipfile.ZipFile(OLD_ZIP) as z:
+              gate(z.testzip() is None,"ZIP_CRC")
+              for item in z.infolist():
+                  name=item.filename
+                  p=PurePosixPath(name)
+                  gate(not p.is_absolute() and ".." not in p.parts and "\\" not in name,"ZIP_PATH")
+                  gate(not stat.S_ISLNK(item.external_attr>>16),"ZIP_SYMLINK")
+                  if item.is_dir(): continue
+                  gate(name not in entries and item.file_size<150000,"ZIP_DUP_OR_SIZE")
+                  entries[name]=z.read(item)
+          gate(len(entries)==17 and "sw.js" in entries,"ZIP_ROOT_17")
+          old_sw=entries["sw.js"]
+          gate(hashlib.sha256(old_sw).hexdigest()=="0945a188269432ec7b1ae96fb15c848cdde9294995e793bea3c3c0857118feed","ROOT_ORIGINAL_SW_SHA")
+          prefix=b"  if(request.method!='GET'||url.origin!==scope.origin||!url.pathname.startsWith(scope.pathname))return;\n"
+          # Exact original uses double comparison syntax 'GET' without evaluation.
+          gate(prefix in old_sw and old_sw.count(prefix)==1,"ROOT_HANDLER_CONTEXT")
+          r2=(b"  // PAE-04 TEST v2.3.3: nested PWA has its own narrower Service Worker.\n"
+              b"  // Do not respondWith() nested /v233 requests: let Safari fetch/register it.\n"
+              b"  // IndexedDB, root app caches, and root navigation remain untouched.\n"
+              b"  if(url.pathname===scope.pathname+'v233' ||\n"
+              b"     url.pathname.startsWith(scope.pathname+'v233/'))return;\n")
+          root_r2=once(old_sw,prefix,prefix+r2,"ROOT_R2")
+          gate(hashlib.sha256(root_r2).hexdigest()==EXPECTED_ROOT_R2,"ROOT_R2_SHA")
+          new_bypass=(b"  // HOME-V7: separate nested TEST preview, never serve old root shell.\n"
+                      b"  if(url.pathname===scope.pathname+'home-v7' ||\n"
+                      b"     url.pathname.startsWith(scope.pathname+'home-v7/'))return;\n")
+          root_new=once(root_r2,b"  event.respondWith((async()=>{",new_bypass+b"  event.respondWith((async()=>{","ROOT_NEW_BYPASS")
+          gate(root_new.replace(new_bypass,b"",1)==root_r2,"ROOT_ADDITIVE_ONLY")
+          
+          # Existing v2.3.3 content is preserved verbatim. Check tree metadata, not
+          # private profile content: never open, inspect or log personal_profile.json.
+          raw_tree=subprocess.check_output(["git","-C","prior","ls-tree","-r","HEAD","site"],text=True).splitlines()
+          prior_tree={entry.split("\t",1)[1][5:]:entry.split("\t",1)[0].split()[2] for entry in raw_tree}
+          gate(prior_tree==PINS_233,"V233_GIT_TREE_22")
+          gate(all((PRIOR/name).is_file() and not (PRIOR/name).is_symlink() for name in PINS_233),"V233_CHECKOUT_FILES")
+          gate(not (CAND/"personal_profile.json").exists() and not (CAND/"personal_adapter.js").exists(),"CANDIDATE_PROFILE_DOWNLOADED")
+          selected={f.relative_to(CAND).as_posix() for f in CAND.rglob("*") if f.is_file()}
+          gate(selected==set(PINS_V7),"V7_SPARSE_EXACT_15")
+          for name,sha in PINS_V7.items():
+              gate(blobsha((CAND/name).read_bytes())==sha,"V7_BLOB_PIN_"+name.replace("/","_"))
+          
+          DIST.mkdir()
+          for name,raw in entries.items():
+              dest=DIST/name
+              dest.parent.mkdir(parents=True,exist_ok=True)
+              dest.write_bytes(root_new if name=="sw.js" else raw)
+          gate(all((DIST/name).read_bytes()==(root_new if name=="sw.js" else raw) for name,raw in entries.items()),"ROOT_PRESERVE_16")
+          shutil.copytree(PRIOR,DIST/"v233")
+          gate(len([p for p in (DIST/"v233").rglob("*") if p.is_file()])==22,"V233_FILES_PRESERVED")
+          
+          preview=DIST/"home-v7"
+          preview.mkdir()
+          for name in PINS_V7:
+              dest=preview/name
+              dest.parent.mkdir(parents=True,exist_ok=True)
+              dest.write_bytes((CAND/name).read_bytes())
+          index=(preview/"index.html").read_text(encoding="utf-8")
+          version="iPhone UX v2.3.3 · Design Pass 02 Finish"
+          gate(index.count(version)==4,"INDEX_VERSION_FOUR")
+          index=index.replace(version,"Compact v7 · TEST only")
+          index=once(index,'  <script src="./personal_adapter.js" defer></script>\n',"","INDEX_REMOVE_ADAPTER")
+          index=once(index,'id="import-file" type="file" accept=','id="import-file" type="file" disabled accept=',"INDEX_DISABLE_IMPORT")
+          msg='<div id="messages" role="status" aria-live="polite"></div>'
+          banner=('<div class="qa-v7-banner" role="note">COMPACT V7 · TEST: только вымышленные данные. '
+                  'Не импортируйте личные медицинские записи. Основная v2.3.3 не изменена.</div>\n        ')
+          index=once(index,msg,banner+msg,"INDEX_BANNER")
+          gate("personal_profile.json" not in index and "personal_adapter.js" not in index,"INDEX_NO_PROFILE")
+          (preview/"index.html").write_text(index,encoding="utf-8")
+          
+          app=(preview/"app.js").read_text(encoding="utf-8")
+          app=once(app,"const DB_NAME='PAE04_HT_STABLE_CANDIDATE_INTEGRATION_SYNTHETIC_SCHEMA1';",
+              "const DB_NAME='"+ISOLATED_DB+"';","APP_ISOLATED_DB")
+          gate("const DB_VERSION=1;" in app and "const BACKUP_VERSION=3;" in app,"APP_STORAGE_CONTRACT")
+          gate("indexedDB.deleteDatabase" not in app,"APP_NO_DELETE")
+          (preview/"app.js").write_text(app,encoding="utf-8")
+          
+          css=(preview/"home.css").read_text(encoding="utf-8")
+          css+=("\n/* HOME-V7 isolated synthetic preview notice */\n"
+                ".qa-v7-banner{background:#fff7e6;border:1px solid #e8c174;border-radius:12px;"
+                "padding:13px 15px;color:#664809;font-weight:650;line-height:1.45;margin:8px 0 15px}\n")
+          (preview/"home.css").write_text(css,encoding="utf-8")
+          
+          old_prefix="pae04-ht-stable-candidate-synthetic-schema1-cache-"
+          for name in ["sw.js","offline_status.js"]:
+              s=(preview/name).read_text(encoding="utf-8")
+              s=once(s,old_prefix,QA_CACHE_PREFIX,"ISOLATED_CACHE_"+name)
+              s=once(s,"    './personal_adapter.js','./personal_profile.json','./offline_status.js'",
+                  "    './offline_status.js'","REMOVE_PROFILE_CACHE_"+name)
+              gate("personal_profile.json" not in s and "personal_adapter.js" not in s,"NO_PROFILE_CACHE_"+name)
+              (preview/name).write_text(s,encoding="utf-8")
+          manifest=json.loads((preview/"manifest.webmanifest").read_text(encoding="utf-8"))
+          gate(manifest["id"]=="./" and manifest["scope"]=="./" and manifest["start_url"]=="./index.html","ISOLATED_SCOPE")
+          manifest["name"]="Health Tracker · Compact v7 TEST"
+          manifest["short_name"]="HT v7 TEST"
+          manifest["description"]="Синтетический TEST-preview Compact v7. Без личных медицинских данных."
+          (preview/"manifest.webmanifest").write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+          gate(len([f for f in preview.rglob("*") if f.is_file()])==15,"PREVIEW_FILE_COUNT")
+          gate(len([f for f in DIST.rglob("*") if f.is_file()])==54,"TOTAL_FILES_17_22_15")
+          gate(not any(f.is_symlink() for f in DIST.rglob("*")),"DIST_SYMLINK")
+          gate(ISOLATED_DB in (preview/"app.js").read_text(encoding="utf-8"),"PREVIEW_DB_POST_READ")
+          gate(QA_CACHE_PREFIX in (preview/"sw.js").read_text(encoding="utf-8"),"PREVIEW_SW_POST_READ")
+          gate(QA_CACHE_PREFIX in (preview/"offline_status.js").read_text(encoding="utf-8"),"PREVIEW_OFFLINE_POST_READ")
+          gate("home-v7/" in root_new.decode("utf-8") and "v233/" in root_new.decode("utf-8"),"ROOT_BOTH_NESTED_EXEMPT")
+          gate('id="import-file" type="file" disabled' in index,"IMPORT_DISABLED_POST")
+          print("PASS_ROOT_PREVIOUS_R2_SHA_AND_ADDITIVE_HOMEV7_BYPASS",flush=True)
+          print("PASS_ORIGINAL_17_AND_V233_22_UNCHANGED; PR16_15_PINNED_SELECTED",flush=True)
+          print("PASS_HOME_V7_SYNTHETIC_ISOLATED_DB_CACHE_NO_PROFILE_NO_IMPORT",flush=True)
+          print("SITE_FILES=54; NEW_ROOT_SW_SHA256="+hashlib.sha256(root_new).hexdigest(),flush=True)
+          print("PREVIEW_URL=/home-v7/; NO_PII_CONTENT_ACCESSED_OR_LOGGED",flush=True)
+          
+          PAE04_HOME_V7_TEST_ONCE
+          node --check dist/home-v7/app.js
+          node --check dist/home-v7/home.js
+          node --check dist/home-v7/sw.js
+          node --check dist/home-v7/offline_status.js
+          node --check dist/home-v7/med_guard.mjs
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+      - name: Deploy isolated HOME-V7 TEST once
+        uses: actions/deploy-pages@v4
