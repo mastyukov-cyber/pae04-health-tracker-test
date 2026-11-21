@@ -17,7 +17,7 @@ jobs:
     if: >-
       github.repository == 'mastyukov-cyber/pae04-health-tracker-test' &&
       github.event_name == 'push' &&
-      github.event.before == 'dcdffbe9f9b681acd0065b0d8e3b3eb59e3532a9' &&
+      github.event.before == 'de48ec682883ef25822563b2f8298abc30fbc010' &&
       github.run_attempt == 1
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -48,21 +48,21 @@ jobs:
           filter: blob:none
           sparse-checkout-cone-mode: false
           sparse-checkout: |
-          /site/index.html
-          /site/app.js
-          /site/home.js
-          /site/home.css
-          /site/styles.css
-          /site/sw.js
-          /site/offline_status.js
-          /site/manifest.webmanifest
-          /site/med_guard.mjs
-          /site/med_matcher.mjs
-          /site/med_guard.css
-          /site/icons/icon.svg
-          /site/icons/apple-touch-icon.png
-          /site/icons/icon-192.png
-          /site/icons/icon-512.png
+            /site/index.html
+            /site/app.js
+            /site/home.js
+            /site/home.css
+            /site/styles.css
+            /site/sw.js
+            /site/offline_status.js
+            /site/manifest.webmanifest
+            /site/med_guard.mjs
+            /site/med_matcher.mjs
+            /site/med_guard.css
+            /site/icons/icon.svg
+            /site/icons/apple-touch-icon.png
+            /site/icons/icon-192.png
+            /site/icons/icon-512.png
           persist-credentials: false
       - name: Verify and package isolated HOME-V7 with STOP_FIRST
         shell: bash
@@ -81,7 +81,7 @@ jobs:
           PRIOR=Path("prior/site")
           CAND=Path("candidate/site")
           DIST=Path("dist")
-          EXPECTED_PREV="dcdffbe9f9b681acd0065b0d8e3b3eb59e3532a9"
+          EXPECTED_PREV="de48ec682883ef25822563b2f8298abc30fbc010"
           EXPECTED_PR15="3020e5c1278e5073c229a0ed36a35a9815658c15"
           EXPECTED_V7="c7aa694aa8f169d8f81caa2679bb10aae61382c0"
           EXPECTED_ZIP="0abb256031187036e8d282eaedc08ffaf970e9de1cffd7cda7814cc84fb8c4cb"
@@ -129,7 +129,7 @@ jobs:
           gate(len(entries)==17 and "sw.js" in entries,"ZIP_ROOT_17")
           old_sw=entries["sw.js"]
           gate(hashlib.sha256(old_sw).hexdigest()=="0945a188269432ec7b1ae96fb15c848cdde9294995e793bea3c3c0857118feed","ROOT_ORIGINAL_SW_SHA")
-          prefix=b"  if(request.method!='GET'||url.origin!==scope.origin||!url.pathname.startsWith(scope.pathname))return;\n"
+          prefix=b"  if(request.method!=='GET'||url.origin!==scope.origin||!url.pathname.startsWith(scope.pathname))return;\n"
           # Exact original uses double comparison syntax 'GET' without evaluation.
           gate(prefix in old_sw and old_sw.count(prefix)==1,"ROOT_HANDLER_CONTEXT")
           r2=(b"  // PAE-04 TEST v2.3.3: nested PWA has its own narrower Service Worker.\n"
@@ -202,8 +202,12 @@ jobs:
           for name in ["sw.js","offline_status.js"]:
               s=(preview/name).read_text(encoding="utf-8")
               s=once(s,old_prefix,QA_CACHE_PREFIX,"ISOLATED_CACHE_"+name)
-              s=once(s,"    './personal_adapter.js','./personal_profile.json','./offline_status.js'",
-                  "    './offline_status.js'","REMOVE_PROFILE_CACHE_"+name)
+              if name=="sw.js":
+                  s=once(s,"  './personal_adapter.js','./personal_profile.json','./offline_status.js',",
+                      "  './offline_status.js',","REMOVE_PROFILE_CACHE_"+name)
+              else:
+                  s=once(s,"    './personal_adapter.js','./personal_profile.json','./offline_status.js'",
+                      "    './offline_status.js'","REMOVE_PROFILE_CACHE_"+name)
               gate("personal_profile.json" not in s and "personal_adapter.js" not in s,"NO_PROFILE_CACHE_"+name)
               (preview/name).write_text(s,encoding="utf-8")
           manifest=json.loads((preview/"manifest.webmanifest").read_text(encoding="utf-8"))
