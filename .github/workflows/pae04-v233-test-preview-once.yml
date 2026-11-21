@@ -1,0 +1,98 @@
+name: PAE-04 v2.3.3 isolated TEST preview one-shot
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/pae04-v233-test-preview-once.yml
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pae04-test-site-pages
+  cancel-in-progress: false
+jobs:
+  publish_v233_preview:
+    if: >-
+      github.repository == 'mastyukov-cyber/pae04-health-tracker-test' &&
+      github.event_name == 'push' &&
+      github.event.before == '12e63a63b7a76dd903b71abfd536e7dffeff11cb' &&
+      github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+    steps:
+      - name: Checkout pinned old TEST source
+        uses: actions/checkout@v4
+        with:
+          path: legacy
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Checkout exact v2.3.3 PR15 candidate
+        uses: actions/checkout@v4
+        with:
+          repository: mastyukov/health-tracker
+          ref: 3020e5c1278e5073c229a0ed36a35a9815658c15
+          path: candidate
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Verify and package unchanged legacy root plus v2.3.3 subpath
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'mastyukov-cyber/pae04-health-tracker-test'
+          test "$GITHUB_REF" = 'refs/heads/main'
+          test "$(git -C legacy rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git -C candidate rev-parse HEAD)" = '3020e5c1278e5073c229a0ed36a35a9815658c15'
+          test ! -e dist
+          python3 - <<'PAE04_V233_TEST_ONE_SHOT'
+          from pathlib import Path, PurePosixPath
+          import hashlib, json, os, stat, shutil, zipfile
+
+          OLD_ZIP=Path('legacy/release/health-tracker-test.zip')
+          NEW=Path('candidate/site')
+          DIST=Path('dist')
+          PINNED={".nojekyll":"e69de29bb2d1d6434b8b29ae775ad8c2e48c5391","CP_MED05_BUILD.json":"73cae13ae3002afd9a139805e7152acfc1ad4762","CP_REAL01_BUILD.json":"b7010ad22f5503f1e63148514f628765e6edd248","CP_UI01_BUILD.json":"b92bd7c5e2720a663cf502ee2abfa9650a7e6dfa","app.js":"3725145e5c48a23027723cc62de9572c0be7feec","home.css":"f38d59e4ef42fa44e64dd471d677881fccb5d040","home.js":"e579cc0db5c8e360b3a57870d0e3bc36a087f1c7","icons/apple-touch-icon.png":"4cf9879b433979d1508c8ffdbb312e29123ef549","icons/icon-192.png":"c07d28a59f0d773c2e18af62b261b50389f60a94","icons/icon-512.png":"09673205f1b64d689d8899c1096031ba351f34cc","icons/icon.svg":"05b76763ede5f0d88e2b855f3d90ed72ddf64842","index.html":"beb4be69b81e31deb5d03543749ef549ce4953e2","manifest.webmanifest":"e74f10f038d5a4e1c04936c1246435de58282d35","med_guard.css":"1ebdff67c6ae4088759bc1c9059ee7f2f5fd6b2e","med_guard.mjs":"9435ec752a887f0e6e5b696be6eaefc7d6999704","med_matcher.mjs":"cf08822f5e71c8fb505fbec066e5eec9145215c6","offline_status.js":"15bebef4326103c10189bacbf118037a9f64e5b8","personal_adapter.js":"277b8bc2435d4bd9f4b30c89db15570ca2f2656f","personal_profile.json":"5b21b52962b8ff2ebc48e5a394ef3cd308d50b4c","robots.txt":"1f53798bb4fe33c86020be7f10c44f29486fd190","styles.css":"33fc30b7c85f7cdbf60f43a206fb1f47a9c72fb4","sw.js":"eca3ff2677e9ea8397214a015e92b90b0011a2a1"}
+          def gate(condition,reason):
+              if not condition: raise SystemExit('STOP_FIRST_'+reason)
+          evt=json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
+          gate(evt.get('before')=='12e63a63b7a76dd903b71abfd536e7dffeff11cb', 'WRONG_PARENT')
+          gate(evt.get('after')==os.environ.get('GITHUB_SHA'), 'WRONG_TRIGGER')
+          gate(OLD_ZIP.is_file(), 'OLD_ARCHIVE_MISSING')
+          gate(hashlib.sha256(OLD_ZIP.read_bytes()).hexdigest()=='0abb256031187036e8d282eaedc08ffaf970e9de1cffd7cda7814cc84fb8c4cb', 'OLD_ARCHIVE_SHA')
+          gate(NEW.is_dir() and len(PINNED)==22, 'CANDIDATE_MISSING')
+          found={}
+          for item in NEW.rglob('*'):
+              gate(not item.is_symlink(), 'SYMLINK_IN_CANDIDATE')
+              if item.is_file():
+                  name=item.relative_to(NEW).as_posix()
+                  raw=item.read_bytes()
+                  found[name]=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          gate(found==PINNED, 'CANDIDATE_BLOB_MISMATCH')
+          gate('v2.3.3' in (NEW/'index.html').read_text(encoding='utf-8'), 'CANDIDATE_VERSION')
+          manifest=json.loads((NEW/'manifest.webmanifest').read_text(encoding='utf-8'))
+          gate(manifest.get('scope')=='./' and manifest.get('start_url')=='./index.html', 'SUBPATH_NOT_SUPPORTED')
+          with zipfile.ZipFile(OLD_ZIP) as z:
+              for info in z.infolist():
+                  pure=PurePosixPath(info.filename)
+                  gate(not pure.is_absolute() and '..' not in pure.parts and not info.filename.startswith('/'), 'OLD_ZIP_UNSAFE_PATH')
+                  gate(not stat.S_ISLNK(info.external_attr>>16), 'OLD_ZIP_SYMLINK')
+              DIST.mkdir()
+              z.extractall(DIST)
+          legacy_files=[f for f in DIST.rglob('*') if f.is_file()]
+          gate(len(legacy_files)==17, 'LEGACY_ROOT_COUNT')
+          gate(not any(x.is_symlink() for x in DIST.rglob('*')), 'LEGACY_SYMLINK')
+          shutil.copytree(NEW,DIST/'v233')
+          gate(len([f for f in (DIST/'v233').rglob('*') if f.is_file()])==22,'PREVIEW_FILE_COUNT')
+          print('PASS_PACKAGE_PINNED_ROOT_17_AND_PR15_PREVIEW_22',flush=True)
+          print('TEST_PREVIEW_SUBPATH=/v233/; DATA_CONTENT_NOT_LOGGED',flush=True)
+          PAE04_V233_TEST_ONE_SHOT
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+      - name: Deploy only TEST Pages site
+        id: deployment
+        uses: actions/deploy-pages@v4
