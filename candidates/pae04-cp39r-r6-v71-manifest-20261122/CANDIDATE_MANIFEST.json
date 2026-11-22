@@ -1,0 +1,158 @@
+{
+  "schema": "pae04.test-candidate-manifest.v1",
+  "id": "PAE04_CP39R_R6_TEST_MANIFEST_ONLY_20261122",
+  "mode": "DOCUMENTATION_ONLY_NOT_DEPLOYABLE",
+  "destination_repository": "mastyukov-cyber/pae04-health-tracker-test",
+  "destination_base_main_sha": "86fafc7d55b9fde867c3dc0536fa21d89419323e",
+  "source_repository": "mastyukov/health-tracker",
+  "source_draft_pr": 19,
+  "source_head_commit": "0c471c1798bff2c3fbf812b81cc235b482387c20",
+  "source_site_tree_sha1": "a38f827b96f62155eec31beb443f4b92549b6b0c",
+  "reference_files_sha_algorithm": "git-blob-sha1",
+  "sha256_of_sanitized_release": "NOT_COMPUTED_NO_ARTIFACT",
+  "site_reference_files": [
+    {
+      "path": "site/.nojekyll",
+      "git_blob_sha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0
+    },
+    {
+      "path": "site/app.js",
+      "git_blob_sha1": "6f76cd6b464216fc1402857c33b1b5a4614b3838",
+      "bytes": 86637
+    },
+    {
+      "path": "site/CP_MED05_BUILD.json",
+      "git_blob_sha1": "73cae13ae3002afd9a139805e7152acfc1ad4762",
+      "bytes": 324
+    },
+    {
+      "path": "site/CP_REAL01_BUILD.json",
+      "git_blob_sha1": "b7010ad22f5503f1e63148514f628765e6edd248",
+      "bytes": 310
+    },
+    {
+      "path": "site/CP_UI01_BUILD.json",
+      "git_blob_sha1": "b92bd7c5e2720a663cf502ee2abfa9650a7e6dfa",
+      "bytes": 306
+    },
+    {
+      "path": "site/home.css",
+      "git_blob_sha1": "e49331b5da9c1632f1d4b384ac05bc57506f50f9",
+      "bytes": 13713
+    },
+    {
+      "path": "site/home.js",
+      "git_blob_sha1": "de4c28b60f6e90a54696b6232c9eb6c4147cea31",
+      "bytes": 22412
+    },
+    {
+      "path": "site/icons/apple-touch-icon.png",
+      "git_blob_sha1": "4cf9879b433979d1508c8ffdbb312e29123ef549",
+      "bytes": 7145
+    },
+    {
+      "path": "site/icons/icon-192.png",
+      "git_blob_sha1": "c07d28a59f0d773c2e18af62b261b50389f60a94",
+      "bytes": 7697
+    },
+    {
+      "path": "site/icons/icon-512.png",
+      "git_blob_sha1": "09673205f1b64d689d8899c1096031ba351f34cc",
+      "bytes": 21771
+    },
+    {
+      "path": "site/icons/icon.svg",
+      "git_blob_sha1": "05b76763ede5f0d88e2b855f3d90ed72ddf64842",
+      "bytes": 449
+    },
+    {
+      "path": "site/index.html",
+      "git_blob_sha1": "08b241a615da56297d4982a7ac5a2c36f0c8c0ca",
+      "bytes": 26045
+    },
+    {
+      "path": "site/manifest.webmanifest",
+      "git_blob_sha1": "e74f10f038d5a4e1c04936c1246435de58282d35",
+      "bytes": 740
+    },
+    {
+      "path": "site/med_guard.css",
+      "git_blob_sha1": "1ebdff67c6ae4088759bc1c9059ee7f2f5fd6b2e",
+      "bytes": 766
+    },
+    {
+      "path": "site/med_guard.mjs",
+      "git_blob_sha1": "9435ec752a887f0e6e5b696be6eaefc7d6999704",
+      "bytes": 9438
+    },
+    {
+      "path": "site/med_matcher.mjs",
+      "git_blob_sha1": "cf08822f5e71c8fb505fbec066e5eec9145215c6",
+      "bytes": 4044
+    },
+    {
+      "path": "site/offline_status.js",
+      "git_blob_sha1": "d287ba87f900dd43c9b83ab463d21fa9aca13d7e",
+      "bytes": 2803
+    },
+    {
+      "path": "site/personal_adapter.js",
+      "git_blob_sha1": "277b8bc2435d4bd9f4b30c89db15570ca2f2656f",
+      "bytes": 7879
+    },
+    {
+      "path": "site/personal_profile.json",
+      "git_blob_sha1": "5b21b52962b8ff2ebc48e5a394ef3cd308d50b4c",
+      "bytes": 7883
+    },
+    {
+      "path": "site/robots.txt",
+      "git_blob_sha1": "1f53798bb4fe33c86020be7f10c44f29486fd190",
+      "bytes": 26
+    },
+    {
+      "path": "site/styles.css",
+      "git_blob_sha1": "33fc30b7c85f7cdbf60f43a206fb1f47a9c72fb4",
+      "bytes": 36188
+    },
+    {
+      "path": "site/sw.js",
+      "git_blob_sha1": "b1c1ce828ff7c552088b4e395f3fea7e05e9c7b0",
+      "bytes": 3890
+    }
+  ],
+  "copied_source_files": 0,
+  "copied_personal_data_files": 0,
+  "candidate_output_path": "UNASSIGNED_NOT_PUBLISHED",
+  "requirements_before_any_test_release": [
+    "Owner approves synthetic-only transformation of personalized source values.",
+    "Independently verify every modified asset and generate full SHA-256 manifest for the transformed TEST build.",
+    "Run new Chrome integrated regression against the exact transformed TEST build; prior original-build PASS cannot be transferred.",
+    "Keep separate TEST origin/storage from any personal FINAL origin; do not overwrite existing TEST without owner approval.",
+    "Physical iPhone acceptance remains required before final sign-off."
+  ],
+  "privacy_notes": [
+    "Original source includes a personal_profile.json that describes real medicine names and reported doses; this manifest copies neither content nor records.",
+    "Original index.html and app.js also include medication catalog labels; full synthetic-only publishing requires review beyond one JSON file.",
+    "Source SHA-1 hashes are references, not SHA-256 checksums of a newly built sanitized artifact."
+  ],
+  "previous_scoped_qa": {
+    "checkpoint": "CP39R-R5",
+    "outcome": "PASS_INTEGRATED_CHROME_SCOPED",
+    "checks": 22,
+    "passed": 22,
+    "failed": 0,
+    "source_commit": "0c471c1798bff2c3fbf812b81cc235b482387c20",
+    "evidence": "Independent readback of QA_RESULT_R5.json in user-authorized Mac QA sandbox during same conversation; not copied to this GitHub candidate.",
+    "limitations": [
+      "original PR19 site only",
+      "no actual import or restore",
+      "no physical iPhone test",
+      "not a test of a future sanitized release build"
+    ]
+  },
+  "release_decision": "NO_GO",
+  "current_test_pages_unchanged": true,
+  "existing_workflows_unchanged": true
+}
