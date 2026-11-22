@@ -1,0 +1,249 @@
+{
+  "schema": "PAE04_PERSONAL_QA_PROFILE_V1",
+  "captured_on": "2026-11-22",
+  "purpose": "PERSONAL_TEST_ONLY",
+  "privacy": "ALL_SYNTHETIC_FICTIONAL_PUBLIC_TEST_NO_REAL_DATA",
+  "existing_record_action": "REFUSE_NONEMPTY_MEDICATION_DATABASE",
+  "medicines": [
+    {
+      "key": "R7-TEST-01",
+      "name": "Тестовый препарат 01",
+      "kind": "regular",
+      "category": "medicine",
+      "dose": "TEST ONLY — не для приёма",
+      "timing": "Вымышленный пример",
+      "product_strength_mg": null,
+      "ingredient": "Синтетическое вещество",
+      "form": "таблетки",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "R7-TEST-02",
+      "name": "Тестовый препарат 02",
+      "kind": "regular",
+      "category": "medicine",
+      "dose": "TEST ONLY — не для приёма",
+      "timing": "Вымышленный пример",
+      "product_strength_mg": null,
+      "ingredient": "Синтетическое вещество",
+      "form": "таблетки",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "R7-TEST-03",
+      "name": "Тестовый препарат 03",
+      "kind": "regular",
+      "category": "medicine",
+      "dose": "TEST ONLY — не для приёма",
+      "timing": "Вымышленный пример",
+      "product_strength_mg": null,
+      "ingredient": "Синтетическое вещество",
+      "form": "таблетки",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "R7-TEST-04",
+      "name": "Тестовый препарат 04",
+      "kind": "regular",
+      "category": "medicine",
+      "dose": "TEST ONLY — не для приёма",
+      "timing": "Вымышленный пример",
+      "product_strength_mg": null,
+      "ingredient": "Синтетическое вещество",
+      "form": "таблетки",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "R7-TEST-05",
+      "name": "Тестовый препарат 05",
+      "kind": "regular",
+      "category": "medicine",
+      "dose": "TEST ONLY — не для приёма",
+      "timing": "Вымышленный пример",
+      "product_strength_mg": null,
+      "ingredient": "Синтетическое вещество",
+      "form": "таблетки",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "R7-TEST-06",
+      "name": "Тестовый препарат 06",
+      "kind": "regular",
+      "category": "medicine",
+      "dose": "TEST ONLY — не для приёма",
+      "timing": "Вымышленный пример",
+      "product_strength_mg": null,
+      "ingredient": "Синтетическое вещество",
+      "form": "таблетки",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "R7-TEST-07",
+      "name": "Тестовый препарат 07",
+      "kind": "regular",
+      "category": "medicine",
+      "dose": "TEST ONLY — не для приёма",
+      "timing": "Вымышленный пример",
+      "product_strength_mg": null,
+      "ingredient": "Синтетическое вещество",
+      "form": "таблетки",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "R7-TEST-08",
+      "name": "Тестовый препарат 08",
+      "kind": "regular",
+      "category": "medicine",
+      "dose": "TEST ONLY — не для приёма",
+      "timing": "Вымышленный пример",
+      "product_strength_mg": null,
+      "ingredient": "Синтетическое вещество",
+      "form": "таблетки",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "R7-TEST-09",
+      "name": "Тестовый препарат 09",
+      "kind": "regular",
+      "category": "medicine",
+      "dose": "TEST ONLY — не для приёма",
+      "timing": "Вымышленный пример",
+      "product_strength_mg": null,
+      "ingredient": "Синтетическое вещество",
+      "form": "таблетки",
+      "from": null,
+      "to": null
+    },
+    {
+      "key": "R7-TEST-10",
+      "name": "Тестовый препарат 10",
+      "kind": "regular",
+      "category": "medicine",
+      "dose": "TEST ONLY — не для приёма",
+      "timing": "Вымышленный пример",
+      "product_strength_mg": null,
+      "ingredient": "Синтетическое вещество",
+      "form": "таблетки",
+      "from": null,
+      "to": null
+    }
+  ],
+  "reference_catalog": [
+    {
+      "id": "R7-TEST-01",
+      "name": "Тестовый препарат 01",
+      "aliases": [],
+      "ingredient": "Синтетическое вещество",
+      "strength": null,
+      "unit": "",
+      "form": "таблетки",
+      "type": "synthetic"
+    },
+    {
+      "id": "R7-TEST-02",
+      "name": "Тестовый препарат 02",
+      "aliases": [],
+      "ingredient": "Синтетическое вещество",
+      "strength": null,
+      "unit": "",
+      "form": "таблетки",
+      "type": "synthetic"
+    },
+    {
+      "id": "R7-TEST-03",
+      "name": "Тестовый препарат 03",
+      "aliases": [],
+      "ingredient": "Синтетическое вещество",
+      "strength": null,
+      "unit": "",
+      "form": "таблетки",
+      "type": "synthetic"
+    },
+    {
+      "id": "R7-TEST-04",
+      "name": "Тестовый препарат 04",
+      "aliases": [],
+      "ingredient": "Синтетическое вещество",
+      "strength": null,
+      "unit": "",
+      "form": "таблетки",
+      "type": "synthetic"
+    },
+    {
+      "id": "R7-TEST-05",
+      "name": "Тестовый препарат 05",
+      "aliases": [],
+      "ingredient": "Синтетическое вещество",
+      "strength": null,
+      "unit": "",
+      "form": "таблетки",
+      "type": "synthetic"
+    },
+    {
+      "id": "R7-TEST-06",
+      "name": "Тестовый препарат 06",
+      "aliases": [],
+      "ingredient": "Синтетическое вещество",
+      "strength": null,
+      "unit": "",
+      "form": "таблетки",
+      "type": "synthetic"
+    },
+    {
+      "id": "R7-TEST-07",
+      "name": "Тестовый препарат 07",
+      "aliases": [],
+      "ingredient": "Синтетическое вещество",
+      "strength": null,
+      "unit": "",
+      "form": "таблетки",
+      "type": "synthetic"
+    },
+    {
+      "id": "R7-TEST-08",
+      "name": "Тестовый препарат 08",
+      "aliases": [],
+      "ingredient": "Синтетическое вещество",
+      "strength": null,
+      "unit": "",
+      "form": "таблетки",
+      "type": "synthetic"
+    },
+    {
+      "id": "R7-TEST-09",
+      "name": "Тестовый препарат 09",
+      "aliases": [],
+      "ingredient": "Синтетическое вещество",
+      "strength": null,
+      "unit": "",
+      "form": "таблетки",
+      "type": "synthetic"
+    },
+    {
+      "id": "R7-TEST-10",
+      "name": "Тестовый препарат 10",
+      "aliases": [],
+      "ingredient": "Синтетическое вещество",
+      "strength": null,
+      "unit": "",
+      "form": "таблетки",
+      "type": "synthetic"
+    }
+  ],
+  "sources": {},
+  "constraints": {
+    "seed_intakes": false,
+    "seed_pressures": false,
+    "do_not_change_prescriptions": true,
+    "backup_format": "synthetic_v3",
+    "offline": true
+  }
+}

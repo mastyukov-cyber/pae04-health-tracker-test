@@ -1,0 +1,65 @@
+name: PAE-04 CP39R-R10 Linux Chromium IndexedDB-ready one-shot
+on:
+  pull_request:
+    types: [opened]
+    branches: [main]
+    paths:
+      - '.github/workflows/pae04-cp39r-r10-indexeddb-ready-once.yml'
+permissions:
+  contents: read
+concurrency:
+  group: pae04-cp39r-r10-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+jobs:
+  integrated_chromium:
+    if: >-
+      github.repository == 'mastyukov-cyber/pae04-health-tracker-test' &&
+      github.event_name == 'pull_request' &&
+      github.event.action == 'opened' &&
+      github.event.pull_request.head.ref == 'sandbox/pae04-cp39r-r10-indexeddb-ready-once-20261122' &&
+      github.event.pull_request.head.repo.full_name == 'mastyukov-cyber/pae04-health-tracker-test' &&
+      github.event.pull_request.base.sha == '86fafc7d55b9fde867c3dc0536fa21d89419323e' &&
+      github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      CI: 'true'
+      NODE_OPTIONS: '--max-old-space-size=768'
+    steps:
+      - name: Checkout pinned QA head without token persistence
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 3
+          persist-credentials: false
+      - name: Set up Node.js 26
+        uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+      - name: Read-only source and environment preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'mastyukov-cyber/pae04-health-tracker-test'
+          test "$GITHUB_EVENT_NAME" = 'pull_request'
+          test "$GITHUB_RUN_ATTEMPT" = '1'
+          test "$(git rev-parse HEAD^)" = '34d00b5b3e14a664aed25a5dd585c6c4a6665453'
+          test "$(git rev-parse HEAD~2)" = 'bc4de06f7536ad889dae720e1cce52c5453fdbed'
+          test "$(node --version | cut -d. -f1)" = 'v26'
+          command -v google-chrome
+          google-chrome --version
+          node --check qa/cp39r-r9/integrated_linux_chromium.cjs
+          echo R10_PREFLIGHT_STATIC_PASS
+      - name: Install pinned Playwright-core into runner temp only
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix "$RUNNER_TEMP/pae04-r10-deps" --no-save --no-audit --no-fund --ignore-scripts --no-package-lock playwright-core@1.65.1
+      - name: One integrated Chromium run on synthetic R7 app
+        shell: bash
+        env:
+          NODE_PATH: ${{ runner.temp }}/pae04-r10-deps/node_modules
+        run: |
+          set -euo pipefail
+          node qa/cp39r-r9/integrated_linux_chromium.cjs
+          echo R10_LINUX_CHROMIUM_ONE_SHOT_COMPLETE
