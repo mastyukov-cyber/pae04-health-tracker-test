@@ -66,7 +66,7 @@ async function run(){
   phase='PINNED_SOURCE';
   gate(process.env.GITHUB_REPOSITORY==='mastyukov-cyber/pae04-health-tracker-test','REPOSITORY');
   gate(process.env.GITHUB_EVENT_NAME==='pull_request'&&process.env.GITHUB_RUN_ATTEMPT==='1','ONE_SHOT_EVENT');
-  gate(command('git',['rev-parse','HEAD^'])===SOURCE_SHA,'SOURCE_PARENT_SHA',{source:SOURCE_SHA});
+  gate(command('git',['rev-parse','HEAD~2'])===SOURCE_SHA,'SOURCE_PARENT_SHA',{source:SOURCE_SHA});
   gate(command('git',['rev-parse','--verify','HEAD']).length===40,'HEAD_VALID');
   const manifest=JSON.parse(fs.readFileSync(path.join(ROOT,'MANIFEST_SHA256.json'),'utf8'));
   gate(manifest.files?.length===22&&manifest.releaseGo===false&&manifest.source?.head==='0c471c1798bff2c3fbf812b81cc235b482387c20'&&manifest.destination?.base_main===EXPECTED_MAIN,'MANIFEST_PIN');
@@ -126,7 +126,8 @@ async function run(){
   page=await context.newPage();page.setDefaultTimeout(12000);
   phase='INTEGRATED_PWA_LOAD';
   await page.goto(address,{waitUntil:'load',timeout:20000});
-  await page.waitForFunction(()=>document.readyState==='complete'&&typeof readBackupSnapshot==='function'&&Boolean(window.PAE04MedicationGuard),null,{timeout:12000});
+  await page.waitForFunction(()=>document.readyState==='complete'&&Boolean(window.PAE04MedicationGuard),null,{timeout:12000});
+  await page.waitForFunction(()=>document.querySelector('#connection-status')?.textContent?.includes('Локальная база доступна')&&typeof db!=='undefined'&&db!==null&&typeof readBackupSnapshot==='function',null,{timeout:15000});
   const dom=await page.evaluate(()=>({pressure:!!document.getElementById('pressure-form'),meds:!!document.getElementById('med-form'),verify:!!document.getElementById('verify-file'),preview:!!document.getElementById('import-file'),export:!!document.getElementById('export-button'),guard:!!window.PAE04MedicationGuard}));
   gate(Object.values(dom).every(Boolean)&&httpHits>0,'INTEGRATED_PWA_LOAD',dom);
   const empty=await counts();
@@ -184,7 +185,7 @@ async function run(){
 
   phase='RELOAD_PERSISTENCE';
   await page.reload({waitUntil:'load',timeout:18000});
-  await page.waitForFunction(()=>typeof readBackupSnapshot==='function',null,{timeout:10000});
+  await page.waitForFunction(()=>document.querySelector('#connection-status')?.textContent?.includes('Локальная база доступна')&&typeof db!=='undefined'&&db!==null&&typeof readBackupSnapshot==='function',null,{timeout:15000});
   const persisted=await counts();
   gate(Object.values(persisted).every(x=>x===1),'PERSISTENT_IDB_4_STORES',persisted);
 
@@ -237,7 +238,7 @@ async function run(){
   phase='OFFLINE_RELOAD';
   await context.setOffline(true);
   await page.reload({waitUntil:'domcontentloaded',timeout:18000});
-  await page.waitForFunction(()=>typeof readBackupSnapshot==='function',null,{timeout:10000});
+  await page.waitForFunction(()=>document.querySelector('#connection-status')?.textContent?.includes('Локальная база доступна')&&typeof db!=='undefined'&&db!==null&&typeof readBackupSnapshot==='function',null,{timeout:15000});
   const offline=await counts();
   const ok=await page.evaluate(()=>document.readyState!=='loading'&&!!document.getElementById('pressure-form')&&!!navigator.serviceWorker.controller);
   gate(ok&&Object.values(offline).every(v=>v===1),'OFFLINE_RELOAD_IDB_4_STORES',offline);
