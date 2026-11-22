@@ -1,0 +1,69 @@
+name: PAE-04 HOME-V7 Linux WebKit synthetic QA (one-shot)
+on:
+  push:
+    branches:
+      - qa/pae04-home-v7-webkit-once-20261122
+    paths:
+      - .github/workflows/pae04-home-v7-webkit-once.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pae04-home-v7-webkit-once-20261122
+  cancel-in-progress: false
+
+jobs:
+  webkit_home_v7:
+    if: >-
+      github.repository == 'mastyukov-cyber/pae04-health-tracker-test' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/qa/pae04-home-v7-webkit-once-20261122' &&
+      github.event.before == '96ab0e490c4b60e5f22b629682eac1ca5d190c9a' &&
+      github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout QA-only branch without credentials
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node 26
+        uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+
+      - name: Verify one-shot scope and static QA source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "mastyukov-cyber/pae04-health-tracker-test"
+          test "$GITHUB_REF" = "refs/heads/qa/pae04-home-v7-webkit-once-20261122"
+          test -f qa/home_v7_webkit_once.py
+          node -e "if (!process.versions.node.startsWith('26.')) process.exit(1)"
+          python -c 'import ast,pathlib,sys; assert sys.version_info[:2]==(3,12); p=pathlib.Path("qa/home_v7_webkit_once.py"); ast.parse(p.read_text(encoding="utf-8")); print("PASS_PYTHON_AST_3_12")'
+
+      - name: Install pinned Playwright and WebKit only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-input 'playwright==1.65.1'
+          python -m playwright install --with-deps webkit
+          python -c 'from importlib.metadata import version; assert version("playwright")=="1.65.1"'
+
+      - name: Execute isolated WebKit HOME-V7 QA once
+        shell: bash
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          set -euo pipefail
+          python qa/home_v7_webkit_once.py
