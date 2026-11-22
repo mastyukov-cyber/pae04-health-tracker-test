@@ -1,0 +1,219 @@
+{
+  "schema": "pae04.cp39r-r7.synthetic.test-build-manifest.v1",
+  "checkpoint": "CP39R-R7",
+  "status": "PREPARED_NOT_QA_NOT_DEPLOYED",
+  "privacy": "synthetic-only synthetic fixture; no real medication records intentionally copied",
+  "releaseGo": false,
+  "source": {
+    "repository": "mastyukov/health-tracker",
+    "head": "0c471c1798bff2c3fbf812b81cc235b482387c20",
+    "site_tree_sha1": "a38f827b96f62155eec31beb443f4b92549b6b0c",
+    "pr": 19
+  },
+  "destination": {
+    "repository": "mastyukov-cyber/pae04-health-tracker-test",
+    "base_main": "86fafc7d55b9fde867c3dc0536fa21d89419323e",
+    "subpath": "candidates/pae04-cp39r-r7-synthetic-build-20261122/site",
+    "pages_deployment": false
+  },
+  "copiedAssets": 22,
+  "modifiedAssets": 7,
+  "unchangedAssets": 15,
+  "sourceTotalBytes": 260466,
+  "cacheIsolation": "pae04-cyber-cp39r-r7-synthetic-isolated-cache-",
+  "indexedDbIsolation": "PAE04_CYBER_CP39R_R7_SYNTHETIC_ONLY_20261122",
+  "hashes": {
+    "sha256": "SHA-256 of exact target bytes, independently computed from target Git blobs and original byte-identical assets",
+    "git_blob_sha1": "Git blob SHA-1, target repository object"
+  },
+  "referenceQA": {
+    "previous": "CP39R-R5 Chrome 22/22 PASS_SCOPED on original source; NOT proof of changed build",
+    "thisBuild": "NOT_RUN",
+    "physicalIPhone": "NOT_RUN"
+  },
+  "files": [
+    {
+      "path": "site/.nojekyll",
+      "sourceBlobSha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "targetBlobSha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "changed": false
+    },
+    {
+      "path": "site/app.js",
+      "sourceBlobSha1": "6f76cd6b464216fc1402857c33b1b5a4614b3838",
+      "targetBlobSha1": "f81435d36a65073e6db853e73b3e2da040f1bf3d",
+      "sha256": "b1fc1b68d724efc97dc8354dd5bd14015b546de87cef46208f4c630e2615c010",
+      "bytes": null,
+      "changed": true
+    },
+    {
+      "path": "site/CP_MED05_BUILD.json",
+      "sourceBlobSha1": "73cae13ae3002afd9a139805e7152acfc1ad4762",
+      "targetBlobSha1": "73cae13ae3002afd9a139805e7152acfc1ad4762",
+      "sha256": "23177fec90f779b6ef6636129cceb7ab20cffa864ce5570e02a493f283d16de3",
+      "bytes": 324,
+      "changed": false
+    },
+    {
+      "path": "site/CP_REAL01_BUILD.json",
+      "sourceBlobSha1": "b7010ad22f5503f1e63148514f628765e6edd248",
+      "targetBlobSha1": "b7010ad22f5503f1e63148514f628765e6edd248",
+      "sha256": "4253c1e188916ddba4e79563ed548137dae35b8431cce9441b46025a2596f920",
+      "bytes": 310,
+      "changed": false
+    },
+    {
+      "path": "site/CP_UI01_BUILD.json",
+      "sourceBlobSha1": "b92bd7c5e2720a663cf502ee2abfa9650a7e6dfa",
+      "targetBlobSha1": "b92bd7c5e2720a663cf502ee2abfa9650a7e6dfa",
+      "sha256": "6f81de5a28facc72e9bbf918693db3f8eab5df4cd3bfbc53f8ed618e836c9af8",
+      "bytes": 306,
+      "changed": false
+    },
+    {
+      "path": "site/home.css",
+      "sourceBlobSha1": "e49331b5da9c1632f1d4b384ac05bc57506f50f9",
+      "targetBlobSha1": "e49331b5da9c1632f1d4b384ac05bc57506f50f9",
+      "sha256": "09893b19ca639fc43c7cfd82f95e3c75b759956f7f932db934863b1e5f78334a",
+      "bytes": 13713,
+      "changed": false
+    },
+    {
+      "path": "site/home.js",
+      "sourceBlobSha1": "de4c28b60f6e90a54696b6232c9eb6c4147cea31",
+      "targetBlobSha1": "de4c28b60f6e90a54696b6232c9eb6c4147cea31",
+      "sha256": "a8faae2e901cb4c384192e358d0aeedebc3e907e5551a62d253f815731433217",
+      "bytes": 22412,
+      "changed": false
+    },
+    {
+      "path": "site/icons/apple-touch-icon.png",
+      "sourceBlobSha1": "4cf9879b433979d1508c8ffdbb312e29123ef549",
+      "targetBlobSha1": "4cf9879b433979d1508c8ffdbb312e29123ef549",
+      "sha256": "7e321de521f7c91a8856a66e237b98bb48d36bc89c6246ab90cc0ffb4ce6e11b",
+      "bytes": 7145,
+      "changed": false
+    },
+    {
+      "path": "site/icons/icon-192.png",
+      "sourceBlobSha1": "c07d28a59f0d773c2e18af62b261b50389f60a94",
+      "targetBlobSha1": "c07d28a59f0d773c2e18af62b261b50389f60a94",
+      "sha256": "455b1aa541ebd7574d441d82615efd6f02d277c2ecf727077aa274fbbbe74f05",
+      "bytes": 7697,
+      "changed": false
+    },
+    {
+      "path": "site/icons/icon-512.png",
+      "sourceBlobSha1": "09673205f1b64d689d8899c1096031ba351f34cc",
+      "targetBlobSha1": "09673205f1b64d689d8899c1096031ba351f34cc",
+      "sha256": "b5509bdf65dc021a057dac3f6db52de87a5d13d64c34cdc5f8dfc677a4e4f18b",
+      "bytes": 21771,
+      "changed": false
+    },
+    {
+      "path": "site/icons/icon.svg",
+      "sourceBlobSha1": "05b76763ede5f0d88e2b855f3d90ed72ddf64842",
+      "targetBlobSha1": "05b76763ede5f0d88e2b855f3d90ed72ddf64842",
+      "sha256": "377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606",
+      "bytes": 449,
+      "changed": false
+    },
+    {
+      "path": "site/index.html",
+      "sourceBlobSha1": "08b241a615da56297d4982a7ac5a2c36f0c8c0ca",
+      "targetBlobSha1": "0d5fe9d2df4166e3c0d6add3f1e0e67931704243",
+      "sha256": "071bd41cc9a5a0554a65d9ca6d38299b3600118ee66d86ae465aaadd518939cb",
+      "bytes": null,
+      "changed": true
+    },
+    {
+      "path": "site/manifest.webmanifest",
+      "sourceBlobSha1": "e74f10f038d5a4e1c04936c1246435de58282d35",
+      "targetBlobSha1": "e74f10f038d5a4e1c04936c1246435de58282d35",
+      "sha256": "f34d5c26d9d3142edd64fb5cfa4345631f9e261124fa6736991d65923738d9fb",
+      "bytes": 740,
+      "changed": false
+    },
+    {
+      "path": "site/med_guard.css",
+      "sourceBlobSha1": "1ebdff67c6ae4088759bc1c9059ee7f2f5fd6b2e",
+      "targetBlobSha1": "1ebdff67c6ae4088759bc1c9059ee7f2f5fd6b2e",
+      "sha256": "4b606c41bfee2be98ffd90123bc55c19f00888c0c3e18ff2f618ab0e18276389",
+      "bytes": 766,
+      "changed": false
+    },
+    {
+      "path": "site/med_guard.mjs",
+      "sourceBlobSha1": "9435ec752a887f0e6e5b696be6eaefc7d6999704",
+      "targetBlobSha1": "8789a54ff18ddf914d856bb5cfa1af4464d77548",
+      "sha256": "5993bd5b1cbd9f2fb4472f787420de0e6e05ea5b31a041ba7daf864b9a9fc085",
+      "bytes": null,
+      "changed": true
+    },
+    {
+      "path": "site/med_matcher.mjs",
+      "sourceBlobSha1": "cf08822f5e71c8fb505fbec066e5eec9145215c6",
+      "targetBlobSha1": "cf08822f5e71c8fb505fbec066e5eec9145215c6",
+      "sha256": "216b1cdc709d29147eba923973f530ef27c89b5422859c91dac74453666ccd08",
+      "bytes": 4044,
+      "changed": false
+    },
+    {
+      "path": "site/offline_status.js",
+      "sourceBlobSha1": "d287ba87f900dd43c9b83ab463d21fa9aca13d7e",
+      "targetBlobSha1": "439d929b58014b24f99824ef63c8dfa0c37815a0",
+      "sha256": "8f5345620eea2e1042bf89630c5516296b18ede0165191372e0f04176b544df6",
+      "bytes": null,
+      "changed": true
+    },
+    {
+      "path": "site/personal_adapter.js",
+      "sourceBlobSha1": "277b8bc2435d4bd9f4b30c89db15570ca2f2656f",
+      "targetBlobSha1": "758122df6b34b94ec747b2b3989622446e4cd398",
+      "sha256": "9dca20cedde04d23bb781f5b3b00a540c8f518295994f2f829aa3fd15f674777",
+      "bytes": null,
+      "changed": true
+    },
+    {
+      "path": "site/personal_profile.json",
+      "sourceBlobSha1": "5b21b52962b8ff2ebc48e5a394ef3cd308d50b4c",
+      "targetBlobSha1": "e8a5bf3553efdb5fdc94a3eab1d794920667cfc3",
+      "sha256": "ea5b672c56a55adc27e804119af34298b68b46fb3d7379908e8b734c27e0a624",
+      "bytes": null,
+      "changed": true
+    },
+    {
+      "path": "site/robots.txt",
+      "sourceBlobSha1": "1f53798bb4fe33c86020be7f10c44f29486fd190",
+      "targetBlobSha1": "1f53798bb4fe33c86020be7f10c44f29486fd190",
+      "sha256": "331ea9090db0c9f6f597bd9840fd5b171830f6e0b3ba1cb24dfa91f0c95aedc1",
+      "bytes": 26,
+      "changed": false
+    },
+    {
+      "path": "site/styles.css",
+      "sourceBlobSha1": "33fc30b7c85f7cdbf60f43a206fb1f47a9c72fb4",
+      "targetBlobSha1": "33fc30b7c85f7cdbf60f43a206fb1f47a9c72fb4",
+      "sha256": "f0faee03997d406f2a6e86e2c8948ef3007ed871a544ca315bc512be4d0dd6f5",
+      "bytes": 36188,
+      "changed": false
+    },
+    {
+      "path": "site/sw.js",
+      "sourceBlobSha1": "b1c1ce828ff7c552088b4e395f3fea7e05e9c7b0",
+      "targetBlobSha1": "c1e36c6823c7b370a3baca19eb90aa50005580ce",
+      "sha256": "ff7cd6d5fd022146a2d814a9677ac67f0ea3810b213e6228ea922023045d7b89",
+      "bytes": null,
+      "changed": true
+    }
+  ],
+  "requirementsBeforeTestDeployment": [
+    "Independent GitHub readback of new full asset tree and manifest",
+    "Static privacy scan and consistency/JS syntax QA of exact changed R7 files",
+    "Chrome integrated QA against exact changed candidate; original CP39R-R5 22/22 not transferable",
+    "Owner-approved TEST deployment only after QA and isolation review",
+    "Physical iPhone acceptance remains required"
+  ]
+}

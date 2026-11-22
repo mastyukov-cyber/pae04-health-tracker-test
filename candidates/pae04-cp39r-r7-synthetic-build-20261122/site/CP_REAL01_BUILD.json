@@ -1,0 +1,12 @@
+{
+  "status": "personal_preview_not_published",
+  "parent": "CP-UI02 checked candidate",
+  "medical_records_copied": false,
+  "seed_intakes": false,
+  "seed_pressures": false,
+  "db_schema_changed": false,
+  "backup_format_changed": false,
+  "medicines": 10,
+  "source_unchanged": true,
+  "auto_seed": false
+}

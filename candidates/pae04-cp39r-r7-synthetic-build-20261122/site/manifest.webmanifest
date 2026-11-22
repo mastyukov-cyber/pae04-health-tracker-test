@@ -1,0 +1,26 @@
+{
+  "id": "./",
+  "name": "Health Tracker · Личный журнал",
+  "short_name": "Health Tracker",
+  "description": "Личная бета iPhone UX v2.3: давление, пульс и приём лекарств. Данные хранятся локально на устройстве.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#f5f7fb",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
