@@ -1,0 +1,327 @@
+{
+  "schema": "pae04.home34.preview.source-only.v1",
+  "status": "PREPARED_NOT_RUN_NOT_DEPLOYED",
+  "source": {
+    "r7": "bc4de06f7536ad889dae720e1cce52c5453fdbed",
+    "production_candidate": "64867aa452df39d60d4749ee3cbae23909e6bcb4",
+    "home31": "c3062d2696e602a124fa5992a046bff6606824bf",
+    "home33": "64867aa452df39d60d4749ee3cbae23909e6bcb4"
+  },
+  "db_id": "PAE04_HOME34_SYNTHETIC_ONLY_20261124",
+  "cache_prefix": "pae04-home34-iphone-isolated-static-",
+  "privacy": "Pinned R7 synthetic-only; 10 fictional cards; no original personal profile read; localStorage keys isolated; no browser execution; pattern scan limited",
+  "variants": {
+    "A": "Baseline for cache migration; retains HOME31 and HOME33",
+    "B": "HOME32 reload plus HOME31/HOME33"
+  },
+  "assets": [
+    {
+      "path": "A/site/.nojekyll",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "r7_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/CP_MED05_BUILD.json",
+      "sha256": "23177fec90f779b6ef6636129cceb7ab20cffa864ce5570e02a493f283d16de3",
+      "bytes": 324,
+      "r7_blob": "73cae13ae3002afd9a139805e7152acfc1ad4762",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/CP_REAL01_BUILD.json",
+      "sha256": "4253c1e188916ddba4e79563ed548137dae35b8431cce9441b46025a2596f920",
+      "bytes": 310,
+      "r7_blob": "b7010ad22f5503f1e63148514f628765e6edd248",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/CP_UI01_BUILD.json",
+      "sha256": "6f81de5a28facc72e9bbf918693db3f8eab5df4cd3bfbc53f8ed618e836c9af8",
+      "bytes": 306,
+      "r7_blob": "b92bd7c5e2720a663cf502ee2abfa9650a7e6dfa",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/app.js",
+      "sha256": "afd3486ae91ac5c5a955f7bbd5ed72ff3b1d3298906071fc2b37c6c2f06f8649",
+      "bytes": 89930,
+      "r7_blob": "f81435d36a65073e6db853e73b3e2da040f1bf3d",
+      "unchanged_from_r7": false
+    },
+    {
+      "path": "A/site/home.css",
+      "sha256": "09893b19ca639fc43c7cfd82f95e3c75b759956f7f932db934863b1e5f78334a",
+      "bytes": 13713,
+      "r7_blob": "e49331b5da9c1632f1d4b384ac05bc57506f50f9",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/home.js",
+      "sha256": "a6fdfad9a916c10919ca4230ad20bbb50b70cd1c70d66471d5a2a0afe2dce60e",
+      "bytes": 22433,
+      "r7_blob": "de4c28b60f6e90a54696b6232c9eb6c4147cea31",
+      "unchanged_from_r7": false
+    },
+    {
+      "path": "A/site/icons/apple-touch-icon.png",
+      "sha256": "7e321de521f7c91a8856a66e237b98bb48d36bc89c6246ab90cc0ffb4ce6e11b",
+      "bytes": 7145,
+      "r7_blob": "4cf9879b433979d1508c8ffdbb312e29123ef549",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/icons/icon-192.png",
+      "sha256": "455b1aa541ebd7574d441d82615efd6f02d277c2ecf727077aa274fbbbe74f05",
+      "bytes": 7697,
+      "r7_blob": "c07d28a59f0d773c2e18af62b261b50389f60a94",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/icons/icon-512.png",
+      "sha256": "b5509bdf65dc021a057dac3f6db52de87a5d13d64c34cdc5f8dfc677a4e4f18b",
+      "bytes": 21771,
+      "r7_blob": "09673205f1b64d689d8899c1096031ba351f34cc",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/icons/icon.svg",
+      "sha256": "377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606",
+      "bytes": 449,
+      "r7_blob": "05b76763ede5f0d88e2b855f3d90ed72ddf64842",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/index.html",
+      "sha256": "8387858ac08388fb0d6da5b538128aef1e26bf61051ec2f096e9e9b970df1044",
+      "bytes": 26542,
+      "r7_blob": "0d5fe9d2df4166e3c0d6add3f1e0e67931704243",
+      "unchanged_from_r7": false
+    },
+    {
+      "path": "A/site/manifest.webmanifest",
+      "sha256": "4b8e18891268a235dae6f8046a6f4210f9ba1f47c6d901c94deeb0b06b9dfae4",
+      "bytes": 688,
+      "r7_blob": "e74f10f038d5a4e1c04936c1246435de58282d35",
+      "unchanged_from_r7": false
+    },
+    {
+      "path": "A/site/med_guard.css",
+      "sha256": "4b606c41bfee2be98ffd90123bc55c19f00888c0c3e18ff2f618ab0e18276389",
+      "bytes": 766,
+      "r7_blob": "1ebdff67c6ae4088759bc1c9059ee7f2f5fd6b2e",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/med_guard.mjs",
+      "sha256": "5993bd5b1cbd9f2fb4472f787420de0e6e05ea5b31a041ba7daf864b9a9fc085",
+      "bytes": 9748,
+      "r7_blob": "8789a54ff18ddf914d856bb5cfa1af4464d77548",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/med_matcher.mjs",
+      "sha256": "216b1cdc709d29147eba923973f530ef27c89b5422859c91dac74453666ccd08",
+      "bytes": 4044,
+      "r7_blob": "cf08822f5e71c8fb505fbec066e5eec9145215c6",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/offline_status.js",
+      "sha256": "9e2abf543d52027c12fe650f9bd86dd39a6981c8e90a452d96f3d8792c83f0e7",
+      "bytes": 2771,
+      "r7_blob": "439d929b58014b24f99824ef63c8dfa0c37815a0",
+      "unchanged_from_r7": false
+    },
+    {
+      "path": "A/site/personal_adapter.js",
+      "sha256": "9dca20cedde04d23bb781f5b3b00a540c8f518295994f2f829aa3fd15f674777",
+      "bytes": 7899,
+      "r7_blob": "758122df6b34b94ec747b2b3989622446e4cd398",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/personal_profile.json",
+      "sha256": "ea5b672c56a55adc27e804119af34298b68b46fb3d7379908e8b734c27e0a624",
+      "bytes": 7650,
+      "r7_blob": "e8a5bf3553efdb5fdc94a3eab1d794920667cfc3",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/robots.txt",
+      "sha256": "331ea9090db0c9f6f597bd9840fd5b171830f6e0b3ba1cb24dfa91f0c95aedc1",
+      "bytes": 26,
+      "r7_blob": "1f53798bb4fe33c86020be7f10c44f29486fd190",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/styles.css",
+      "sha256": "f0faee03997d406f2a6e86e2c8948ef3007ed871a544ca315bc512be4d0dd6f5",
+      "bytes": 36188,
+      "r7_blob": "33fc30b7c85f7cdbf60f43a206fb1f47a9c72fb4",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "A/site/sw.js",
+      "sha256": "f25a2097a68304e0bb885bd90c63c1cf626c5dae1173abe1afd3f1486fddc414",
+      "bytes": 3858,
+      "r7_blob": "c1e36c6823c7b370a3baca19eb90aa50005580ce",
+      "unchanged_from_r7": false
+    },
+    {
+      "path": "B/site/.nojekyll",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "r7_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/CP_MED05_BUILD.json",
+      "sha256": "23177fec90f779b6ef6636129cceb7ab20cffa864ce5570e02a493f283d16de3",
+      "bytes": 324,
+      "r7_blob": "73cae13ae3002afd9a139805e7152acfc1ad4762",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/CP_REAL01_BUILD.json",
+      "sha256": "4253c1e188916ddba4e79563ed548137dae35b8431cce9441b46025a2596f920",
+      "bytes": 310,
+      "r7_blob": "b7010ad22f5503f1e63148514f628765e6edd248",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/CP_UI01_BUILD.json",
+      "sha256": "6f81de5a28facc72e9bbf918693db3f8eab5df4cd3bfbc53f8ed618e836c9af8",
+      "bytes": 306,
+      "r7_blob": "b92bd7c5e2720a663cf502ee2abfa9650a7e6dfa",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/app.js",
+      "sha256": "afd3486ae91ac5c5a955f7bbd5ed72ff3b1d3298906071fc2b37c6c2f06f8649",
+      "bytes": 89930,
+      "r7_blob": "f81435d36a65073e6db853e73b3e2da040f1bf3d",
+      "unchanged_from_r7": false
+    },
+    {
+      "path": "B/site/home.css",
+      "sha256": "09893b19ca639fc43c7cfd82f95e3c75b759956f7f932db934863b1e5f78334a",
+      "bytes": 13713,
+      "r7_blob": "e49331b5da9c1632f1d4b384ac05bc57506f50f9",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/home.js",
+      "sha256": "a6fdfad9a916c10919ca4230ad20bbb50b70cd1c70d66471d5a2a0afe2dce60e",
+      "bytes": 22433,
+      "r7_blob": "de4c28b60f6e90a54696b6232c9eb6c4147cea31",
+      "unchanged_from_r7": false
+    },
+    {
+      "path": "B/site/icons/apple-touch-icon.png",
+      "sha256": "7e321de521f7c91a8856a66e237b98bb48d36bc89c6246ab90cc0ffb4ce6e11b",
+      "bytes": 7145,
+      "r7_blob": "4cf9879b433979d1508c8ffdbb312e29123ef549",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/icons/icon-192.png",
+      "sha256": "455b1aa541ebd7574d441d82615efd6f02d277c2ecf727077aa274fbbbe74f05",
+      "bytes": 7697,
+      "r7_blob": "c07d28a59f0d773c2e18af62b261b50389f60a94",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/icons/icon-512.png",
+      "sha256": "b5509bdf65dc021a057dac3f6db52de87a5d13d64c34cdc5f8dfc677a4e4f18b",
+      "bytes": 21771,
+      "r7_blob": "09673205f1b64d689d8899c1096031ba351f34cc",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/icons/icon.svg",
+      "sha256": "377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606",
+      "bytes": 449,
+      "r7_blob": "05b76763ede5f0d88e2b855f3d90ed72ddf64842",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/index.html",
+      "sha256": "9012627d922971235436a1cf04b47c5fa2da069ec8755e14aefb67636b06e144",
+      "bytes": 26542,
+      "r7_blob": "0d5fe9d2df4166e3c0d6add3f1e0e67931704243",
+      "unchanged_from_r7": false
+    },
+    {
+      "path": "B/site/manifest.webmanifest",
+      "sha256": "4b8e18891268a235dae6f8046a6f4210f9ba1f47c6d901c94deeb0b06b9dfae4",
+      "bytes": 688,
+      "r7_blob": "e74f10f038d5a4e1c04936c1246435de58282d35",
+      "unchanged_from_r7": false
+    },
+    {
+      "path": "B/site/med_guard.css",
+      "sha256": "4b606c41bfee2be98ffd90123bc55c19f00888c0c3e18ff2f618ab0e18276389",
+      "bytes": 766,
+      "r7_blob": "1ebdff67c6ae4088759bc1c9059ee7f2f5fd6b2e",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/med_guard.mjs",
+      "sha256": "5993bd5b1cbd9f2fb4472f787420de0e6e05ea5b31a041ba7daf864b9a9fc085",
+      "bytes": 9748,
+      "r7_blob": "8789a54ff18ddf914d856bb5cfa1af4464d77548",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/med_matcher.mjs",
+      "sha256": "216b1cdc709d29147eba923973f530ef27c89b5422859c91dac74453666ccd08",
+      "bytes": 4044,
+      "r7_blob": "cf08822f5e71c8fb505fbec066e5eec9145215c6",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/offline_status.js",
+      "sha256": "51d7321bba8464ef4b2779cb47ad99231f0ef5627175a6466d66b17d6d75e2c0",
+      "bytes": 2771,
+      "r7_blob": "439d929b58014b24f99824ef63c8dfa0c37815a0",
+      "unchanged_from_r7": false
+    },
+    {
+      "path": "B/site/personal_adapter.js",
+      "sha256": "9dca20cedde04d23bb781f5b3b00a540c8f518295994f2f829aa3fd15f674777",
+      "bytes": 7899,
+      "r7_blob": "758122df6b34b94ec747b2b3989622446e4cd398",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/personal_profile.json",
+      "sha256": "ea5b672c56a55adc27e804119af34298b68b46fb3d7379908e8b734c27e0a624",
+      "bytes": 7650,
+      "r7_blob": "e8a5bf3553efdb5fdc94a3eab1d794920667cfc3",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/robots.txt",
+      "sha256": "331ea9090db0c9f6f597bd9840fd5b171830f6e0b3ba1cb24dfa91f0c95aedc1",
+      "bytes": 26,
+      "r7_blob": "1f53798bb4fe33c86020be7f10c44f29486fd190",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/styles.css",
+      "sha256": "f0faee03997d406f2a6e86e2c8948ef3007ed871a544ca315bc512be4d0dd6f5",
+      "bytes": 36188,
+      "r7_blob": "33fc30b7c85f7cdbf60f43a206fb1f47a9c72fb4",
+      "unchanged_from_r7": true
+    },
+    {
+      "path": "B/site/sw.js",
+      "sha256": "feefb2a2ba0661a4eb7ecc9514d1f7442e2fd05564f1fe6dab75f3ac13fbf39b",
+      "bytes": 3937,
+      "r7_blob": "c1e36c6823c7b370a3baca19eb90aa50005580ce",
+      "unchanged_from_r7": false
+    }
+  ]
+}

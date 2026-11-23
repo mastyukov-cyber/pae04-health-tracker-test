@@ -1,0 +1,16 @@
+{
+  "status": "candidate_not_released",
+  "source_head": "0b42de82aa2223e1f1e395542c3ead3c6858b4ca",
+  "db_schema_changed": false,
+  "backup_format_changed": false,
+  "changed_files": [
+    "index.html",
+    "app.js",
+    "sw.js"
+  ],
+  "added_files": [
+    "med_guard.mjs",
+    "med_matcher.mjs",
+    "med_guard.css"
+  ]
+}
