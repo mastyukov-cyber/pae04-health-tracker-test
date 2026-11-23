@@ -1,0 +1,446 @@
+name: PAE-04 CP41-SG01 synthetic iPhone preview — namespace isolated on cyber Pages
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/pae04-cp41-sg01-preview-pages.yml'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pae04-test-site-pages
+  cancel-in-progress: false
+
+jobs:
+  verify-and-package:
+    if: github.repository == 'mastyukov-cyber/pae04-health-tracker-test' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    container:
+      image: mcr.microsoft.com/playwright/python:v1.65.1-noble
+    env:
+      PAE04_SYNTHETIC_ONLY: 'true'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout unchanged TEST package
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout immutable verified CP40 source in separate folder
+        uses: actions/checkout@v4
+        with:
+          repository: mastyukov/health-tracker
+          ref: 45cb4a05f3f50c82cdade02ff72ada7b5d4a16cd
+          path: source-cp40
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Checkout pinned CP41 application separately (read-only)
+        uses: actions/checkout@v4
+        with:
+          repository: mastyukov/health-tracker
+          ref: 76e144028de7701d6f7bffcdc515ab5aaf373201
+          path: source-cp41
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Verify repository, source commit, and original TEST ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PAE04_SYNTHETIC_ONLY" = "true"
+          test "$GITHUB_REPOSITORY" = "mastyukov-cyber/pae04-health-tracker-test"
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$(git -c safe.directory="$GITHUB_WORKSPACE/source-cp40" -C source-cp40 rev-parse HEAD)" = "45cb4a05f3f50c82cdade02ff72ada7b5d4a16cd"
+          printf '%s  %s\n' '0abb256031187036e8d282eaedc08ffaf970e9de1cffd7cda7814cc84fb8c4cb' 'release/health-tracker-test.zip' | sha256sum -c -
+          test -f .github/workflows/pae04-test-pages.yml
+          test -f source-cp40/qa/cp40/safari_preview_package.py
+          test "$(git -c safe.directory="$GITHUB_WORKSPACE/source-cp41" -C source-cp41 rev-parse HEAD)" = "76e144028de7701d6f7bffcdc515ab5aaf373201"
+          test "$(git -c safe.directory="$GITHUB_WORKSPACE/source-cp41" -C source-cp41 hash-object site/app.js)" = "5b7432415d8c2c35000c3d4bd219de583e20e09c"
+          test "$(git -c safe.directory="$GITHUB_WORKSPACE/source-cp40" -C source-cp40 hash-object site/app.js)" = "c1adc5545d175ed2456a18d4febd00c095f423f1"
+      - name: Use matching WebKit Playwright Python 1.65.1
+        run: python -m pip install --quiet --disable-pip-version-check 'playwright==1.65.1'
+      - name: Build sanitized synthetic preview and verify WebKit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile source-cp40/qa/cp40/safari_preview_package.py
+          # Actual source HEAD is verified above; this env scope enables the sandbox-only builder.
+          GITHUB_REF='refs/heads/sandbox/pae04-approved-ux23-iphone-cp40-20261123-r1' PAE04_SYNTHETIC_ONLY=true python source-cp40/qa/cp40/safari_preview_package.py
+      - name: Verify TEST root unchanged and add only CP40 preview subdirectory
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -c "import zipfile; zipfile.ZipFile('release/health-tracker-test.zip').extractall('dist')"
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,json,re,zipfile
+          root=Path('dist')
+          old_yml=Path('.github/workflows/pae04-test-pages.yml').read_text(encoding='utf-8')
+          m=re.search(r'^\s*expected = (\{.*\})$',old_yml,re.MULTILINE)
+          if not m:raise SystemExit('BLOCKED: old TEST file allowlist unavailable')
+          expected=json.loads(m.group(1))
+          found={p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file()}
+          if found!=set(expected):raise SystemExit('BLOCKED: TEST root files differ')
+          for path,sha in expected.items():
+              if hashlib.sha256((root/path).read_bytes()).hexdigest()!=sha:
+                  raise SystemExit('BLOCKED: original TEST root SHA drift: '+path)
+          report_file=Path('source-cp40/qa/cp40/safari_preview_artifact/CP40_PREVIEW_QA.json')
+          report=json.loads(report_file.read_text(encoding='utf-8'))
+          if report.get('status')!='PASS' or len(report.get('checks',[]))<29:
+              raise SystemExit('BLOCKED: preview QA incomplete')
+          if any(x.get('status')!='PASS' for x in report['checks']):
+              raise SystemExit('BLOCKED: failed preview check')
+          if report.get('source_sha')!='21969ddc9c44c0973056bc1e7606f06972b61580':
+              raise SystemExit('BLOCKED: approved CP40 source SHA drift')
+          archive=report_file.parent/report['zip_name']
+          if not archive.is_file():raise SystemExit('BLOCKED: preview ZIP absent')
+          if hashlib.sha256(archive.read_bytes()).hexdigest()!=report['zip_sha256']:
+              raise SystemExit('BLOCKED: preview ZIP checksum mismatch')
+          target=root/'cp40-iphone-preview'
+          target.mkdir()
+          with zipfile.ZipFile(archive) as z:
+              if z.testzip() is not None:raise SystemExit('BLOCKED: preview ZIP CRC')
+              names=z.namelist()
+              if len(names)!=len(set(names)):raise SystemExit('BLOCKED: duplicate filenames')
+              for item in z.infolist():
+                  name=item.filename
+                  if name.startswith('/') or '..' in Path(name).parts or '\\' in name or item.is_dir():
+                      raise SystemExit('BLOCKED: unsafe archive path')
+                  if (item.external_attr>>16)&0o170000 == 0o120000:
+                      raise SystemExit('BLOCKED: symlink')
+              if 'index.html' not in names or 'sw.js' not in names:
+                  raise SystemExit('BLOCKED: missing entrypoint or SW')
+              for name in names:
+                  dest=target/name;dest.parent.mkdir(parents=True,exist_ok=True)
+                  dest.write_bytes(z.read(name))
+          if json.loads((target/'personal_profile.json').read_text(encoding='utf-8')).get('medicines')!=[]:
+              raise SystemExit('BLOCKED: personal profile in preview')
+          if 'id="pae04-public-preview-warning"' not in (target/'index.html').read_text(encoding='utf-8'):
+              raise SystemExit('BLOCKED: visible synthetic-only warning absent')
+          if 'personalSeedDisabled:true' not in (target/'personal_adapter.js').read_text(encoding='utf-8'):
+              raise SystemExit('BLOCKED: personal data seeding not disabled')
+          for path,sha in expected.items():
+              if hashlib.sha256((root/path).read_bytes()).hexdigest()!=sha:
+                  raise SystemExit('BLOCKED: TEST root was changed')
+          print('PAE04_CP40_CYBER_PREVIEW_PACKAGED PASS: 17 original TEST files byte-identical; preview in /cp40-iphone-preview/')
+          print('CP40_PREVIEW_SHA256 '+report['zip_sha256'])
+          print('CP40_PREVIEW_FILES '+str(len(names)))
+          PY
+      - name: Stage EXACT previously prepared CP41 with unique IndexedDB/SW cache; never overwrite CP40
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,json,shutil,re
+          root=Path('dist')
+          cp40=root/'cp40-iphone-preview'
+          cp41=root/'cp41-sg01-iphone-preview'
+          src40=Path('source-cp40/site/app.js').read_text(encoding='utf-8')
+          src41=Path('source-cp41/site/app.js').read_text(encoding='utf-8')
+          digest=lambda b:hashlib.sha256(b).hexdigest()
+          filehash=lambda p:digest(p.read_bytes())
+          def require(cond,msg):
+              if not cond:raise SystemExit('BLOCKED CP41: '+msg)
+          def replace_once(s,old,new,name):
+              require(s.count(old)==1, 'unique '+name)
+              return s.replace(old,new,1)
+          pins={
+           'PREVIEW_PROVENANCE.json':'16cfb285832c5644942c0dedb1370ab4edd0ac61173b0911d68b4524e457899f',
+           'app.js':'9178c790d4fc0d89dffd89964c4515ba4bbd2819ac8016c025b78bb5a69c8c97',
+           'home.css':'09893b19ca639fc43c7cfd82f95e3c75b759956f7f932db934863b1e5f78334a',
+           'home.js':'f455b88de7f7c8c388b20516839bcc8f1b0d5cfb204d7562dfc43f62740856b2',
+           'icons/apple-touch-icon.png':'7e321de521f7c91a8856a66e237b98bb48d36bc89c6246ab90cc0ffb4ce6e11b',
+           'icons/icon-192.png':'455b1aa541ebd7574d441d82615efd6f02d277c2ecf727077aa274fbbbe74f05',
+           'icons/icon-512.png':'b5509bdf65dc021a057dac3f6db52de87a5d13d64c34cdc5f8dfc677a4e4f18b',
+           'icons/icon.svg':'377cd4fa7b4ff64ecd8d4157a9aacc67aaedcede7b39b2f4082e60a0c3b1d606',
+           'index.html':'fbf8337ba6fb9e26ffb904e0530331bb5dd7bb32a6bddfc1834d89363244e4d6',
+           'manifest.webmanifest':'d024327ff2a516a92092931e5f9ad303744bd529f5ef2e5084316ffc4e3cdf94',
+           'med_guard.css':'4b606c41bfee2be98ffd90123bc55c19f00888c0c3e18ff2f618ab0e18276389',
+           'med_guard.mjs':'ff522082f976086884e23fdf493dbbf02416152ca10644c38cd6a3359c03c413',
+           'med_matcher.mjs':'216b1cdc709d29147eba923973f530ef27c89b5422859c91dac74453666ccd08',
+           'offline_status.js':'0efe9577c7a2331e98bb9dcafec0d1181a5080ceabea6514cf4ff3db228de560',
+           'personal_adapter.js':'38375dfb354ba4e3393b4d9c8d1fe7c18ac76f2b918ba9ac5f9e90babc334a4c',
+           'personal_profile.json':'4a61bf63f5d4f8100208fabd925d8b589da95934356976c55ccfae546357be88',
+           'robots.txt':'331ea9090db0c9f6f597bd9840fd5b171830f6e0b3ba1cb24dfa91f0c95aedc1',
+           'styles.css':'5c4d697d37335fb808ddd688716a93c35fbd14d11d62a79719724dfb7c8b8c2e',
+           'sw.js':'1885336875fdc94a7e690efd4ecc168d1d40f56c38747aae7cbf4ae800ffd3fe'
+          }
+          require(cp40.is_dir(),'existing CP40 preview missing')
+          require({x.relative_to(cp40).as_posix() for x in cp40.rglob('*') if x.is_file()}==set(pins),
+                  'unexpected CP40 inventory')
+          for name,sha in pins.items():require(filehash(cp40/name)==sha,'existing CP40 changed: '+name)
+          require(digest(src41.encode('utf-8'))!=digest(src40.encode('utf-8')),'donor unchanged')
+          needle='// PAE-04 owner-approved policy: selected EXTERNAL backups only, after SHA-256.'
+          start=src41.find(needle)
+          stop=src41.find('function validateBackupData(data,includeLocal=true)',start)
+          require(start>0 and stop>start,'strict donor function not found')
+          donated=src41[start:stop]
+          require(donated.count('function validateExternalBackupShape(parsed)')==1,
+                  'strict donor function invalid')
+          def transfer(s):
+              s=replace_once(s,'function validateBackupData(data,includeLocal=true)',
+                             donated+'function validateBackupData(data,includeLocal=true)','validator transfer')
+              a="if(await sha256(body)!==expected)throw Error('SHA-256 не совпадает: файл изменён или повреждён');"
+              b="if(await sha256(body)!==expected)throw Error('SHA-256 не совпадает: файл повреждён');"
+              s=replace_once(s,a,a+'\n    validateExternalBackupShape(parsed);','verify after SHA')
+              s=replace_once(s,b,b+'\n    validateExternalBackupShape(parsed);','import after SHA')
+              return s
+          require(transfer(src40)==src41,'donor contains unexpected changes')
+          shutil.copytree(cp40,cp41)
+          app=transfer((cp41/'app.js').read_text(encoding='utf-8'))
+          require(digest(app.encode('utf-8'))=='38af03c2562a928b91efbfeeba1f5a9b0c7659a4a6bbe6361e97576f792f656d',
+                  'prepared CP41 strict validator bytes differ')
+          html=(cp41/'index.html').read_text(encoding='utf-8')
+          html=replace_once(html,'CP40 iPhone v2.3','CP41-SG01 iPhone v2.3','CP41 banner')
+          require(digest(html.encode('utf-8'))=='995fef930c5ce7478db14d1f1ae3f9108327f9ce5cd14309a720c87c5df599f2',
+                  'prepared CP41 HTML bytes differ')
+          oldDb="const DB_NAME='PAE04_HT_STABLE_CANDIDATE_INTEGRATION_SYNTHETIC_SCHEMA1';"
+          newDb="const DB_NAME='PAE04_CP41_SG01_SYNTHETIC_ISOLATED_DB_20261123';"
+          app=replace_once(app,oldDb,newDb,'unique CP41 IndexedDB name')
+          require(digest(app.encode('utf-8'))=='255f383826123658ec7ebdde385781a570f0df698d55c31b2e5e871c8ea085d6',
+                  'CP41 isolated app SHA mismatch')
+          (cp41/'app.js').write_text(app,encoding='utf-8')
+          (cp41/'index.html').write_text(html,encoding='utf-8')
+          sw=(cp41/'sw.js').read_text(encoding='utf-8')
+          sw=replace_once(sw,
+           "const CACHE_PREFIX='pae04-ht-stable-candidate-synthetic-schema1-cache-';",
+           "const CACHE_PREFIX='pae04-cp41-sg01-isolated-static-';",'CP41 cache deletion scope')
+          sw=replace_once(sw,
+           "const CACHE=CACHE_PREFIX+'personal-home-v71-cachefix-20261122';",
+           "const CACHE=CACHE_PREFIX+'v1-20261123';",'CP41 cache version')
+          require(digest(sw.encode('utf-8'))=='23508c9c7415ff57a722b856542dbff72bf2a55d908e633f1ee94a389a6d0c25',
+                  'CP41 scoped SW SHA mismatch')
+          (cp41/'sw.js').write_text(sw,encoding='utf-8')
+          status=(cp41/'offline_status.js').read_text(encoding='utf-8')
+          status=replace_once(status,
+           'pae04-ht-stable-candidate-synthetic-schema1-cache-personal-home-v71-cachefix-20261122',
+           'pae04-cp41-sg01-isolated-static-v1-20261123',
+           'CP41 offline status cache')
+          require(digest(status.encode('utf-8'))=='0eec48f511533769447b2ddb688a555f24e890ad3f2ff5754239f8e82f101cfe',
+                  'CP41 offline status SHA mismatch')
+          (cp41/'offline_status.js').write_text(status,encoding='utf-8')
+          provenance={
+           'project':'PAE-04 HEALTH TRACKER',
+           'checkpoint':'CP41-SG01 physical Safari file picker PREVIEW',
+           'source_sha':'76e144028de7701d6f7bffcdc515ab5aaf373201',
+           'strict_donor':'498bb6f153278deaef211a424e365dca87059339',
+           'synthetic_only':True,'real_medical_data':'DO_NOT_ENTER','release_status':'NO_GO',
+           'shared_origin':'mastyukov-cyber.github.io',
+           'isolation':'separate application IndexedDB name, Service Worker scope, and CacheStorage prefix',
+           'security_limit':'shared origin is not an independent security boundary',
+           'owner_approval':'GitHub mastyukov-cyber preview only'
+          }
+          (cp41/'PREVIEW_PROVENANCE.json').write_text(
+           json.dumps(provenance,ensure_ascii=False,indent=2),encoding='utf-8')
+          require(json.loads((cp41/'personal_profile.json').read_text(encoding='utf-8')).get('medicines')==[],
+                  'personal medications not removed')
+          require('personalSeedDisabled:true' in (cp41/'personal_adapter.js').read_text(encoding='utf-8'),
+                  'personal seed not disabled')
+          require('id="pae04-public-preview-warning"' in html,'synthetic warning missing')
+          require('validateExternalBackupShape(parsed);' in app,'strict import guard missing')
+          require(app.count('validateExternalBackupShape(parsed);')==2,'strict guard count mismatch')
+          require(sw.count('pae04-ht-stable-candidate-synthetic-schema1-cache-')==0,
+                  'shared CacheStorage prefix remains')
+          require(newDb in app,'namespace not unique')
+          require((cp41/'sw.js').read_text(encoding='utf-8').count('self.registration.scope')>=2,
+                  'SW not scoped to preview')
+          for name,sha in pins.items():require(filehash(cp40/name)==sha,
+                  'original CP40 mutated during CP41 staging: '+name)
+          print('CP41_SG01_PREVIEW_STAGED PASS')
+          print('CP41_SRC_APPROVED 76e144028de7701d6f7bffcdc515ab5aaf373201')
+          print('CP41_APP_SHA256',filehash(cp41/'app.js'))
+          print('CP41_SW_SHA256',filehash(cp41/'sw.js'))
+          print('CP41_OFFLINE_SHA256',filehash(cp41/'offline_status.js'))
+          print('CP40_ALL_19_FILES_UNCHANGED PASS')
+          PY
+      - name: One scoped WebKit namespace/CacheStorage isolation check only (not CP41 87/87 replay)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import functools,http.server,threading,json,hashlib
+          from playwright.sync_api import sync_playwright
+          ROOT=Path('dist').resolve()
+          SERVER=http.server.ThreadingHTTPServer(('127.0.0.1',0),
+           functools.partial(http.server.SimpleHTTPRequestHandler,directory=str(ROOT)))
+          SERVER.daemon_threads=True
+          threading.Thread(target=SERVER.serve_forever,daemon=True).start()
+          messages=[];checks=[]
+          def verify(label,ok):
+           checks.append((label,bool(ok)))
+           if not ok:raise AssertionError(label)
+          try:
+           with sync_playwright() as pw:
+            browser=pw.webkit.launch(headless=True)
+            try:
+             ctx=browser.new_context(viewport={'width':390,'height':844},
+                device_scale_factor=2,is_mobile=True,has_touch=True,
+                locale='ru-RU',service_workers='allow')
+             base='http://127.0.0.1:'+str(SERVER.server_port)
+             p40=ctx.new_page()
+             p40.on('pageerror',lambda e:messages.append('CP40: '+str(e)))
+             p40.goto(base+'/cp40-iphone-preview/index.html',wait_until='domcontentloaded',timeout=30000)
+             p40.wait_for_function("() => typeof db!=='undefined' && !!db",timeout=20000)
+             verify('original CP40 DB unchanged name',
+              p40.evaluate('DB_NAME')=='PAE04_HT_STABLE_CANDIDATE_INTEGRATION_SYNTHETIC_SCHEMA1')
+             p40.evaluate("""async()=>{
+              const now=new Date(),date=dateLocal(now),created=now.toISOString();
+              await addRecord('pressures',{id:'SYN_CP40_SENTINEL_001',arm:'right',
+                dateTime:date+'T00:01',systolic:120,diastolic:80,pulse:60,note:'',
+                createdAt:created}); await reload();
+             }""")
+             before=p40.evaluate("async()=>await readBackupSnapshot()")
+             verify('CP40 sentinel actually saved',len(before['pressures'])==1)
+             p40.wait_for_function("() => !!navigator.serviceWorker.controller",timeout=35000)
+             old='pae04-ht-stable-candidate-synthetic-schema1-cache-personal-home-v71-cachefix-20261122'
+             newer='pae04-cp41-sg01-isolated-static-v1-20261123'
+             verify('CP40 initial cache present',
+              p40.evaluate('async old=>(await caches.keys()).includes(old)',old))
+             p41=ctx.new_page()
+             p41.on('pageerror',lambda e:messages.append('CP41: '+str(e)))
+             p41.goto(base+'/cp41-sg01-iphone-preview/index.html',wait_until='domcontentloaded',timeout=30000)
+             p41.wait_for_function("() => typeof db!=='undefined' && !!db && typeof validateExternalBackupShape==='function'",timeout=20000)
+             verify('CP41 uses unique database name',
+               p41.evaluate("DB_NAME")=='PAE04_CP41_SG01_SYNTHETIC_ISOLATED_DB_20261123')
+             verify('CP41 starts with zero records',
+               all(len(x)==0 for x in p41.evaluate("async()=>Object.values(await readBackupSnapshot())")))
+             p41.wait_for_function("() => !!navigator.serviceWorker.controller",timeout=35000)
+             verify('CP41 ServiceWorker restricted to its own directory',
+               p41.evaluate("navigator.serviceWorker.controller.scriptURL.endsWith('/cp41-sg01-iphone-preview/sw.js')"))
+             cachekeys=p41.evaluate("async()=>await caches.keys()")
+             verify('both CP40 and CP41 caches survive activation',
+              old in cachekeys and newer in cachekeys)
+             p41.evaluate("""async()=>{
+              const now=new Date(),date=dateLocal(now),created=now.toISOString();
+              await addRecord('pressures',{id:'SYN_CP41_SENTINEL_001',arm:'right',
+                dateTime:date+'T00:02',systolic:121,diastolic:81,pulse:61,note:'',
+                createdAt:created});await reload();
+             }""")
+             cp41records=p41.evaluate("async()=>await readBackupSnapshot()")
+             verify('CP41 synthetic-only write succeeded',
+                    len(cp41records['pressures'])==1)
+             # Exactly one new negative case confirms namespace changes didn't bypass validator.
+             signed=p41.evaluate("""async()=>{
+                const signed=await createBackup();
+                signed.cp41_unknown_field=true;
+                delete signed.sha256;
+                signed.sha256=await sha256(signed);
+                return signed;
+             }""")
+             signedBody={k:v for k,v in signed.items() if k!='sha256'}
+             def canonical(v):
+              return json.dumps(v,ensure_ascii=False,sort_keys=True,separators=(',',':'))
+             verify('correct signature for one synthetic negative control',
+               hashlib.sha256(canonical(signedBody).encode()).hexdigest()==signed['sha256'])
+             p41.locator(".nav-item[data-page='settings']").click()
+             p41.locator('#import-file').set_input_files({'name':'CP41_SYN_NEGATIVE.json',
+                'mimeType':'application/json','buffer':json.dumps(signed,ensure_ascii=False).encode()})
+             p41.wait_for_function("() => document.querySelector('#import-preview')?.textContent.includes('Неизвестное поле backup.cp41_unknown_field')",timeout=15000)
+             verify('selected signed malformed backup rejected before import',
+              p41.locator('#import-button').is_disabled() and
+              p41.locator('#checkpoint-button').is_disabled())
+             verify('CP41 synthetic IndexedDB unaffected by malformed file',
+              p41.evaluate('async()=>await readBackupSnapshot()')==cp41records)
+             verify('CP40 sentinel unchanged after CP41 writes',
+               p40.evaluate('async()=>await readBackupSnapshot()')==before)
+             verify('no JavaScript page errors',not messages)
+             p41.screenshot(path='cp41-namespace-webkit.png',full_page=False)
+             ctx.close()
+            finally:browser.close()
+          finally:
+           SERVER.shutdown();SERVER.server_close()
+          Path('cp41-namespace-report.json').write_text(json.dumps({
+           'status':'PASS','checks':checks,'isolation':'functional namespace only; shared origin',
+           'synthetic_only':True,'page_errors':messages,
+           'source_sha':'76e144028de7701d6f7bffcdc515ab5aaf373201'
+          },ensure_ascii=False,indent=2),encoding='utf-8')
+          print('CP41_CYBER_NAMESPACE_WEBKIT',json.dumps({'status':'PASS','checks':len(checks),'errors':0}))
+          PY
+      - name: Configure GitHub Pages after every safety gate
+        uses: actions/configure-pages@v5
+      - name: Upload unchanged TEST + byte-identical CP40 + namespaced CP41 preview
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+      - name: Retain preview QA metadata and synthetic screenshot only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-cp40-cyber-preview-QA
+          path: |
+            source-cp40/qa/cp40/safari_preview_artifact/CP40_PREVIEW_QA.json
+            source-cp40/qa/cp40/safari_preview_artifact/CP40_preview_webkit_synthetic.png
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Preserve ONLY synthetic CP41 namespace evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-cp41-sg01-cyber-namespace-evidence
+          path: |
+            cp41-namespace-report.json
+            cp41-namespace-webkit.png
+          if-no-files-found: warn
+          retention-days: 7
+
+  publish:
+    needs: verify-and-package
+    if: github.repository == 'mastyukov-cyber/pae04-health-tracker-test' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    environment:
+      name: github-pages
+    steps:
+      - name: Deploy unchanged TEST + CP40 with namespaced CP41-SG01
+        id: pages
+        uses: actions/deploy-pages@v4
+
+  public-http-smoke:
+    needs: publish
+    if: github.repository == 'mastyukov-cyber/pae04-health-tracker-test' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Verify actual HTTPS CP41, original CP40 and original TEST without changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://mastyukov-cyber.github.io/pae04-health-tracker-test'
+          mkdir -p /tmp/pae04-cp41-live
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 "$BASE/index.html" -o "/tmp/pae04-cp41-live/test_index.html"
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 "$BASE/sw.js" -o "/tmp/pae04-cp41-live/test_sw.js"
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 "$BASE/cp40-iphone-preview/index.html" -o "/tmp/pae04-cp41-live/cp40_index.html"
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 "$BASE/cp40-iphone-preview/app.js" -o "/tmp/pae04-cp41-live/cp40_app.js"
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 "$BASE/cp40-iphone-preview/sw.js" -o "/tmp/pae04-cp41-live/cp40_sw.js"
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 "$BASE/cp41-sg01-iphone-preview/app.js" -o "/tmp/pae04-cp41-live/cp41_app.js"
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 "$BASE/cp41-sg01-iphone-preview/sw.js" -o "/tmp/pae04-cp41-live/cp41_sw.js"
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 "$BASE/cp41-sg01-iphone-preview/offline_status.js" -o "/tmp/pae04-cp41-live/cp41_offline.js"
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 "$BASE/cp41-sg01-iphone-preview/index.html" -o "/tmp/pae04-cp41-live/cp41_index.html"
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 "$BASE/cp41-sg01-iphone-preview/personal_profile.json" -o "/tmp/pae04-cp41-live/cp41_profile.json"
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 "$BASE/cp41-sg01-iphone-preview/personal_adapter.js" -o "/tmp/pae04-cp41-live/cp41_adapter.js"
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 "$BASE/cp41-sg01-iphone-preview/PREVIEW_PROVENANCE.json" -o "/tmp/pae04-cp41-live/cp41_provenance.json"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          p=Path('/tmp/pae04-cp41-live')
+          h=lambda name:hashlib.sha256((p/name).read_bytes()).hexdigest()
+          assert h('test_index.html')=='d14432b9bf9f728d63c55c96368f66a1aab1655281e1deeeb52bec71ef585291','Original TEST HTML changed'
+          assert h('test_sw.js')=='0945a188269432ec7b1ae96fb15c848cdde9294995e793bea3c3c0857118feed','Original TEST SW changed'
+          assert h('cp40_index.html')=='fbf8337ba6fb9e26ffb904e0530331bb5dd7bb32a6bddfc1834d89363244e4d6','Original CP40 HTML changed'
+          assert h('cp40_app.js')=='9178c790d4fc0d89dffd89964c4515ba4bbd2819ac8016c025b78bb5a69c8c97','Original CP40 app changed'
+          assert h('cp40_sw.js')=='1885336875fdc94a7e690efd4ecc168d1d40f56c38747aae7cbf4ae800ffd3fe','Original CP40 SW changed'
+          assert h('cp41_app.js')=='255f383826123658ec7ebdde385781a570f0df698d55c31b2e5e871c8ea085d6','CP41 app SHA mismatch'
+          assert h('cp41_sw.js')=='23508c9c7415ff57a722b856542dbff72bf2a55d908e633f1ee94a389a6d0c25','CP41 SW SHA mismatch'
+          assert h('cp41_offline.js')=='0eec48f511533769447b2ddb688a555f24e890ad3f2ff5754239f8e82f101cfe','CP41 offline SHA mismatch'
+          assert h('cp41_index.html')=='995fef930c5ce7478db14d1f1ae3f9108327f9ce5cd14309a720c87c5df599f2','CP41 HTML SHA mismatch'
+          assert json.loads((p/'cp41_profile.json').read_text(encoding='utf-8')).get('medicines')==[],'CP41 private medication leak'
+          assert 'CP41-SG01' in (p/'cp41_index.html').read_text(encoding='utf-8'),'CP41 warning missing'
+          assert 'personalSeedDisabled:true' in (p/'cp41_adapter.js').read_text(encoding='utf-8'),'personal seed enabled'
+          assert json.loads((p/'cp41_provenance.json').read_text(encoding='utf-8')).get('synthetic_only') is True,'not synthetic'
+          print('CP41_SG01_CYBER_PUBLIC_HTTP PASS')
+          print('CP41_URL https://mastyukov-cyber.github.io/pae04-health-tracker-test/cp41-sg01-iphone-preview/index.html')
+          print('EXISTING_TEST_AND_CP40_BYTES_UNCHANGED PASS')
+          PY
