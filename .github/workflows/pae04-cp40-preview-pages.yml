@@ -59,8 +59,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p dist
-          unzip -q release/health-tracker-test.zip -d dist
+          python -c "import zipfile; zipfile.ZipFile('release/health-tracker-test.zip').extractall('dist')"
           python - <<'PY'
           from pathlib import Path
           import hashlib,json,re,zipfile
