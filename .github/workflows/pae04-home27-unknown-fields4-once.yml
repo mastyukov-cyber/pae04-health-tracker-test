@@ -33,9 +33,9 @@ jobs:
           test "$(git hash-object qa/home24/chrome_qa.py)" = "fcb19320db4617a35f7684772e22382689f7c364"
           test "$(git hash-object qa/home24/stage_cp41.py)" = "f085a859c140710fbe00908500d5088b386269c6"
           test "$(git hash-object qa/home24/strict_preflight.js)" = "a85037a475d5ec312f9e9c97541b58491070b828"
-          test "$(git rev-parse HEAD^)" = "d7c4f8242e7532b3d33f82d448f32f20bc87a554"
+          test "$(git -c safe.directory="$GITHUB_WORKSPACE" rev-parse HEAD^)" = "d7c4f8242e7532b3d33f82d448f32f20bc87a554"
           test "$(git hash-object qa/home27/unknown_fields4_qa.py)" = "4c3ba2aa78b4691430addf1ebb7a9311cc5f1917"
-          git diff-tree --no-commit-id --name-only -r HEAD | sort > /tmp/pae04-home27-changed.txt
+          git -c safe.directory="$GITHUB_WORKSPACE" diff-tree --no-commit-id --name-only -r HEAD | sort > /tmp/pae04-home27-changed.txt
           printf '%s\n' '.github/workflows/pae04-home27-unknown-fields4-once.yml' > /tmp/pae04-home27-expected.txt
           diff -u /tmp/pae04-home27-expected.txt /tmp/pae04-home27-changed.txt
           echo "HOME27_SOURCE_SCOPE PASS"
