@@ -1,4 +1,5 @@
 name: PAE04 HOME28 privacy egress - ONE synthetic Chromium QA
+# HOME28 scoped SVG namespace context review: trigger ONE QA without changing runner behavior.
 on:
   push:
     branches:

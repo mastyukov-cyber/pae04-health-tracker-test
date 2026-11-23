@@ -44,6 +44,24 @@ SECRET_SIGNATURES = {
     "supabase-service-role-assignment": re.compile(r"(?i)\bservice_role\b\s*[:=]\s*['\"][A-Za-z0-9_-]{12,}"),
 }
 URL_PATTERN = re.compile(r"https?://[^\s'\"<>\\)]+", re.IGNORECASE)
+SVG_NS_URI = "http://www.w3.org/2000/svg"
+
+def is_svg_namespace_context(content, match):
+    if match.group(0) != SVG_NS_URI:
+        return False
+    before = content[max(0, match.start()-160):match.start()]
+    after = content[match.end():match.end()+160]
+    xmlns = re.search(
+        r"""<svg\b[^<>]*\bxmlns\s*=\s*(['"])$""", before)
+    if xmlns and after.startswith(xmlns.group(1)):
+        return True
+    ns = re.search(r"""\bconst\s+ns\s*=\s*(['"])$""", before)
+    return bool(
+        ns and after.startswith(ns.group(1))
+        and re.match(
+            r"""['"]\s*,\s*svg\s*=\s*document\.createElementNS\(\s*ns\s*,\s*['"]svg['"]\s*\)""",
+            after))
+
 SOURCE_SUFFIXES = {".js", ".mjs", ".html", ".css", ".json", ".webmanifest", ".svg"}
 
 
@@ -85,6 +103,8 @@ def static_source_review(pins):
             if pattern.search(content):
                 secrets.append({"file": name, "signature": signature})
         for match in URL_PATTERN.finditer(content):
+            if is_svg_namespace_context(content, match):
+                continue
             host = urlsplit(match.group(0).rstrip(";.,)")).hostname
             if host and host not in ("127.0.0.1", "localhost"):
                 referenced_hosts.add(host.lower())
