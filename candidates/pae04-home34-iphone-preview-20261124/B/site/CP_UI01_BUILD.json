@@ -1,0 +1,16 @@
+{
+  "status": "synthetic_candidate_only",
+  "source": "CP-MED05.1 detached candidate",
+  "db_schema_changed": false,
+  "backup_format_changed": false,
+  "modified": [
+    "index.html",
+    "sw.js"
+  ],
+  "added": [
+    "home.js",
+    "home.css"
+  ],
+  "no_medical_records": true,
+  "no_deployment": true
+}

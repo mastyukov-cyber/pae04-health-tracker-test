@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="theme-color" content="#f5f7fb" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="HOME34 TEST" />
+  <meta name="description" content="Личный журнал давления, пульса и приёма лекарств. Данные хранятся локально на устройстве." />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png" />
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./home.css" />
+  <title>Health Tracker · HOME-34 A · TEST</title>
+  <meta name="application-version" content="Health Tracker · HOME-34 A · TEST">
+</head>
+<body>
+  <div id="pae04-home34-synthetic-warning" role="note">HOME-34 A — ТОЛЬКО ВЫМЫШЛЕННЫЕ ДАННЫЕ. Не вводить реальные медицинские сведения и не выбирать личные резервные копии.</div>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">♥</span><div><strong>HEALTH TRACKER</strong><small>Health Tracker · HOME-34 A · TEST</small></div></div>
+      <div class="topbar-right"><span class="connection" id="connection-status"><span class="status-dot"></span>Проверяем локальную базу</span><span class="pill demo-pill">Данные на устройстве</span></div>
+    </header>
+
+    <div class="layout">
+      <nav class="sidebar" aria-label="Разделы">
+        <button class="nav-item active" type="button" data-page="overview"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5M5.5 9v12h13V9M9.5 21v-7h5v7"/></svg></span><span>Сегодня</span></button>
+        <button class="nav-item" type="button" data-page="pressure"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.8 4.8a5.7 5.7 0 0 0-8.1 0L12 5.5l-.7-.7a5.7 5.7 0 0 0-8.1 8.1L12 21l8.8-8.1a5.7 5.7 0 0 0 0-8.1Z"/><path d="M3.5 12h4l2-3 3.1 6 2-3h5"/></svg></span><span>Давление</span></button>
+        <button class="nav-item" type="button" data-page="meds"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7.2 3.5h9.6a4.7 4.7 0 0 1 4.7 4.7v7.6a4.7 4.7 0 0 1-4.7 4.7H7.2a4.7 4.7 0 0 1-4.7-4.7V8.2a4.7 4.7 0 0 1 4.7-4.7Z" transform="rotate(-45 12 12)"/><path d="m8.5 15.5 7-7"/></svg></span><span>Лекарства</span></button>
+        <button class="nav-item" type="button" data-page="settings"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 13.5 1.1.9-1.2 2.1-1.4-.5a7.8 7.8 0 0 1-1.5.9l-.3 1.5h-2.4l-.4-1.5a7.8 7.8 0 0 1-1.6-.9l-1.4.5-1.2-2.1 1.1-.9a7.4 7.4 0 0 1 0-1.8l-1.1-.9 1.2-2.1 1.4.5a7.8 7.8 0 0 1 1.6-.9l.4-1.5h2.4l.3 1.5a7.8 7.8 0 0 1 1.5.9l1.4-.5 1.2 2.1-1.1.9a7.4 7.4 0 0 1 0 1.8Z" transform="translate(-1 -1)"/></svg></span><span>Настройки</span></button>
+        <div class="sidebar-foot">Работает без аккаунта<br />Нет облачной синхронизации<br />Данные только на устройстве</div>
+      </nav>
+
+      <main class="main" id="main">
+        <div id="messages" role="status" aria-live="polite"></div>
+
+        <section class="page active ui01-home" id="page-overview" aria-labelledby="overview-title">
+  <header class="ui01-top">
+    <div><h1 class="ui01-title" id="overview-title">Сегодня</h1><span class="ui01-date" id="ui01-date"></span></div>
+    
+  </header>
+  <div class="ui01-card" id="ui01-pressure" aria-label="Давление сегодня"></div>
+  <div class="ui01-card ui01-average-card" id="ui01-pressure-average" aria-label="Среднее давление за сегодня" hidden></div>
+  <div id="ui01-meds" aria-label="Лекарства сегодня"></div>
+  <div class="ui01-compat" hidden aria-hidden="true">
+    <span id="stat-pressure">0</span><span id="stat-meds">0</span><span id="stat-intakes">0</span>
+    <div id="overview-pressure"></div><div id="overview-meds"></div>
+  </div>
+</section>
+
+        <section class="page" id="page-pressure" aria-labelledby="pressure-title">
+          <div class="page-head"><div><p class="eyebrow">МОДУЛЬ 01</p><h1 id="pressure-title">Давление</h1><p class="muted">Внесите показания и дату с временем.</p></div></div>
+          <div id="v232-pressure-highlights" class="v232-pressure-highlights" aria-label="Последний замер и среднее за сегодня"></div><article class="panel pressure-chart-panel"><div class="panel-heading"><h2>Динамика давления и пульса</h2><div class="v23-period-control"><span class="v23-period-caption">График</span><div class="v23-segmented" data-period-target="pressure-chart-period" role="group" aria-label="Период: график"><button type="button" data-period="7" aria-pressed="false">7 дней</button><button type="button" data-period="30" aria-pressed="false">1 месяц</button><button type="button" data-period="90" aria-pressed="false">3 месяца</button><button type="button" data-period="all" aria-pressed="false">Всё</button></div><select id="pressure-chart-period" class="v23-visually-hidden" tabindex="-1" aria-hidden="true"><option value="7">7 дней</option><option value="30">1 месяц</option><option value="90">3 месяца</option><option value="all">Всё</option></select></div></div><div id="pressure-chart" aria-live="polite"></div><p class="form-hint">Верхнее давление — синяя линия; нижнее — зелёная; пульс — красная линия на отдельной шкале.</p></article>
+          <div class="two-col uneven"><article class="panel"><h2>Новое измерение</h2><form id="pressure-form" autocomplete="off"><div class="form-grid"><label>Систолическое, мм рт. ст.<input type="number" id="systolic" name="systolic" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" min="50" max="300" required inputmode="numeric" placeholder="120" /></label><label>Диастолическое, мм рт. ст.<input type="number" id="diastolic" name="diastolic" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" min="30" max="200" required inputmode="numeric" placeholder="80" /></label><label>Пульс, уд/мин (необязательно)<input type="number" id="pulse" name="pulse" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" min="25" max="250" inputmode="numeric" placeholder="70" /></label><div class="wheel-field pressure-date-field"><span class="wheel-field-title">Дата и время</span><input type="datetime-local" id="pressure-datetime" name="dateTime" class="wheel-source" aria-hidden="true" tabindex="-1" required /><button type="button" class="wheel-trigger" data-wheel-target="pressure-datetime" aria-label="Выбрать дату и время измерения прокруткой"><span class="wheel-value" data-wheel-label="pressure-datetime">Выберите дату и время</span><span aria-hidden="true">⌄</span></button></div></div><div class="pressure-note-area"><div class="pressure-note-heading"><label for="pressure-note">Заметка (необязательно)</label><button type="button" id="pressure-keyboard-done" class="keyboard-done" aria-label="Закрыть клавиатуру заметки без сохранения измерения">Готово</button></div><textarea id="pressure-note" name="note" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="250" rows="2" placeholder="Заметка к замеру"></textarea></div><button type="submit" class="primary">Сохранить замер</button></form></article>
+          <article class="panel"><div class="panel-heading v05-filter-head"><h2>История замеров</h2><div class="v05-filter-actions"><div class="v23-period-control"><span class="v23-period-caption">История</span><div class="v23-segmented" data-period-target="pressure-list-period" role="group" aria-label="Период: история"><button type="button" data-period="7" aria-pressed="false">7 дней</button><button type="button" data-period="30" aria-pressed="false">1 месяц</button><button type="button" data-period="90" aria-pressed="false">3 месяца</button><button type="button" data-period="all" aria-pressed="false">Всё</button></div><select id="pressure-list-period" class="v23-visually-hidden" tabindex="-1" aria-hidden="true"><option value="7">7 дней</option><option value="30">1 месяц</option><option value="90">3 месяца</option><option value="all">Всё</option></select></div><span class="count" id="pressure-count">0 записей</span></div></div><label class="compact-search" for="pressure-search">Поиск по истории давления<input id="pressure-search" type="search" maxlength="80" autocomplete="off" placeholder="Показания, дата или заметка" /></label><div id="pressure-list" class="list-body empty">Пока нет измерений.</div></article></div>
+        </section>
+
+        <section class="page" id="page-meds" aria-labelledby="meds-title">
+          <div class="page-head"><div><p class="eyebrow">МОДУЛЬ 02</p><h1 id="meds-title">Лекарства</h1><p class="muted">Список препаратов отдельно от давления. Без напоминаний.</p></div><span class="tag">Отметка факта приёма</span></div>
+          <div class="two-col uneven"><article class="panel v232-add-med-panel"><details class="v232-add-med"><summary>Добавить препарат</summary><form id="med-form" autocomplete="off"><label>Справочник лекарств и добавок<input id="catalog-search" list="demo-catalog" placeholder="Выберите пример или введите вручную" maxlength="100" /><datalist id="demo-catalog"><option value="Тестовый препарат 01"></option><option value="Тестовый препарат 02"></option><option value="Тестовый препарат 03"></option><option value="Тестовый препарат 04"></option><option value="Тестовый препарат 05"></option><option value="Тестовый препарат 06"></option><option value="Тестовый препарат 07"></option><option value="Тестовый препарат 08"></option><option value="Тестовый препарат 09"></option><option value="Тестовый препарат 10"></option></datalist></label><label>Название препарата<input id="med-name" maxlength="100" required placeholder="Например: Тестовый препарат 01" /></label><label>Исходная строка дозировки (необязательно)<input id="med-dose" maxlength="60" placeholder="Указанная дозировка (можно уточнить)" /></label>
+<label>Дозировка препарата / концентрация<input id="med-strength" type="number" min="0.001" max="100000" step="any" inputmode="decimal" placeholder="Например: 10" /></label>
+<div class="form-grid med-v021-grid"><label>Единица измерения<select id="med-unit"><option value="">Не указана</option><option>мг</option><option>мкг</option><option>мл</option><option>г</option><option>ЕД</option></select></label>
+<label>Форма выпуска<select id="med-form-factor"><option value="">Не указана</option><option>таблетки</option><option>капсулы</option><option>капли</option><option>раствор</option><option>другое</option></select></label></div><label>Тип приёма<select id="med-kind"><option value="regular">Постоянный</option><option value="course">Курсовой</option><option value="asNeeded">Ситуативный</option></select></label><label>Приёмов в день (для журнала)<select id="med-daily-target"><option value="">Не задано</option><option value="1">1 раз</option><option value="2">2 раза</option><option value="3">3 раза</option></select></label><div class="form-grid course-fields" id="course-fields" hidden><div class="wheel-field"><span class="wheel-field-title">Начало курса</span><input id="course-from" class="wheel-source" aria-hidden="true" tabindex="-1" type="date" /><button type="button" class="wheel-trigger" data-wheel-target="course-from" aria-label="Выбрать дату начала курса прокруткой"><span class="wheel-value" data-wheel-label="course-from">Не указана</span><span aria-hidden="true">⌄</span></button></div><div class="wheel-field"><span class="wheel-field-title">Окончание курса</span><input id="course-to" class="wheel-source" aria-hidden="true" tabindex="-1" type="date" /><button type="button" class="wheel-trigger" data-wheel-target="course-to" aria-label="Выбрать дату окончания курса прокруткой"><span class="wheel-value" data-wheel-label="course-to">Не указана</span><span aria-hidden="true">⌄</span></button></div></div><p class="form-hint">Справочник помогает выбрать название. Кратность предназначена для учёта и не изменяет назначение. Старые текстовые дозировки не преобразуются автоматически.</p><button class="primary" type="submit">Добавить препарат</button></form></details></article>
+          <article class="panel"><div class="panel-heading"><h2>Журнал приёма</h2><div class="inline-date wheel-intake-field"><span>Дата</span><input id="intake-date" class="wheel-source" aria-hidden="true" tabindex="-1" type="date" /><button type="button" class="wheel-trigger" data-wheel-target="intake-date" aria-label="Выбрать дату приёма прокруткой"><span class="wheel-value" data-wheel-label="intake-date">Сегодня</span><span aria-hidden="true">⌄</span></button></div></div><p class="form-hint">При установленной кратности используйте отдельные галочки после выбора фактического времени. Если кратность не задана, кнопка «Подтвердить приём» сохраняет один факт. Повторная отметка на то же время заблокирована. Каждая отметка, отмена и исправление времени сохраняются в журнале. В старых записях время может быть неизвестно — не подставляется автоматически.</p><label class="compact-search" for="med-search">Найти препарат<input id="med-search" type="search" maxlength="100" autocomplete="off" placeholder="Название препарата" /></label><div id="med-list" class="list-body empty">Препараты ещё не добавлены.</div><div class="section-divider"></div><div class="v05-filter-actions v05-intake-head"><h3>История приёма</h3><label class="v05-filter" for="med-history-kind">Тип <select id="med-history-kind"><option value="regular" selected>∞ Постоянные</option><option value="course">▦ Курсовые</option><option value="asNeeded">ϟ Ситуативные</option><option value="all">Все</option></select></label><label class="v05-filter" for="med-history-period">Период <select id="med-history-period"><option value="7" selected>7 дней</option><option value="30">1 месяц</option><option value="90">3 месяца</option><option value="365">12 месяцев</option><option value="all">Всё время</option></select></label><label class="v05-filter" for="intake-filter">Показать <select id="intake-filter"><option value="all">Все</option><option value="active">Подтверждённые</option><option value="cancelled">Отменённые</option></select></label></div><div id="intake-list" class="list-body empty">Отметок пока нет.</div></article></div>
+        </section>
+
+        <section class="page" id="page-settings" aria-labelledby="backup-title">
+  <p class="v23-storage-note" role="note">Личная бета. Записи хранятся на этом iPhone; перед восстановлением сохраните резервную копию.</p>
+          <div class="page-head"><div><p class="eyebrow">ЛОКАЛЬНЫЕ ДАННЫЕ</p><h1 id="backup-title">Настройки</h1><p class="v232-build-label" id="v232-build-version">Health Tracker · HOME-34 A · TEST</p><p class="muted">Экспорт, проверка SHA-256 и восстановление отсутствующих записей.</p><p id="pae04-offline-status" class="pae04-offline-status" role="status" aria-live="polite" data-ready="false">Офлайн-копия: проверяем…</p></div><span class="tag">JSON · SHA-256</span></div>
+          <article class="panel settings-display-panel" id="settings-display"><h2>Внешний вид</h2><div class="settings-display-grid"><div><strong>Размер текста</strong><div class="ui01-font-tools" aria-label="Размер шрифта">
+      <button id="ui01-font-less" type="button" aria-label="Уменьшить шрифт">А−</button>
+      <span id="ui01-font-label" aria-live="polite"></span>
+      <button id="ui01-font-more" type="button" aria-label="Увеличить шрифт">А+</button>
+    </div></div><label>Тема интерфейса<select id="display-theme"><option value="system">Как на устройстве</option><option value="light">Светлая</option><option value="dark">Тёмная</option></select></label><label class="settings-compact"><input id="compact-view" type="checkbox" /> Компактное отображение</label></div><p class="form-hint">Настройки вида сохраняются только в этом браузере и не меняют медицинские записи.</p><p class="form-hint">Работа без аккаунта. Блокировка приложения паролем не реализована; отмена отметки требует подтверждения, журнал событий сохраняется.</p></article>
+          <article class="panel safety-panel" id="data-safety-panel">
+            <h2><span aria-hidden="true">🛡️</span> Проверка сохранности данных</h2>
+            <p class="form-hint">Проверяем все четыре хранилища IndexedDB и связи записей. Это не создаёт резервную копию и не гарантирует защиту от удаления приложения.</p>
+            <div class="safety-grid">
+              <div><strong>Локальная база</strong><p id="safety-db-status" role="status" aria-live="polite">Проверка не выполнялась</p></div>
+              <div><strong>Хранилище браузера</strong><p id="safety-browser-status">Статус неизвестен</p></div>
+              <div><strong>Внешняя копия</strong><p id="safety-copy-status">Не подтверждена в этой сессии</p></div>
+            </div>
+            <button type="button" class="secondary safety-check-button" id="safety-check">Повторно проверить локальную базу</button>
+            <p class="form-hint">Для надёжной защиты сохраните JSON отдельно, выберите его через «Проверить JSON без импорта» и убедитесь, что SHA-256 совпадает. Облачное автокопирование пока отсутствует.</p>
+          </article>
+          <div class="two-col"><article class="panel action-panel"><div class="round-icon">⇩</div><h2>Экспортировать копию</h2><p>Скачать файл с измерениями, препаратами и отметками приёма. Файл не отправляется на сервер.</p><button id="export-button" class="primary" type="button">Скачать резервную копию</button><p class="form-hint"><strong>Внимание:</strong> JSON не зашифрован. SHA-256 проверяет целостность, но не скрывает содержимое. Сохраняйте файл в защищённом месте.</p><div class="verify-box"><h3>Проверить скачанную копию</h3><p>Выберите сохранённый JSON, чтобы проверить SHA-256 и количество записей. Проверка не выполняет импорт.</p><label class="file-label" for="verify-file">Проверить JSON без импорта</label><input id="verify-file" type="file" accept=".json,application/json" /><div id="verify-result" role="status" aria-live="polite"></div></div></article>
+          <article class="panel action-panel"><div class="round-icon">⇧</div><h2>Восстановить из файла</h2><p>Сначала проверяем файл и конфликты, затем скачиваем защитную копию текущих записей. Импорт разрешается только после подтверждения сохранения копии.</p><label class="file-label" for="import-file">Выбрать JSON-файл</label><input id="import-file" type="file" accept=".json,application/json" /><div id="import-preview" class="import-preview" role="status" aria-live="polite"></div>
+<div class="checkpoint-steps"><button id="checkpoint-button" type="button" disabled>1. Скачать защитную копию текущих записей</button>
+<label class="checkpoint-label"><input id="checkpoint-ack" type="checkbox" disabled /> 2. Я нашёл и сохранил защитную копию отдельно</label>
+<p id="checkpoint-status" role="status" aria-live="polite" class="form-hint"></p></div>
+<button id="import-button" class="primary" type="button" disabled>3. Подтвердить безопасный импорт</button></article></div>
+          <div class="panel limitations"><h2>Особенности Health Tracker · личная бета</h2><p>Импорт добавляет только отсутствующие записи: совпадающие пропускаются, конфликтующие идентификаторы блокируются. Полная замена архива, шифрование файлов копий и автоматическая синхронизация пока не реализованы.</p><p>Резервная копия JSON не зашифрована. Сохраняйте её отдельно, проверяйте SHA-256 перед восстановлением и не очищайте данные Safari без резервной копии. Приложение не заменяет рекомендации врача.</p></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+    <!-- PAE-04 v05.4: self-contained, local-only wheel date picker. No calendar and no data writes until Apply. -->
+    <div id="wheel-modal" class="wheel-backdrop" hidden>
+      <section class="wheel-dialog" role="dialog" aria-modal="true" aria-labelledby="wheel-title">
+        <div class="wheel-head">
+          <button type="button" class="wheel-text-btn" id="wheel-cancel">Отмена</button>
+          <h2 id="wheel-title">Выбор даты</h2>
+          <button type="button" class="wheel-text-btn wheel-done" id="wheel-apply">Готово</button>
+        </div>
+        <p class="wheel-preview" id="wheel-preview" aria-live="polite"></p>
+        <div class="wheel-columns">
+          <div class="wheel-col"><span class="wheel-col-name">День</span><div id="wheel-day" class="wheel-scroll" role="listbox" tabindex="0" aria-label="День"></div></div>
+          <div class="wheel-col wheel-col-month"><span class="wheel-col-name">Месяц</span><div id="wheel-month" class="wheel-scroll" role="listbox" tabindex="0" aria-label="Месяц"></div></div>
+          <div class="wheel-col"><span class="wheel-col-name">Год</span><div id="wheel-year" class="wheel-scroll" role="listbox" tabindex="0" aria-label="Год"></div></div>
+        </div>
+        <label class="wheel-time-row" id="wheel-time-row" hidden>Время измерения <input type="time" id="wheel-time" step="60" /></label>
+        <button type="button" class="wheel-clear" id="wheel-clear" hidden>Не указывать дату</button>
+        <p class="wheel-help">Прокручивайте день, месяц и год. Дата сохраняется только после кнопки «Готово».</p>
+      </section>
+    </div>
+  <link rel="stylesheet" href="./med_guard.css" />
+  <script type="module" src="./med_guard.mjs"></script>
+  <script src="./app.js" defer></script>
+  <script src="./home.js" defer></script>
+  <script src="./personal_adapter.js" defer></script>
+  
+  <script src="./offline_status.js" defer></script>
+</body>
+</html>
