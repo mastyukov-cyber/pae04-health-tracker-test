@@ -1,0 +1,51 @@
+name: PAE-04 HOME24 — single synthetic Chromium file-picker QA (NO DEPLOY)
+on:
+  push:
+    branches:
+      - qa/pae04-home24-synthetic-chrome-20261123-01
+    paths:
+      - '.github/workflows/pae04-home24-chrome.yml'
+      - 'qa/home24/**'
+permissions:
+  contents: read
+concurrency:
+  group: pae04-home24-one-scoped-qa-20261123
+  cancel-in-progress: false
+jobs:
+  only-scoped-qa:
+    if: github.repository == 'mastyukov-cyber/pae04-health-tracker-test' && github.ref == 'refs/heads/qa/pae04-home24-synthetic-chrome-20261123-01'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    container:
+      image: mcr.microsoft.com/playwright/python:v1.65.1-noble
+    env:
+      PAE04_SYNTHETIC_ONLY: 'true'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout exactly one QA branch; no deployment credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install pinned Playwright Python adapter
+        run: python -m pip install --quiet --disable-pip-version-check 'playwright==1.65.1'
+      - name: Stage exact HOME24 prepared source with published CP41 SHA pins
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PAE04_SYNTHETIC_ONLY" = "true"
+          python qa/home24/stage_cp41.py
+      - name: One scoped Chromium run, stop on FIRST error
+        shell: bash
+        run: |
+          set -euo pipefail
+          python qa/home24/chrome_qa.py
+      - name: Upload synthetic QA evidence only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-home24-chromium-scoped-evidence
+          path: |
+            qa/home24/HOME24_CHROME_REPORT.json
+            qa/home24/HOME24_CHROME_SYNTHETIC.png
+          if-no-files-found: warn
+          retention-days: 7
