@@ -208,7 +208,7 @@ jobs:
         with:
           name: pae04-home24-cyber-sha-manifest
           path: qa-evidence
-      - name: Independently read back 75/75 live HTTPS files (no browser QA rerun)
+      - name: Independently read back 74/74 HTTP files (75/75 SHA verified before deploy; no browser QA)
         shell: bash
         run: |
           set -euo pipefail
@@ -219,6 +219,10 @@ jobs:
           files=manifest["files"]
           assert len(files)==75 and manifest["test_root_files"]==17
           assert manifest["home24_files"]==20 and manifest["cp40_files"]==19 and manifest["cp41_files"]==19
+          nojekyll_sha="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          assert files.get(".nojekyll")==nojekyll_sha, "original 75-file manifest .nojekyll SHA drift"
+          http_files={name:sha for name,sha in files.items() if name!=".nojekyll"}
+          assert len(http_files)==74 and set(files)-set(http_files)=={".nojekyll"}
           BASE="https://mastyukov-cyber.github.io/pae04-health-tracker-test/"
           def check(item):
            name,want=item
@@ -238,13 +242,14 @@ jobs:
              reason=str(e)
              if attempt<7:time.sleep(3)
            raise RuntimeError("LIVE SHA DRIFT "+name+" "+reason)
-          # Root/CP40/CP41 should stay byte-identical; verify every file after the release.
+          # Build manifests all 75 SHA-pinned files; .nojekyll is a Pages service marker (not public HTTP).
+          # Verify all 74 normal HTTPS resources, with exact SHA-256 per resource.
           with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
-           results=list(pool.map(check,files.items()))
-          assert set(results)==set(files)
+           results=list(pool.map(check,http_files.items()))
+          assert set(results)==set(http_files)
           print("HOME24_CYBER_PUBLIC_HTTP PASS",json.dumps({
-           "verified_files":len(results),"TEST":17,"CP40":19,"CP41":19,"HOME24":20,
-           "sha":"75/75_MATCH","qa_previously":"138/138","release":"NO_GO"}))
+           "http_verified_files":len(results),"manifest_sha_files":len(files),"TEST":17,"CP40":19,"CP41":19,"HOME24":20,
+           "sha":"74/74_HTTP_MATCH;75/75_BUILD_SHA_MATCH","qa_previously":"138/138","release":"NO_GO"}))
           print("HOME24_URL https://mastyukov-cyber.github.io/pae04-health-tracker-test/home24-iphone-preview/index.html")
 
           PY
