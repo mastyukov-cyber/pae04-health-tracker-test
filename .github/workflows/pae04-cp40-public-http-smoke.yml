@@ -1,0 +1,52 @@
+name: PAE-04 CP40 public HTTPS preview — independent read-only smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/pae04-cp40-public-http-smoke.yml'
+permissions:
+  contents: read
+jobs:
+  verify-live-pages:
+    if: github.repository == 'mastyukov-cyber/pae04-health-tracker-test' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Fetch ONLY public Pages URLs, no secrets and no deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://mastyukov-cyber.github.io/pae04-health-tracker-test'
+          mkdir -p /tmp/pae04-live
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 \
+            "$BASE/cp40-iphone-preview/index.html" -o /tmp/pae04-live/preview_index.html
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 \
+            "$BASE/cp40-iphone-preview/personal_profile.json" -o /tmp/pae04-live/profile.json
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 \
+            "$BASE/cp40-iphone-preview/personal_adapter.js" -o /tmp/pae04-live/adapter.js
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 \
+            "$BASE/cp40-iphone-preview/med_guard.mjs" -o /tmp/pae04-live/guard.mjs
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 \
+            "$BASE/index.html" -o /tmp/pae04-live/original_index.html
+          curl -fsSL --retry 8 --retry-delay 4 --retry-all-errors --connect-timeout 15 --max-time 25 \
+            "$BASE/sw.js" -o /tmp/pae04-live/original_sw.js
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          p=Path('/tmp/pae04-live')
+          h=lambda file:hashlib.sha256((p/file).read_bytes()).hexdigest()
+          assert h('original_index.html')=='d14432b9bf9f728d63c55c96368f66a1aab1655281e1deeeb52bec71ef585291','Original TEST HTML altered'
+          assert h('original_sw.js')=='0945a188269432ec7b1ae96fb15c848cdde9294995e793bea3c3c0857118feed','Original TEST Service Worker altered'
+          html=(p/'preview_index.html').read_text(encoding='utf-8')
+          assert 'id="pae04-public-preview-warning"' in html,'Synthetic banner missing'
+          assert 'Health Tracker · Compact v7.1' in html,'Wrong CP40 version'
+          assert 'noindex,nofollow,noarchive' in html,'Public preview robots meta missing'
+          profile=json.loads((p/'profile.json').read_text(encoding='utf-8'))
+          assert profile.get('medicines')==[],'Personal medication names leaked'
+          assert 'personalSeedDisabled:true' in (p/'adapter.js').read_text(encoding='utf-8'),'Personal seed not disabled'
+          catalog=(p/'guard.mjs').read_text(encoding='utf-8')
+          assert 'Тестовый препарат 1' in catalog and 'Тестовый препарат 10' in catalog,'Synthetic catalog missing'
+          print('PAE04_CP40_PUBLIC_HTTP PASS')
+          print('CP40_URL https://mastyukov-cyber.github.io/pae04-health-tracker-test/cp40-iphone-preview/index.html')
+          print('ORIGINAL_TEST_ROOT_SHA256 PASS; ORIGINAL_SW_SHA256 PASS; SYNTHETIC_ONLY PASS')
+          PY
