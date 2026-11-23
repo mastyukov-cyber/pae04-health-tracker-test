@@ -1,0 +1,59 @@
+name: PAE04 HOME27 unknown fields 4 - ONE scoped synthetic Chromium QA
+on:
+  push:
+    branches:
+      - qa/pae04-home27-unknown-fields4-once-20261123-01
+    paths:
+      - .github/workflows/pae04-home27-unknown-fields4-once.yml
+permissions:
+  contents: read
+concurrency:
+  group: pae04-home27-unknown-fields4-once
+  cancel-in-progress: false
+
+jobs:
+  home27:
+    if: github.repository == 'mastyukov-cyber/pae04-health-tracker-test' && github.ref == 'refs/heads/qa/pae04-home27-unknown-fields4-once-20261123-01'
+    runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright/python:v1.65.1-noble
+    timeout-minutes: 12
+    steps:
+      - name: Checkout isolated QA branch read only
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Exact HOME24 source and HOME27 scope preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "mastyukov-cyber/pae04-health-tracker-test"
+          test "$GITHUB_REF" = "refs/heads/qa/pae04-home27-unknown-fields4-once-20261123-01"
+          test "$(git hash-object qa/home24/chrome_qa.py)" = "fcb19320db4617a35f7684772e22382689f7c364"
+          test "$(git hash-object qa/home24/stage_cp41.py)" = "f085a859c140710fbe00908500d5088b386269c6"
+          test "$(git hash-object qa/home24/strict_preflight.js)" = "a85037a475d5ec312f9e9c97541b58491070b828"
+          git diff --name-only 70314d306d50d31b7703c49fe3077038b651243c HEAD | sort > /tmp/pae04-home27-changed.txt
+          printf '%s\n' '.github/workflows/pae04-home27-unknown-fields4-once.yml' 'qa/home27/unknown_fields4_qa.py' > /tmp/pae04-home27-expected.txt
+          diff -u /tmp/pae04-home27-expected.txt /tmp/pae04-home27-changed.txt
+          echo "HOME27_SOURCE_SCOPE PASS"
+      - name: Install exact Playwright Python 1.65.1
+        shell: bash
+        run: python -m pip install --quiet --disable-pip-version-check 'playwright==1.65.1'
+      - name: Stage SHA-pinned HOME24 from published synthetic CP41
+        shell: bash
+        run: |
+          set -euo pipefail
+          python qa/home24/stage_cp41.py
+      - name: Run ONLY four unknown fields x two actual handlers + v1/v2/v3
+        shell: bash
+        run: |
+          set -euo pipefail
+          python qa/home27/unknown_fields4_qa.py
+      - name: Preserve scoped report after PASS or FAIL
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: PAE04_HOME27_UNKNOWN_FIELDS4_REPORT
+          path: qa/home27/HOME27_UNKNOWN_FIELDS4_REPORT.json
+          if-no-files-found: warn
+          retention-days: 1
