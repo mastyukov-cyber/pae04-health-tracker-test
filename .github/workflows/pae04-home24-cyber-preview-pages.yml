@@ -89,8 +89,16 @@ jobs:
           fail(has(zip_path,"0abb256031187036e8d282eaedc08ffaf970e9de1cffd7cda7814cc84fb8c4cb"),"TEST release ZIP source drift")
           with zipfile.ZipFile(zip_path) as z:
            fail(z.testzip() is None,"TEST ZIP CRC")
-           names=z.namelist()
-           fail(set(names)==set(PIN_TEST),"TEST ZIP inventory drift")
+           entries=z.infolist()
+           names=[entry.filename for entry in entries if not entry.is_dir()]
+           allowed_dirs={str(Path(name).parent) for name in PIN_TEST if "/" in name}|{"."}
+           fail(len(names)==len(PIN_TEST) and set(names)==set(PIN_TEST),"TEST ZIP file inventory drift")
+           fail(len({entry.filename for entry in entries})==len(entries),"TEST ZIP duplicate entries")
+           fail(all(not entry.is_dir() or
+                    (not entry.filename.startswith("/") and
+                     ".." not in Path(entry.filename).parts and
+                     str(Path(entry.filename)) in allowed_dirs) for entry in entries),
+                "TEST ZIP unexpected directory entry")
            for n in names:
             fail(not n.startswith("/") and ".." not in Path(n).parts,"unsafe TEST ZIP path "+n)
             b=z.read(n)
