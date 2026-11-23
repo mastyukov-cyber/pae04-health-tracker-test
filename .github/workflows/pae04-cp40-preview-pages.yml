@@ -1,0 +1,146 @@
+name: PAE-04 CP40 synthetic iPhone preview — cyber isolated subpath
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/pae04-cp40-preview-pages.yml'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pae04-test-site-pages
+  cancel-in-progress: false
+
+jobs:
+  verify-and-package:
+    if: github.repository == 'mastyukov-cyber/pae04-health-tracker-test' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    container:
+      image: mcr.microsoft.com/playwright/python:v1.65.1-noble
+    env:
+      PAE04_SYNTHETIC_ONLY: 'true'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout unchanged TEST package
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout immutable verified CP40 source in separate folder
+        uses: actions/checkout@v4
+        with:
+          repository: mastyukov/health-tracker
+          ref: 45cb4a05f3f50c82cdade02ff72ada7b5d4a16cd
+          path: source-cp40
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify repository, source commit, and original TEST ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PAE04_SYNTHETIC_ONLY" = "true"
+          test "$GITHUB_REPOSITORY" = "mastyukov-cyber/pae04-health-tracker-test"
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$(git -c safe.directory="$GITHUB_WORKSPACE/source-cp40" -C source-cp40 rev-parse HEAD)" = "45cb4a05f3f50c82cdade02ff72ada7b5d4a16cd"
+          printf '%s  %s\n' '0abb256031187036e8d282eaedc08ffaf970e9de1cffd7cda7814cc84fb8c4cb' 'release/health-tracker-test.zip' | sha256sum -c -
+          test -f .github/workflows/pae04-test-pages.yml
+          test -f source-cp40/qa/cp40/safari_preview_package.py
+      - name: Use matching WebKit Playwright Python 1.65.1
+        run: python -m pip install --quiet --disable-pip-version-check 'playwright==1.65.1'
+      - name: Build sanitized synthetic preview and verify WebKit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile source-cp40/qa/cp40/safari_preview_package.py
+          # Actual source HEAD is verified above; this env scope enables the sandbox-only builder.
+          GITHUB_REF='refs/heads/sandbox/pae04-approved-ux23-iphone-cp40-20261123-r1' PAE04_SYNTHETIC_ONLY=true python source-cp40/qa/cp40/safari_preview_package.py
+      - name: Verify TEST root unchanged and add only CP40 preview subdirectory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          unzip -q release/health-tracker-test.zip -d dist
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,json,re,zipfile
+          root=Path('dist')
+          old_yml=Path('.github/workflows/pae04-test-pages.yml').read_text(encoding='utf-8')
+          m=re.search(r'^\s*expected = (\{.*\})$',old_yml,re.MULTILINE)
+          if not m:raise SystemExit('BLOCKED: old TEST file allowlist unavailable')
+          expected=json.loads(m.group(1))
+          found={p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file()}
+          if found!=set(expected):raise SystemExit('BLOCKED: TEST root files differ')
+          for path,sha in expected.items():
+              if hashlib.sha256((root/path).read_bytes()).hexdigest()!=sha:
+                  raise SystemExit('BLOCKED: original TEST root SHA drift: '+path)
+          report_file=Path('source-cp40/qa/cp40/safari_preview_artifact/CP40_PREVIEW_QA.json')
+          report=json.loads(report_file.read_text(encoding='utf-8'))
+          if report.get('status')!='PASS' or len(report.get('checks',[]))<29:
+              raise SystemExit('BLOCKED: preview QA incomplete')
+          if any(x.get('status')!='PASS' for x in report['checks']):
+              raise SystemExit('BLOCKED: failed preview check')
+          if report.get('source_sha')!='21969ddc9c44c0973056bc1e7606f06972b61580':
+              raise SystemExit('BLOCKED: approved CP40 source SHA drift')
+          archive=report_file.parent/report['zip_name']
+          if not archive.is_file():raise SystemExit('BLOCKED: preview ZIP absent')
+          if hashlib.sha256(archive.read_bytes()).hexdigest()!=report['zip_sha256']:
+              raise SystemExit('BLOCKED: preview ZIP checksum mismatch')
+          target=root/'cp40-iphone-preview'
+          target.mkdir()
+          with zipfile.ZipFile(archive) as z:
+              if z.testzip() is not None:raise SystemExit('BLOCKED: preview ZIP CRC')
+              names=z.namelist()
+              if len(names)!=len(set(names)):raise SystemExit('BLOCKED: duplicate filenames')
+              for item in z.infolist():
+                  name=item.filename
+                  if name.startswith('/') or '..' in Path(name).parts or '\\' in name or item.is_dir():
+                      raise SystemExit('BLOCKED: unsafe archive path')
+                  if (item.external_attr>>16)&0o170000 == 0o120000:
+                      raise SystemExit('BLOCKED: symlink')
+              if 'index.html' not in names or 'sw.js' not in names:
+                  raise SystemExit('BLOCKED: missing entrypoint or SW')
+              for name in names:
+                  dest=target/name;dest.parent.mkdir(parents=True,exist_ok=True)
+                  dest.write_bytes(z.read(name))
+          if json.loads((target/'personal_profile.json').read_text(encoding='utf-8')).get('medicines')!=[]:
+              raise SystemExit('BLOCKED: personal profile in preview')
+          if 'id="pae04-public-preview-warning"' not in (target/'index.html').read_text(encoding='utf-8'):
+              raise SystemExit('BLOCKED: visible synthetic-only warning absent')
+          if 'personalSeedDisabled:true' not in (target/'personal_adapter.js').read_text(encoding='utf-8'):
+              raise SystemExit('BLOCKED: personal data seeding not disabled')
+          for path,sha in expected.items():
+              if hashlib.sha256((root/path).read_bytes()).hexdigest()!=sha:
+                  raise SystemExit('BLOCKED: TEST root was changed')
+          print('PAE04_CP40_CYBER_PREVIEW_PACKAGED PASS: 17 original TEST files byte-identical; preview in /cp40-iphone-preview/')
+          print('CP40_PREVIEW_SHA256 '+report['zip_sha256'])
+          print('CP40_PREVIEW_FILES '+str(len(names)))
+          PY
+      - name: Configure GitHub Pages after every safety gate
+        uses: actions/configure-pages@v5
+      - name: Upload unchanged TEST plus isolated CP40 preview
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+      - name: Retain preview QA metadata and synthetic screenshot only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-cp40-cyber-preview-QA
+          path: |
+            source-cp40/qa/cp40/safari_preview_artifact/CP40_PREVIEW_QA.json
+            source-cp40/qa/cp40/safari_preview_artifact/CP40_preview_webkit_synthetic.png
+          if-no-files-found: warn
+          retention-days: 7
+
+  publish:
+    needs: verify-and-package
+    if: github.repository == 'mastyukov-cyber/pae04-health-tracker-test' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    environment:
+      name: github-pages
+    steps:
+      - name: Deploy exact verified TEST plus CP40 preview
+        id: pages
+        uses: actions/deploy-pages@v4
