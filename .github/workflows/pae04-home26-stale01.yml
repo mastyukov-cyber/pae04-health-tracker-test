@@ -1,0 +1,61 @@
+name: PAE-04 HOME26 — one exact-published synthetic stale-checkpoint QA (NO DEPLOY)
+on:
+  push:
+    branches:
+      - qa/pae04-home26-stale01-20261123-01
+    paths:
+      - '.github/workflows/pae04-home26-stale01.yml'
+      - 'qa/home26/stale01_runtime.py'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: pae04-home26-stale01-one-20261123
+  cancel-in-progress: false
+jobs:
+  only-stale01:
+    if: github.repository == 'mastyukov-cyber/pae04-health-tracker-test' && github.ref == 'refs/heads/qa/pae04-home26-stale01-20261123-01'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    container:
+      image: mcr.microsoft.com/playwright/python:v1.65.1-noble
+    env:
+      PAE04_HOME26_SYNTHETIC_ONLY: 'ALLOW_ONCE'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout isolated QA branch without write credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install exact existing Playwright adapter
+        run: python -m pip install --quiet --disable-pip-version-check 'playwright==1.65.1'
+      - name: Download exact successful HOME24 published Pages artifact (not rebuild)
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 45227631004
+          repository: mastyukov-cyber/pae04-health-tracker-test
+          github-token: ${{ github.token }}
+          name: github-pages
+          path: qa/home26/evidence/pages
+      - name: Download exact successful HOME24 SHA-256 manifest
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 45227631004
+          repository: mastyukov-cyber/pae04-health-tracker-test
+          github-token: ${{ github.token }}
+          name: pae04-home24-cyber-sha-manifest
+          path: qa/home26/evidence/manifest
+      - name: One scoped synthetic Chromium stale-checkpoint test and independent 4-store readback
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PAE04_HOME26_SYNTHETIC_ONLY" = "ALLOW_ONCE"
+          python qa/home26/stale01_runtime.py
+      - name: Preserve exact scoped evidence (no Pages, no main writes)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pae04-home26-stale01-synthetic-report
+          path: qa/home26/HOME26_STALE01_REPORT.json
+          if-no-files-found: warn
+          retention-days: 7
