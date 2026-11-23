@@ -1,0 +1,52 @@
+name: PAE04 HOME28 privacy egress - ONE synthetic Chromium QA
+on:
+  push:
+    branches:
+      - qa/pae04-home28-privacy-egress-once-20261124-01
+    paths:
+      - .github/workflows/pae04-home28-privacy-egress-once.yml
+permissions:
+  contents: read
+concurrency:
+  group: pae04-home28-privacy-egress-once
+  cancel-in-progress: false
+jobs:
+  home28:
+    if: github.repository == 'mastyukov-cyber/pae04-health-tracker-test' && github.ref == 'refs/heads/qa/pae04-home28-privacy-egress-once-20261124-01'
+    runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright/python:v1.65.1-noble
+    timeout-minutes: 12
+    steps:
+      - name: Checkout isolated synthetic QA branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Exact source and add-only scope preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'mastyukov-cyber/pae04-health-tracker-test'
+          test "$GITHUB_REF" = 'refs/heads/qa/pae04-home28-privacy-egress-once-20261124-01'
+          test "$(git -c safe.directory="$GITHUB_WORKSPACE" rev-parse HEAD^)" = 'd01a6fa3e9256c390874c8bf50a22f07efcdc048'
+          test "$(git hash-object qa/home24/stage_cp41.py)" = 'f085a859c140710fbe00908500d5088b386269c6'
+          test "$(git hash-object qa/home24/strict_preflight.js)" = 'a85037a475d5ec312f9e9c97541b58491070b828'
+          git -c safe.directory="$GITHUB_WORKSPACE" diff-tree --no-commit-id --name-only -r HEAD | sort > /tmp/pae04-home28-actual.txt
+          printf '%s\n' '.github/workflows/pae04-home28-privacy-egress-once.yml' 'qa/home28/privacy_egress_qa.py' > /tmp/pae04-home28-expected.txt
+          diff -u /tmp/pae04-home28-expected.txt /tmp/pae04-home28-actual.txt
+          echo HOME28_SOURCE_SCOPE_PASS
+      - name: Install pinned Playwright Python
+        run: python -m pip install --quiet --disable-pip-version-check 'playwright==1.65.1'
+      - name: Stage exact HOME24 site from public SHA-pinned CP41
+        run: python qa/home24/stage_cp41.py
+      - name: Privacy egress and static secret guard - synthetic only
+        run: python qa/home28/privacy_egress_qa.py
+      - name: Upload scoped HOME28 report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: PAE04_HOME28_PRIVACY_EGRESS_REPORT
+          path: qa/home28/HOME28_PRIVACY_EGRESS_REPORT.json
+          if-no-files-found: warn
+          retention-days: 1
