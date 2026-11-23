@@ -82,7 +82,8 @@ def extract_exact_site():
                 dst = SITE / rel
                 dst.parent.mkdir(parents=True, exist_ok=True)
                 dst.write_bytes(data)
-    check("artifact full file inventory 75", seen == set(pins))
+    check("published .nojekyll pinned to empty SHA-256", pins.get(".nojekyll") == sha(b""))
+    check("Pages artifact 74 files excluding only .nojekyll", len(seen) == 74 and seen == (set(pins) - {".nojekyll"}))
     check("extracted HOME24 inventory 20", {
         p.relative_to(SITE).as_posix() for p in SITE.rglob("*") if p.is_file()
     } == set(expected))
