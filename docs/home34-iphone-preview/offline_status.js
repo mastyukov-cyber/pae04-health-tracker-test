@@ -2,7 +2,7 @@
 /* CP-OFFLINE01. Diagnostic only: never opens or modifies IndexedDB.
    A green network dot is NOT proof that the offline app shell is installed. */
 (function(){
-  const CACHE='pae04-home34-iphone-isolated-static-home34-a-20261124';
+  const CACHE='pae04-home34-iphone-isolated-static-home34-b-20261124';
   const REQUIRED=[
     './','./index.html','./app.js','./styles.css','./home.js','./home.css',
     './med_guard.mjs','./med_matcher.mjs','./med_guard.css',

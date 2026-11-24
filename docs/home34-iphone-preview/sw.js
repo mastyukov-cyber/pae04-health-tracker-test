@@ -1,7 +1,7 @@
 'use strict';
 /* PAE-04 CP-OFFLINE01: immutable app shell. Never accesses IndexedDB. */
 const CACHE_PREFIX='pae04-home34-iphone-isolated-static-';
-const CACHE=CACHE_PREFIX+'home34-a-20261124';
+const CACHE=CACHE_PREFIX+'home34-b-20261124';
 const SHELL=new URL('./index.html',self.registration.scope).href;
 const FILES=[
   './','./index.html','./app.js','./styles.css','./home.js','./home.css',
@@ -14,7 +14,7 @@ const FILES=[
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
     const cache=await caches.open(CACHE);
-    await cache.addAll(FILES);
+    await cache.addAll(FILES.map(file=>new Request(new URL(file,self.registration.scope),{cache:"reload"})));
     // Never activate a partially cached release.
     for(const path of ['./','./index.html','./app.js','./home.js',
                        './med_guard.mjs','./offline_status.js']){
