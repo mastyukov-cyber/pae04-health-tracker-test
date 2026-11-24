@@ -1,0 +1,26 @@
+{
+  "id": "./",
+  "name": "Health Tracker · TEST v0.6.2-test.1",
+  "short_name": "HT TEST",
+  "description": "PAE-04 · TEST v0.6.2-test.1 · CP-MULTI03. Только синтетические данные.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#f5f7fb",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

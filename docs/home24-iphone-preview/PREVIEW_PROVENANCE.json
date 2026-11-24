@@ -1,0 +1,17 @@
+{
+  "project": "PAE-04 HEALTH TRACKER",
+  "checkpoint": "HOME-24 CP41 pre-parse JSON duplicate-key guard preparation",
+  "status": "OWNER_APPROVED_CYBER_PREVIEW_ONLY",
+  "approval": "OWNER_APPROVED_PUBLISH_20261123",
+  "source": "EXACT published CP41 GitHub Pages Actions 45165229283",
+  "cp41_source_sandbox_head": "76e144028de7701d6f7bffcdc515ab5aaf373201",
+  "cp41_cyber_main": "4e5403389232801a6dd3966542e8cdeece4f32a2",
+  "home23_strict_preflight_sha256": "4fcee08c000764a9665eca30359cf53e2d04cf48fd88f05cd90213304bfb3d70",
+  "reuse": "checkNoDuplicateKeys() ONLY; parseChecked() NOT CALLED: legacy field allowlist conflicts with CP41",
+  "synthetic_only": true,
+  "qa_execution": "PASS_SCOPED_CHROMIUM_138_138",
+  "publication": "GITHUB_PAGES_TEST_ONLY",
+  "release": "NO_GO",
+  "storage": "new HOME24 IndexedDB and CacheStorage names; shared origins not equivalent to security isolation",
+  "security_gate": "OPEN"
+}

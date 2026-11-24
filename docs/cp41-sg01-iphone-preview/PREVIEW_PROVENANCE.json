@@ -1,0 +1,13 @@
+{
+  "project": "PAE-04 HEALTH TRACKER",
+  "checkpoint": "CP41-SG01 physical Safari file picker PREVIEW",
+  "source_sha": "76e144028de7701d6f7bffcdc515ab5aaf373201",
+  "strict_donor": "498bb6f153278deaef211a424e365dca87059339",
+  "synthetic_only": true,
+  "real_medical_data": "DO_NOT_ENTER",
+  "release_status": "NO_GO",
+  "shared_origin": "mastyukov-cyber.github.io",
+  "isolation": "separate application IndexedDB name, Service Worker scope, and CacheStorage prefix",
+  "security_limit": "shared origin is not an independent security boundary",
+  "owner_approval": "GitHub mastyukov-cyber preview only"
+}
